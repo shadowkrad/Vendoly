@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand-primary: #0f172a;
+  --brand-primary-hover: #1e293b;
+  --brand-accent: #059669;
+  --brand-accent-light: #ecfdf5;
+  --brand-surface: #ffffff;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 antialiased selection:bg-emerald-500 selection:text-white min-h-screen;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Classi di utilità Taaaac Design System */
+.taaaac-card {
+  @apply bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs transition-shadow hover:shadow-sm;
+}
+
+.taaaac-btn-primary {
+  @apply rounded-xl font-semibold transition-all cursor-pointer px-4 py-2.5 inline-flex items-center justify-center gap-2 text-white shadow-xs;
+  background-color: var(--brand-primary);
+}
+
+.taaaac-btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.taaaac-btn-accent {
+  @apply rounded-xl font-semibold transition-all cursor-pointer px-4 py-2.5 inline-flex items-center justify-center gap-2 text-white shadow-xs;
+  background-color: var(--brand-accent);
+}
+
+.taaaac-btn-accent:hover {
+  filter: brightness(1.1);
+}
+
+.taaaac-btn-secondary {
+  @apply rounded-xl font-semibold transition-all cursor-pointer px-4 py-2.5 inline-flex items-center justify-center gap-2 bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 shadow-xs;
+}
+
+/* Scrollbar personalizzata per il touch POS */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

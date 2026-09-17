@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  color     String?   // Colore pulsante cassa es. "#059669", "#3b82f6"
+  icon      String?   // Nome icona Lucide es. "ShoppingBag", "Shirt"
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id            String     @id @default(cuid())
+  name          String
+  sku           String     @unique
+  barcode       String?
+  description   String?
+  price         Float
+  costPrice     Float?
+  vatRate       Float      @default(22.0) // 22%, 10%, 4%, 0%
+  stockQuantity Int        @default(0)
+  minStockAlert Int        @default(5)
+  imageUrl      String?
+  categoryId    String
+  category      Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  isActive      Boolean    @default(true)
+  saleItems     SaleItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model Customer {
+  id                 String   @id @default(cuid())
+  firstName          String
+  lastName           String
+  phone              String?
+  email              String?
+  taxCode            String?  // Codice Fiscale
+  fidelityCardNumber String?  @unique
+  fidelityPoints     Int      @default(0)
+  tier               String   @default("BASE") // BASE, SILVER, GOLD, VIP
+  notes              String?
+  sales              Sale[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model Sale {
+  id             String     @id @default(cuid())
+  saleNumber     String     @unique // es. "SCT-2026-0001"
+  subtotal       Float
+  taxAmount      Float
+  discountAmount Float      @default(0.0)
+  totalAmount    Float
+  paymentMethod  String     @default("CONTANTI") // CONTANTI, POS_CARTA, SATISPAY, GIFT_CARD, MISTO
+  status         String     @default("COMPLETED") // PENDING, COMPLETED, REFUNDED, CANCELLED
+  cashierName    String     @default("Cassa Principale")
+  notes          String?
+  customerId     String?
+  customer       Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  pointsEarned   Int        @default(0)
+  pointsRedeemed Int        @default(0)
+  items          SaleItem[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model SaleItem {
+  id          String   @id @default(cuid())
+  saleId      String
+  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  productName String
+  unitPrice   Float
+  quantity    Int      @default(1)
+  vatRate     Float    @default(22.0)
+  subtotal    Float
+}
+
+model TenantLocalCache {
+  id             String   @id @default("singleton")
+  domain         String
+  licenseStatus  String   @default("ATTIVO") // ATTIVO, SOSPESO, IN_SCADENZA
+  enabledModules String   @default("[]")     // JSON stringified array
+  brandName      String   @default("Vendoly Store")
+  logoUrl        String?
+  primaryColor   String   @default("#0f172a")
+  accentColor    String   @default("#059669")
+  contactEmail   String?
+  phone          String?
+  lastSyncedAt   DateTime @default(now())
+}

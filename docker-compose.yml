@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vendoly-${SUBDOMAIN:-demo}
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/prod.db
+      - TAAAAC_CORE_URL=https://taaaac.eu
+      - TAAAAC_TENANT_DOMAIN=${SUBDOMAIN:-demo}.taaaac.eu
+      - TAAAAC_TENANT_TOKEN=${TAAAAC_TENANT_TOKEN}
+      - NEXT_PUBLIC_APP_URL=https://${SUBDOMAIN:-demo}.taaaac.eu
+    volumes:
+      - vendoly_data:/app/data
+    networks:
+      - traefik-public
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vendoly-${SUBDOMAIN:-demo}.rule=Host(`${SUBDOMAIN:-demo}.taaaac.eu`)"
+      - "traefik.http.routers.vendoly-${SUBDOMAIN:-demo}.entrypoints=websecure"
+      - "traefik.http.routers.vendoly-${SUBDOMAIN:-demo}.tls.certresolver=letsencrypt"
+      - "traefik.http.services.vendoly-${SUBDOMAIN:-demo}.loadbalancer.server.port=3000"
+
+volumes:
+  vendoly_data:
+
+networks:
+  traefik-public:
+    external: true
