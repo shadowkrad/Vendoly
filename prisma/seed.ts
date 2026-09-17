@@ -293,11 +293,54 @@ async function main() {
     },
   });
 
+  // 7. Creazione Inserzioni Multi-Canale dimostrative (Issue #2)
+  await prisma.channelListing.deleteMany();
+  await prisma.channelListing.createMany({
+    data: [
+      {
+        productId: p1.id,
+        channel: "VINTED",
+        status: "ACTIVE",
+        listedPrice: 27.0,
+        listedAt: new Date(),
+      },
+      {
+        productId: p1.id,
+        channel: "SUBITO",
+        status: "ACTIVE",
+        listedPrice: 28.0,
+        listedAt: new Date(),
+      },
+      {
+        productId: p2.id,
+        channel: "EBAY",
+        status: "ACTIVE",
+        listedPrice: 74.0,
+        listedAt: new Date(),
+      },
+      {
+        productId: p2.id,
+        channel: "FACEBOOK",
+        status: "ACTIVE",
+        listedPrice: 65.0,
+        listedAt: new Date(),
+      },
+      {
+        productId: p7.id,
+        channel: "SUBITO",
+        status: "ACTIVE",
+        listedPrice: 120.0,
+        listedAt: new Date(),
+      },
+    ],
+  });
+
   console.log("✅ Seed completato con successo!");
   console.log(`- Prodotti creati: 8`);
   console.log(`- Categorie create: 5`);
   console.log(`- Clienti Fidelity creati: 3`);
   console.log(`- Vendite registrate: 2`);
+  console.log(`- Inserzioni Multi-Canale create: 5`);
 }
 
 main()

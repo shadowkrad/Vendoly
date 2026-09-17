@@ -1,12 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { validatePosAuthorization } from "@/lib/auth-pos";
 import {
   DEMO_CATEGORIES,
   DEMO_PRODUCTS,
   DEMO_CUSTOMERS,
 } from "@/lib/demo-data";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  // 1. Controllo di autorizzazione POS (Issue #1)
+  const auth = validatePosAuthorization(req);
+  if (!auth.authorized && auth.errorResponse) {
+    return auth.errorResponse;
+  }
+
   try {
     const categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
@@ -21,6 +28,7 @@ export async function GET() {
       where: { isActive: true },
       include: {
         category: true,
+        channelListings: true,
       },
       orderBy: { name: "asc" },
     });

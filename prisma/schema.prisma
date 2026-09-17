@@ -18,23 +18,46 @@ model Category {
 }
 
 model Product {
-  id            String     @id @default(cuid())
-  name          String
-  sku           String     @unique
-  barcode       String?
-  description   String?
-  price         Float
-  costPrice     Float?
-  vatRate       Float      @default(22.0) // 22%, 10%, 4%, 0%
-  stockQuantity Int        @default(0)
-  minStockAlert Int        @default(5)
-  imageUrl      String?
-  categoryId    String
-  category      Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  isActive      Boolean    @default(true)
-  saleItems     SaleItem[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id               String           @id @default(cuid())
+  name             String
+  sku              String           @unique
+  barcode          String?
+  description      String?
+  price            Float
+  costPrice        Float?
+  vatRate          Float            @default(22.0) // 22%, 10%, 4%, 0%
+  stockQuantity    Int              @default(0)
+  minStockAlert    Int              @default(5)
+  imageUrl         String?
+  categoryId       String
+  category         Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  isActive         Boolean          @default(true)
+  // Campi Multi-Canale (Issue #2)
+  condition        String           @default("NUOVO") // NUOVO, COME_NUOVO, OTTIMO, USATO
+  subitoPrice      Float?
+  ebayPrice        Float?
+  vintedPrice      Float?
+  marketplacePrice Float?
+  channelNotes     String?
+  channelListings  ChannelListing[]
+  saleItems        SaleItem[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model ChannelListing {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  channel     String    // SUBITO, FACEBOOK, EBAY, VINTED
+  status      String    @default("DRAFT") // DRAFT, ACTIVE, SOLD, ARCHIVED
+  externalUrl String?
+  externalId  String?
+  listedPrice Float
+  listedAt    DateTime?
+  soldAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Customer {

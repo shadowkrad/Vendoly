@@ -27,7 +27,7 @@ export default async function HomePage() {
 
     products = await prisma.product.findMany({
       where: { isActive: true },
-      include: { category: true },
+      include: { category: true, channelListings: true },
       orderBy: { name: "asc" },
     });
 
