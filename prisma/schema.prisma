@@ -7,106 +7,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Category {
-  id        String    @id @default(cuid())
-  name      String
-  color     String?   // Colore pulsante cassa es. "#059669", "#3b82f6"
-  icon      String?   // Nome icona Lucide es. "ShoppingBag", "Shirt"
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
 model Product {
-  id               String           @id @default(cuid())
-  name             String
-  sku              String           @unique
-  barcode          String?
-  description      String?
-  price            Float
-  costPrice        Float?
-  vatRate          Float            @default(22.0) // 22%, 10%, 4%, 0%
-  stockQuantity    Int              @default(0)
-  minStockAlert    Int              @default(5)
-  imageUrl         String?
-  categoryId       String
-  category         Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  isActive         Boolean          @default(true)
-  // Campi Multi-Canale (Issue #2)
-  condition        String           @default("NUOVO") // NUOVO, COME_NUOVO, OTTIMO, USATO
-  subitoPrice      Float?
-  ebayPrice        Float?
-  vintedPrice      Float?
-  marketplacePrice Float?
-  channelNotes     String?
-  channelListings  ChannelListing[]
-  saleItems        SaleItem[]
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id           String      @id @default(cuid())
+  title        String
+  description  String
+  price        Float
+  comparePrice Float?
+  stock        Int         @default(1)
+  category     String
+  images       String      // JSON array di URL immagini
+  sku          String?     @unique
+  condition    String      @default("NUOVO") // NUOVO, USATO_COME_NUOVO, OTTIME_CONDIZIONI
+  isActive     Boolean     @default(true)
+
+  // Flag canali marketplace (Issue #5)
+  syncFacebook Boolean     @default(false)
+  syncSubito   Boolean     @default(false)
+  syncEbay     Boolean     @default(false)
+  syncVinted   Boolean     @default(false)
+
+  orderItems   OrderItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
-model ChannelListing {
-  id          String    @id @default(cuid())
-  productId   String
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  channel     String    // SUBITO, FACEBOOK, EBAY, VINTED
-  status      String    @default("DRAFT") // DRAFT, ACTIVE, SOLD, ARCHIVED
-  externalUrl String?
-  externalId  String?
-  listedPrice Float
-  listedAt    DateTime?
-  soldAt      DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  shippingAddress String?
+  fulfillmentType String      @default("SPEDIZIONE") // SPEDIZIONE, RITIRO_IN_NEGOZIO
+  status          String      @default("IN_ATTESA")   // IN_ATTESA, PAGATO, SPEDITO, COMPLETATO
+  totalAmount     Float
+  channel         String      @default("SITO_WEB")    // SITO_WEB, SUBITO, VINTED, EBAY, FACEBOOK
+  trackingCode    String?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now()) @updatedAt
 }
 
-model Customer {
-  id                 String   @id @default(cuid())
-  firstName          String
-  lastName           String
-  phone              String?
-  email              String?
-  taxCode            String?  // Codice Fiscale
-  fidelityCardNumber String?  @unique
-  fidelityPoints     Int      @default(0)
-  tier               String   @default("BASE") // BASE, SILVER, GOLD, VIP
-  notes              String?
-  sales              Sale[]
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-}
-
-model Sale {
-  id             String     @id @default(cuid())
-  saleNumber     String     @unique // es. "SCT-2026-0001"
-  subtotal       Float
-  taxAmount      Float
-  discountAmount Float      @default(0.0)
-  totalAmount    Float
-  paymentMethod  String     @default("CONTANTI") // CONTANTI, POS_CARTA, SATISPAY, GIFT_CARD, MISTO
-  status         String     @default("COMPLETED") // PENDING, COMPLETED, REFUNDED, CANCELLED
-  cashierName    String     @default("Cassa Principale")
-  notes          String?
-  customerId     String?
-  customer       Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  pointsEarned   Int        @default(0)
-  pointsRedeemed Int        @default(0)
-  items          SaleItem[]
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-}
-
-model SaleItem {
-  id          String   @id @default(cuid())
-  saleId      String
-  sale        Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  productId   String
-  product     Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
-  productName String
-  unitPrice   Float
-  quantity    Int      @default(1)
-  vatRate     Float    @default(22.0)
-  subtotal    Float
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int     @default(1)
+  unitPrice Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
 }
 
 model TenantLocalCache {

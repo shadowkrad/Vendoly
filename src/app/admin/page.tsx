@@ -1,16 +1,18 @@
 import { getTenantConfig } from "@/lib/taaaac-core";
-import { getStoreProducts } from "@/lib/store-actions";
-import Storefront from "@/components/Storefront";
+import { getStoreProducts, getStoreOrders } from "@/lib/store-actions";
+import AdminDashboard from "@/components/AdminDashboard";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export default async function AdminPage() {
   const tenantConfig = await getTenantConfig();
   const products = await getStoreProducts();
+  const orders = await getStoreOrders();
 
   return (
-    <Storefront
+    <AdminDashboard
       initialProducts={products}
+      initialOrders={orders}
       tenantConfig={tenantConfig}
     />
   );
