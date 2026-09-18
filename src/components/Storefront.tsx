@@ -226,13 +226,6 @@ Vorrei confermare l'ordine e ricevere dettagli per il pagamento e la spedizione.
           </div>
           <div className="flex items-center gap-4 text-slate-300">
             <span>Assistenza: {tenantConfig.contact?.phone || "+39 02 8901 5678"}</span>
-            <Link
-              href="/admin"
-              className="flex items-center gap-1 font-semibold text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              <Lock className="w-3.5 h-3.5" />
-              Area Riservata Commerciante
-            </Link>
           </div>
         </div>
       </div>
@@ -801,7 +794,16 @@ Vorrei confermare l'ordine e ricevere dettagli per il pagamento e la spedizione.
             </span>
             <span>• Modulo E-Commerce & Marketplace Vendoly</span>
           </div>
-          <p>© {new Date().getFullYear()} Taaaac Modular Ecosystem. Tutti i diritti riservati.</p>
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <p>© {new Date().getFullYear()} Taaaac Modular Ecosystem. Tutti i diritti riservati.</p>
+            <Link
+              href="/admin"
+              className="text-slate-400 hover:text-slate-600 text-xs flex items-center gap-1 transition-colors"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Area Riservata Esercente</span>
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

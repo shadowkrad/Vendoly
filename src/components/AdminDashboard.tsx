@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Package,
   ShoppingBag,
@@ -23,6 +24,7 @@ import {
   Store,
   X,
   ExternalLink,
+  LogOut,
 } from "lucide-react";
 import { MockProduct, MockOrder } from "@/lib/mock-store";
 import {
@@ -146,11 +148,26 @@ export default function AdminDashboard({
     setTrackingInput("");
   };
 
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   // Copia annuncio negli appunti
   const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedSuccess(true);
     setTimeout(() => setCopiedSuccess(false), 2500);
+  };
+
+  // Logout / Blocco Cassa
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+      router.refresh();
+    } catch (err) {
+      console.error("Logout error:", err);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -222,15 +239,27 @@ export default function AdminDashboard({
             </button>
           </div>
 
-          {/* Link alla Vetrina Pubblica */}
-          <Link
-            href="/"
-            target="_blank"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-slate-200 transition-colors"
-          >
-            <span>Vedi Vetrina Pubblica</span>
-            <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
-          </Link>
+          {/* Link alla Vetrina Pubblica & Blocco Cassa */}
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              target="_blank"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-slate-200 transition-colors"
+            >
+              <span>Vedi Vetrina</span>
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+            </Link>
+
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50"
+              title="Blocca sessione cassa e richiedi PIN"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>{isLoggingOut ? "Uscita..." : "Blocca Cassa"}</span>
+            </button>
+          </div>
         </div>
       </header>
 
