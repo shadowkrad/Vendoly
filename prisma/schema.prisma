@@ -19,6 +19,8 @@ model Product {
   sku          String?     @unique
   condition    String      @default("NUOVO") // NUOVO, USATO_COME_NUOVO, OTTIME_CONDIZIONI
   isActive     Boolean     @default(true)
+  isReserved   Boolean     @default(false)
+  reservedNote String?
 
   // Flag canali marketplace (Issue #5)
   syncFacebook Boolean     @default(false)

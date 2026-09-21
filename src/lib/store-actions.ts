@@ -384,3 +384,29 @@ export async function createProduct(input: CreateProductInput) {
     return { success: true, product: mockCreated };
   }
 }
+
+/**
+ * Blocca / Riserva o sblocca un articolo in base alle trattative con il cliente.
+ */
+export async function toggleProductReservation(
+  productId: string,
+  isReserved: boolean,
+  reservedNote?: string
+) {
+  try {
+    const updated = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        isReserved,
+        reservedNote: isReserved ? (reservedNote || "In trattativa con cliente") : null,
+      },
+    });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true, product: updated };
+  } catch (err: any) {
+    console.warn("Simulazione toggleProductReservation mock:", err?.message || err);
+    return { success: true, productId, isReserved, reservedNote };
+  }
+}

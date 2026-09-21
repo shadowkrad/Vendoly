@@ -30,6 +30,7 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
+  Lock,
 } from "lucide-react";
 import { MockProduct, MockOrder } from "@/lib/mock-store";
 import {
@@ -38,6 +39,7 @@ import {
   toggleProductMarketplaceSync,
   recordMarketplaceSale,
   createProduct,
+  toggleProductReservation,
   CreateProductInput,
 } from "@/lib/store-actions";
 import { TenantConfigResponse } from "@/types/taaaac";
@@ -97,6 +99,11 @@ export default function AdminDashboard({
   // Modale Modifica Tracking Spedizione
   const [trackingModalOrder, setTrackingModalOrder] = useState<MockOrder | null>(null);
   const [trackingInput, setTrackingInput] = useState("");
+
+  // Modale Riserva / Blocca per Cliente (Trattativa WhatsApp o Negozio)
+  const [reserveModalProduct, setReserveModalProduct] = useState<MockProduct | null>(null);
+  const [reserveNoteInput, setReserveNoteInput] = useState("");
+  const [isReserving, setIsReserving] = useState(false);
 
   // Filtro Canale Ordini
   const [orderChannelFilter, setOrderChannelFilter] = useState<string>("ALL");
@@ -159,6 +166,37 @@ export default function AdminDashboard({
       prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
     );
     await updateProductStock(productId, newStock);
+  };
+
+  // Toggle Riserva Articolo (Trattative WhatsApp o Banco)
+  const handleToggleReserve = async () => {
+    if (!reserveModalProduct) return;
+    setIsReserving(true);
+
+    const newReservedState = !reserveModalProduct.isReserved;
+    const note = newReservedState
+      ? reserveNoteInput.trim() || "In trattativa con cliente"
+      : undefined;
+
+    try {
+      await toggleProductReservation(reserveModalProduct.id, newReservedState, note);
+
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === reserveModalProduct.id
+            ? { ...p, isReserved: newReservedState, reservedNote: note }
+            : p
+        )
+      );
+
+      setReserveModalProduct(null);
+      setReserveNoteInput("");
+    } catch (err) {
+      console.error("Errore riserva articolo:", err);
+      alert("Errore durante l'aggiornamento dello stato dell'articolo.");
+    } finally {
+      setIsReserving(false);
+    }
   };
 
   // Toggle Sincronizzazione Canale
@@ -559,7 +597,14 @@ export default function AdminDashboard({
                       return (
                         <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
                           <td className="p-4 max-w-xs">
-                            <p className="font-bold text-slate-900 line-clamp-1">{p.title}</p>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <p className="font-bold text-slate-900 line-clamp-1">{p.title}</p>
+                              {p.isReserved && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                  🔒 In Trattativa
+                                </span>
+                              )}
+                            </div>
                             <p className="text-[11px] text-slate-500 font-mono">
                               {p.sku || "NO-SKU"} • {p.category}
                             </p>
@@ -649,6 +694,34 @@ export default function AdminDashboard({
                           </td>
                           <td className="p-4 text-right">
                             <div className="flex items-center justify-end gap-1.5">
+                              {/* Pulsante Riserva / Blocca per Trattativa */}
+                              {p.isReserved ? (
+                                <button
+                                  onClick={() => {
+                                    setReserveModalProduct(p);
+                                    setReserveNoteInput(p.reservedNote || "");
+                                  }}
+                                  title="Articolo riservato: clicca per gestire o sbloccare"
+                                  className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Lock className="w-3.5 h-3.5 text-amber-700" />
+                                  <span>Bloccato</span>
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setReserveModalProduct(p);
+                                    setReserveNoteInput("");
+                                  }}
+                                  disabled={p.stock <= 0}
+                                  title="Blocca / Riserva questo articolo per un cliente in trattativa"
+                                  className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-40"
+                                >
+                                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                                  <span>Blocca</span>
+                                </button>
+                              )}
+
                               {/* Pulsante Segna come Venduto (Anti-Doppia Vendita) */}
                               <button
                                 onClick={() => handleOpenSaleModal(p)}
@@ -1514,6 +1587,97 @@ export default function AdminDashboard({
                 className="taaaac-btn-primary w-1/2 py-2 text-xs"
               >
                 Salva & Segna Spedito
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. Modale Riserva / Blocca Articolo per Cliente (Trattativa WhatsApp o Negozio) */}
+      {reserveModalProduct && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900">
+                    {reserveModalProduct.isReserved ? "Gestione Blocco Articolo" : "Blocca / Riserva Articolo"}
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    In base alle richieste del cliente via WhatsApp o al banco
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setReserveModalProduct(null)}
+                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 mb-4">
+              <p className="font-bold text-xs text-slate-900 line-clamp-1">
+                {reserveModalProduct.title}
+              </p>
+              <div className="flex justify-between items-center text-[11px] text-slate-500 mt-1">
+                <span>Prezzo: <strong>{formatCurrency(reserveModalProduct.price)}</strong></span>
+                <span>Giacenza: {reserveModalProduct.stock} pz</span>
+              </div>
+            </div>
+
+            {!reserveModalProduct.isReserved ? (
+              <div className="space-y-3 mb-4">
+                <label className="text-xs font-semibold text-slate-700 block">
+                  Dettagli / Nota Trattativa (es. Nome cliente, orario o accordo):
+                </label>
+                <input
+                  type="text"
+                  placeholder="es. Riservato per Marco fino a domani alle 18:00"
+                  value={reserveNoteInput}
+                  onChange={(e) => setReserveNoteInput(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-amber-500"
+                />
+                <p className="text-[11px] text-slate-500">
+                  L&apos;articolo verrà segnalato come <strong>In Trattativa</strong> sul collettore online per informare altri visitatori.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 mb-4 space-y-1">
+                <p className="font-bold">Articolo attualmente bloccato:</p>
+                <p className="text-[11px] italic">&quot;{reserveModalProduct.reservedNote || "In trattativa con cliente"}&quot;</p>
+                <p className="text-[10px] text-amber-700 pt-1">
+                  Se il cliente non finalizza, sbloccalo con un clic. Se finalizza, clicca su &quot;Venduto&quot; per scalare la giacenza.
+                </p>
+              </div>
+            )}
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setReserveModalProduct(null)}
+                className="taaaac-btn-secondary w-1/2 py-2.5 text-xs"
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                disabled={isReserving}
+                onClick={handleToggleReserve}
+                className={`w-1/2 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  reserveModalProduct.isReserved
+                    ? "bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+                    : "bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
+                }`}
+              >
+                {isReserving
+                  ? "Salvataggio..."
+                  : reserveModalProduct.isReserved
+                  ? "Sblocca Articolo"
+                  : "Conferma Blocco"}
               </button>
             </div>
           </div>

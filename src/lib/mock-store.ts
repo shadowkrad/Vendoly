@@ -10,6 +10,8 @@ export interface MockProduct {
   sku?: string | null;
   condition: string;
   isActive: boolean;
+  isReserved?: boolean;
+  reservedNote?: string | null;
   syncFacebook: boolean;
   syncSubito: boolean;
   syncEbay: boolean;

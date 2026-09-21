@@ -123,7 +123,7 @@ Ho visto sul vostro collettore online l'articolo:
 💰 Prezzo: € ${product.price.toFixed(2)}
 📌 Condizione: ${condition}
 
-È ancora disponibile? Vorrei informazioni o bloccarlo prima che venga venduto su altri canali. Grazie!`;
+Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche. Grazie!`;
 
     return `https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -230,8 +230,8 @@ Ho visto sul vostro collettore online l'articolo:
                 Tutti i capi, le calzature e i pezzi selezionati del punto vendita{" "}
                 <strong className="text-slate-800">{tenantConfig.theme.brandName}</strong>,
                 sincronizzati istantaneamente con le migliori piattaforme di compravendita.
-                Scegli se acquistare con la protezione del tuo marketplace preferito o bloccare
-                l'articolo direttamente da noi con un messaggio.
+                Scegli se acquistare con la protezione del tuo marketplace preferito oppure chiedere
+                maggiori informazioni direttamente a noi via WhatsApp.
               </p>
 
               {/* Garanzie e Vantaggi */}
@@ -523,8 +523,14 @@ Ho visto sul vostro collettore online l'articolo:
                       </span>
                     </div>
 
-                    {/* Badge Pezzo Unico / Scorta */}
-                    <div className="absolute top-2.5 right-2.5">
+                    {/* Badge Riservato / Pezzo Unico / Scorta */}
+                    <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1">
+                      {product.isReserved && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500 text-white shadow-2xs flex items-center gap-1">
+                          <Lock className="w-2.5 h-2.5" />
+                          In Trattativa
+                        </span>
+                      )}
                       {isLowStock ? (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500 text-white shadow-2xs">
                           Pezzo Unico
@@ -614,10 +620,10 @@ Ho visto sul vostro collettore online l'articolo:
                         target="_blank"
                         rel="noopener noreferrer"
                         className="py-2.5 px-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer text-center"
-                        title="Blocca o richiedi informazioni su WhatsApp"
+                        title="Chiedi informazioni su WhatsApp"
                       >
                         <MessageCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span className="truncate">Blocca</span>
+                        <span className="truncate">Chiedi Info</span>
                       </a>
                     </div>
                   </div>
@@ -709,6 +715,18 @@ Ho visto sul vostro collettore online l'articolo:
                   <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
                     {selectedProduct.description}
                   </p>
+
+                  {selectedProduct.isReserved && (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+                      <div>
+                        <strong className="block">In Trattativa con un cliente</strong>
+                        <span className="text-[11px] text-amber-800">
+                          {selectedProduct.reservedNote || "Un cliente ha richiesto informazioni su questo articolo. Puoi comunque contattarci per verificare la disponibilità."}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="text-[11px] text-slate-500 space-y-1 pt-1">
                     <div className="flex justify-between">
@@ -809,15 +827,15 @@ Ho visto sul vostro collettore online l'articolo:
                   )}
                 </div>
 
-                {/* Opzione WhatsApp Diretto / Ritiro Negozio */}
+                {/* Opzione WhatsApp Diretto / Chiedi Informazioni */}
                 <div className="mt-3 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="space-y-0.5 text-center sm:text-left">
                     <p className="text-xs font-bold text-emerald-950 flex items-center justify-center sm:justify-start gap-1.5">
                       <MessageCircle className="w-4 h-4 text-emerald-600" />
-                      Preferisci comprare direttamente da noi?
+                      Vuoi maggiori dettagli su questo articolo?
                     </p>
                     <p className="text-[11px] text-emerald-800">
-                      Blocca subito il pezzo per il ritiro in sede o richiedi la spedizione diretta
+                      Scrivici direttamente su WhatsApp per foto aggiuntive, misure o disponibilità
                     </p>
                   </div>
 
@@ -827,7 +845,7 @@ Ho visto sul vostro collettore online l'articolo:
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
                   >
-                    <span>Blocca su WhatsApp</span>
+                    <span>Chiedi Informazioni</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </a>
                 </div>
