@@ -114,8 +114,8 @@ export default function NotificationBell({
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div
-            className={`absolute z-50 w-80 sm:w-96 rounded-2xl bg-white text-slate-900 shadow-2xl border border-slate-200 overflow-hidden ${
-              placement === "topbar" ? "right-0 top-full mt-2" : "left-0 bottom-full mb-2 sm:left-auto sm:right-0"
+            className={`absolute z-50 w-80 sm:w-96 rounded-2xl bg-white text-slate-900 shadow-2xl border border-slate-200 overflow-hidden top-full mt-2 ${
+              placement === "topbar" ? "right-0" : "left-0"
             }`}
           >
             <div className="px-4 py-3 bg-slate-900 text-white flex items-center justify-between">

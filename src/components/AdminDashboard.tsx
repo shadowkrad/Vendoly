@@ -395,78 +395,36 @@ export default function AdminDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
+    <div className="space-y-6 font-sans text-slate-800">
       {/* 1. Header Area Riservata Commerciante */}
-      <header className="sticky top-0 z-30 bg-slate-900 text-white border-b border-slate-800 px-5 py-3 shadow-md">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+      <header className="bg-slate-900 text-white rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-sm space-y-4">
+        {/* Riga Superiore: Brand Info & Azioni Rapide (Sempre allineati a destra) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
               <Store className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold tracking-tight text-white">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-base font-bold tracking-tight text-white truncate">
                   {tenantConfig.theme.brandName}
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
                   Collettore & Hub Marketplace
                 </span>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-400 truncate">
                 Pannello di Gestione Multi-Canale & Anti-Doppia Vendita • Taaaac
               </p>
             </div>
           </div>
 
-          {/* Navigazione Tab */}
-          <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
-            <button
-              onClick={() => setActiveTab("catalog")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "catalog"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <Package className="w-3.5 h-3.5" />
-              Catalogo & Scorte
-            </button>
-            <button
-              onClick={() => setActiveTab("marketplaces")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "marketplaces"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              Marketplace Hub
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            </button>
-            <button
-              onClick={() => setActiveTab("orders")}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeTab === "orders"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "text-slate-300 hover:text-white"
-              }`}
-            >
-              <Truck className="w-3.5 h-3.5" />
-              Vendite & Spedizioni ({orders.length})
-              {stats.pendingOrders > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-[10px] font-bold">
-                  {stats.pendingOrders}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Link Vetrina & Blocco Cassa */}
-          <div className="flex items-center gap-2">
+          {/* Azioni Rapide a Destra: Sempre accanto */}
+          <div className="flex items-center gap-2 shrink-0 self-start sm:self-center">
             <Link
               href="/"
               target="_blank"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-slate-200 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/15 text-slate-200 transition-colors"
             >
               <span>Vedi Collettore</span>
               <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
@@ -483,12 +441,62 @@ export default function AdminDashboard({
             </button>
           </div>
         </div>
+
+        {/* Riga Inferiore: Tab Switcher & Status Indicator */}
+        <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex bg-slate-800/90 p-1 rounded-xl border border-slate-700/80 overflow-x-auto scrollbar-none">
+            <button
+              onClick={() => setActiveTab("catalog")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === "catalog"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <Package className="w-3.5 h-3.5" />
+              Catalogo & Scorte
+            </button>
+            <button
+              onClick={() => setActiveTab("marketplaces")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === "marketplaces"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              Marketplace Hub
+              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </button>
+            <button
+              onClick={() => setActiveTab("orders")}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === "orders"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <Truck className="w-3.5 h-3.5" />
+              Vendite & Spedizioni ({orders.length})
+              {stats.pendingOrders > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-[10px] font-bold">
+                  {stats.pendingOrders}
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Sync Live Attivo • Subito, Vinted, eBay, FB</span>
+          </div>
+        </div>
       </header>
 
       {/* Banner Notifica Successo Vendita Anti-Doppia Vendita */}
       {saleSuccessMessage && (
-        <div className="bg-emerald-600 text-white text-xs px-5 py-2.5 shadow-md flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="max-w-7xl mx-auto w-full flex items-center gap-2">
+        <div className="bg-emerald-600 text-white text-xs px-4 py-2.5 rounded-2xl shadow-xs flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-200" />
             <span className="font-semibold">{saleSuccessMessage}</span>
           </div>
@@ -499,8 +507,7 @@ export default function AdminDashboard({
       )}
 
       {/* 2. Top KPI Cards */}
-      <section className="max-w-7xl mx-auto w-full px-5 pt-6 pb-2">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="taaaac-card flex items-center gap-4">
             <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
               <Package className="w-5 h-5" />
@@ -547,10 +554,9 @@ export default function AdminDashboard({
             </div>
           </div>
         </div>
-      </section>
 
       {/* 3. Contenuto Principale Dinamico */}
-      <main className="max-w-7xl mx-auto w-full px-5 py-4 flex-1">
+      <div className="space-y-4">
         {/* TAB 1: Catalogo & Scorte */}
         {activeTab === "catalog" && (
           <div className="space-y-4">
@@ -1051,7 +1057,7 @@ export default function AdminDashboard({
             </div>
           </div>
         )}
-      </main>
+      </div>
 
       {/* 4. MODALE REGISTRA VENDITA RAPIDA (ANTI-DOPPIA VENDITA) */}
       {saleProduct && (
