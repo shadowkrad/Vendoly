@@ -10,7 +10,7 @@ services:
       - DATABASE_URL=file:/app/data/prod.db
       - TAAAAC_CORE_URL=https://taaaac.eu
       - TAAAAC_TENANT_DOMAIN=${SUBDOMAIN:-demo}.taaaac.eu
-      - TAAAAC_TENANT_TOKEN=${TAAAAC_TENANT_TOKEN}
+      - TAAAAC_TENANT_TOKEN=${TAAAAC_TENANT_TOKEN:-}
       - NEXT_PUBLIC_APP_URL=https://${SUBDOMAIN:-demo}.taaaac.eu
     volumes:
       - vendoly_data:/app/data
@@ -25,6 +25,7 @@ services:
 
 volumes:
   vendoly_data:
+    name: vendoly_${SUBDOMAIN:-demo}_data
 
 networks:
   traefik-public:
