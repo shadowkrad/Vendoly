@@ -3,11 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import {
-  ShoppingBag,
   Search,
-  Plus,
-  Minus,
-  Trash2,
   CheckCircle2,
   Store,
   Truck,
@@ -22,42 +18,33 @@ import {
   Sparkles,
   Info,
   Lock,
+  Globe,
+  Layers,
+  ArrowUpRight,
+  Phone,
+  Clock,
+  Check,
 } from "lucide-react";
 import { MockProduct } from "@/lib/mock-store";
-import { createOrder } from "@/lib/store-actions";
 import { TenantConfigResponse } from "@/types/taaaac";
 import { formatCurrency } from "@/lib/utils";
-
-interface CartItem {
-  product: MockProduct;
-  quantity: number;
-}
 
 interface StorefrontProps {
   initialProducts: MockProduct[];
   tenantConfig: TenantConfigResponse;
 }
 
+type ChannelFilter = "ALL" | "SUBITO" | "VINTED" | "EBAY" | "FACEBOOK" | "NEGOZIO";
+
 export default function Storefront({ initialProducts, tenantConfig }: StorefrontProps) {
   const [products] = useState<MockProduct[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [selectedChannel, setSelectedChannel] = useState<ChannelFilter>("ALL");
 
-  // Carrello
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-
-  // Scheda Dettaglio Prodotto
+  // Scheda Dettaglio Prodotto (Modal)
   const [selectedProduct, setSelectedProduct] = useState<MockProduct | null>(null);
-
-  // Form Checkout
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [shippingAddress, setShippingAddress] = useState("");
-  const [fulfillmentType, setFulfillmentType] = useState<"SPEDIZIONE" | "RITIRO_IN_NEGOZIO">("SPEDIZIONE");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedOrder, setCompletedOrder] = useState<any | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   // Estrazione categorie uniche
   const categories = useMemo(() => {
@@ -68,152 +55,108 @@ export default function Storefront({ initialProducts, tenantConfig }: Storefront
     return Array.from(set);
   }, [products]);
 
-  // Filtraggio catalogo
+  // Conteggio presenze sui canali marketplace
+  const channelStats = useMemo(() => {
+    let subito = 0;
+    let vinted = 0;
+    let ebay = 0;
+    let facebook = 0;
+    let negozio = 0;
+
+    products.forEach((p) => {
+      if (p.syncSubito) subito++;
+      if (p.syncVinted) vinted++;
+      if (p.syncEbay) ebay++;
+      if (p.syncFacebook) facebook++;
+      if (p.stock > 0) negozio++;
+    });
+
+    return { subito, vinted, ebay, facebook, negozio, total: products.length };
+  }, [products]);
+
+  // Filtraggio catalogo per ricerca, categoria e canale marketplace
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      // Filtro categoria
       const matchCat = selectedCategory === "ALL" || p.category === selectedCategory;
+
+      // Filtro ricerca testuale
+      const query = searchQuery.trim().toLowerCase();
       const matchSearch =
-        searchQuery.trim() === "" ||
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.sku && p.sku.toLowerCase().includes(searchQuery.toLowerCase()));
-      return matchCat && matchSearch;
+        query === "" ||
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        (p.sku && p.sku.toLowerCase().includes(query));
+
+      // Filtro canale marketplace
+      let matchChannel = true;
+      if (selectedChannel === "SUBITO") matchChannel = p.syncSubito;
+      else if (selectedChannel === "VINTED") matchChannel = p.syncVinted;
+      else if (selectedChannel === "EBAY") matchChannel = p.syncEbay;
+      else if (selectedChannel === "FACEBOOK") matchChannel = p.syncFacebook;
+      else if (selectedChannel === "NEGOZIO") matchChannel = p.stock > 0;
+
+      return matchCat && matchSearch && matchChannel;
     });
-  }, [products, selectedCategory, searchQuery]);
-
-  // Totali Carrello
-  const cartTotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-  }, [cart]);
-
-  const cartItemsCount = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
-  }, [cart]);
-
-  const addToCart = (product: MockProduct, qty: number = 1) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        const newQty = Math.min(product.stock, existing.quantity + qty);
-        return prev.map((item) =>
-          item.product.id === product.id ? { ...item, quantity: newQty } : item
-        );
-      }
-      return [...prev, { product, quantity: Math.min(product.stock, qty) }];
-    });
-    setIsCartOpen(true);
-  };
-
-  const updateQuantity = (productId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            if (newQty > item.product.stock) {
-              alert(`Giacenza massima disponibile: ${item.product.stock}`);
-              return item;
-            }
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
-  };
+  }, [products, selectedCategory, searchQuery, selectedChannel]);
 
   // Helper parsing immagini
-  const getProductImage = (product: MockProduct) => {
+  const getProductImages = (product: MockProduct): string[] => {
     try {
       const parsed = JSON.parse(product.images);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed[0];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch {
       // fallback
     }
-    return "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80";
+    return ["https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80"];
   };
 
-  // Ordina su WhatsApp (Pulsante 1-Click per massima conversione)
-  const handleOrderWhatsApp = () => {
-    if (cart.length === 0) return;
-    if (!customerName || !customerPhone) {
-      alert("Inserisci almeno il tuo Nome e Numero di Telefono per completare la richiesta su WhatsApp");
-      return;
-    }
+  // Generatore link per WhatsApp (Blocco / Informazioni rapido)
+  const getWhatsAppInquiryUrl = (product: MockProduct) => {
+    const rawPhone = tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678";
+    const condition = getConditionText(product.condition);
+    const message = `👋 Ciao ${tenantConfig.theme.brandName}!
+Ho visto sul vostro collettore online l'articolo:
 
-    const storePhone = tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678";
-    const itemsList = cart
-      .map(
-        (it) =>
-          `• ${it.quantity}x ${it.product.title} - ${formatCurrency(it.product.price * it.quantity)}`
-      )
-      .join("\n");
+🏷️ *${product.title}*
+🔖 SKU: ${product.sku || product.id}
+💰 Prezzo: € ${product.price.toFixed(2)}
+📌 Condizione: ${condition}
 
-    const message = `🛍️ *NUOVO ORDINE DA VENDOLY STORE*
-----------------------------------
-👤 *Cliente*: ${customerName}
-📞 *Telefono*: ${customerPhone}
-${customerEmail ? `📧 *Email*: ${customerEmail}\n` : ""}${
-      fulfillmentType === "SPEDIZIONE"
-        ? `🚚 *Consegna*: Spedizione a Domicilio\n📍 *Indirizzo*: ${shippingAddress || "Da concordare"}`
-        : "🏪 *Consegna*: Ritiro in Negozio (Click & Collect)"
-    }
+È ancora disponibile? Vorrei informazioni o bloccarlo prima che venga venduto su altri canali. Grazie!`;
 
-🛒 *ARTICOLI ORDINATI*:
-${itemsList}
-
-💰 *TOTALE*: ${formatCurrency(cartTotal)}
-----------------------------------
-Vorrei confermare l'ordine e ricevere dettagli per il pagamento e la spedizione. Grazie!`;
-
-    const whatsappUrl = `https://wa.me/${storePhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
+    return `https://wa.me/${rawPhone}?text=${encodeURIComponent(message)}`;
   };
 
-  // Conferma Ordine Online
-  const handleOnlineCheckout = async () => {
-    if (cart.length === 0) return;
-    if (!customerName || !customerPhone) {
-      alert("Compila il nome e il recapito telefonico per confermare l'ordine");
-      return;
-    }
-    if (fulfillmentType === "SPEDIZIONE" && !shippingAddress) {
-      alert("Inserisci l'indirizzo di spedizione per la consegna");
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const res = await createOrder({
-        customerName,
-        customerPhone,
-        customerEmail: customerEmail || undefined,
-        shippingAddress: fulfillmentType === "SPEDIZIONE" ? shippingAddress : "Ritiro in negozio",
-        fulfillmentType,
-        channel: "SITO_WEB",
-        items: cart.map((it) => ({
-          productId: it.product.id,
-          quantity: it.quantity,
-          unitPrice: it.product.price,
-        })),
-      });
-
-      if (res.success && res.order) {
-        setCompletedOrder(res.order);
-        setCart([]);
-        setIsCartOpen(false);
-      }
-    } catch (err) {
-      console.error("Errore ordine:", err);
-      alert("Si è verificato un errore durante la registrazione dell'ordine");
-    } finally {
-      setIsSubmitting(false);
+  // URL per i vari marketplace (ricerca mirata per titolo o annuncio)
+  const getMarketplaceSearchUrl = (channel: "SUBITO" | "VINTED" | "EBAY" | "FACEBOOK", product: MockProduct) => {
+    const q = encodeURIComponent(product.title);
+    switch (channel) {
+      case "SUBITO":
+        return `https://www.subito.it/annunci-italia/vendita/usato/?q=${q}`;
+      case "VINTED":
+        return `https://www.vinted.it/catalog?search_text=${q}`;
+      case "EBAY":
+        return `https://www.ebay.it/sch/i.html?_nkw=${q}`;
+      case "FACEBOOK":
+        return `https://www.facebook.com/marketplace/search/?query=${q}`;
     }
   };
+
+  function getConditionText(cond: string) {
+    switch (cond) {
+      case "NUOVO":
+        return "Nuovo con etichetta";
+      case "USATO_COME_NUOVO":
+        return "Come nuovo / Impeccabile";
+      case "OTTIME_CONDIZIONI":
+        return "Ottime condizioni";
+      case "BUONE_CONDIZIONI":
+        return "Buone condizioni vintage";
+      default:
+        return "Selezionato & Garantito";
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 selection:bg-emerald-500 selection:text-white">
@@ -222,569 +165,679 @@ Vorrei confermare l'ordine e ricevere dettagli per il pagamento e la spedizione.
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Spedizioni rapide in 24/48h o Ritiro Gratuito in Negozio</span>
+            <span>
+              Collettore Ufficiale Vendite: Pezzi Unici sincronizzati su Subito, Vinted, eBay e Negozio Fisico
+            </span>
           </div>
           <div className="flex items-center gap-4 text-slate-300">
-            <span>Assistenza: {tenantConfig.contact?.phone || "+39 02 8901 5678"}</span>
+            <span>Assistenza & WhatsApp: {tenantConfig.contact?.phone || "+39 02 8901 5678"}</span>
           </div>
         </div>
       </div>
 
-      {/* 2. Header Principale Vetrina */}
+      {/* 2. Header Principale Collettore */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xs">
               <Store className="w-6 h-6 text-emerald-400" />
             </div>
             <div>
-              <span className="text-xl font-bold tracking-tight text-slate-900 block leading-tight">
-                {tenantConfig.theme.brandName}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold tracking-tight text-slate-900 block leading-tight">
+                  {tenantConfig.theme.brandName}
+                </span>
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  <Globe className="w-3 h-3" />
+                  Hub Multi-Marketplace
+                </span>
+              </div>
               <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-                Vetrina Ufficiale • Powered by Taaaac
+                Vetrina Collettore & Disponibilità Live • Powered by Taaaac
               </span>
             </div>
           </div>
 
-          {/* Barra Ricerca Veloce */}
-          <div className="hidden md:flex flex-1 max-w-md mx-6">
-            <div className="relative w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cerca per articolo, marca o categoria..."
-                className="w-full bg-slate-100/80 border border-slate-200/80 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:bg-white focus:border-slate-300 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
+          {/* Azione Contatto Rapido */}
+          <div className="flex items-center gap-3">
+            <a
+              href={`https://wa.me/${tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678"}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs cursor-pointer"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span className="hidden md:inline">Contatta il Negozio</span>
+              <span className="md:hidden">WhatsApp</span>
+            </a>
           </div>
-
-          {/* Pulsante Carrello */}
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="taaaac-btn-primary py-2.5 px-4 text-xs flex items-center gap-2 relative shadow-xs"
-          >
-            <ShoppingBag className="w-4 h-4 text-emerald-300" />
-            <span className="font-bold hidden sm:inline">Carrello</span>
-            <span className="bg-emerald-600 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full">
-              {cartItemsCount}
-            </span>
-          </button>
         </div>
       </header>
 
-      {/* 3. Hero Promo Banner */}
-      <section className="bg-linear-to-b from-white to-slate-50 border-b border-slate-200/80 py-10 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="max-w-2xl space-y-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              Nuovi Arrivi & Occasioni Selezionate
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              I migliori capi, accessori e pezzi unici per te.
-            </h1>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Esplora il catalogo del nostro negozio. Puoi acquistare comodamente online, ritirare senza attesa al banco o ordinare direttamente su WhatsApp!
-            </p>
-          </div>
-
-          <div className="flex flex-wrap sm:flex-nowrap gap-3 w-full md:w-auto">
-            <div className="flex-1 sm:w-48 taaaac-card p-4 flex items-center gap-3 bg-white/80">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Truck className="w-5 h-5" />
+      {/* 3. Hero Collettore & Filosofia Hub */}
+      <section className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200/80 py-8 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-3.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Zero Rischio Doppia Vendita • Sincronizzazione Cross-Canale</span>
               </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Spedizioni 24/48h</p>
-                <p className="text-[11px] text-slate-500">Corriere Espresso</p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                Catalogo Unificato & Vetrina Multi-Marketplace
+              </h1>
+              <p className="text-sm text-slate-600 leading-relaxed max-w-2xl">
+                Tutti i capi, le calzature e i pezzi selezionati del punto vendita{" "}
+                <strong className="text-slate-800">{tenantConfig.theme.brandName}</strong>,
+                sincronizzati istantaneamente con le migliori piattaforme di compravendita.
+                Scegli se acquistare con la protezione del tuo marketplace preferito o bloccare
+                l'articolo direttamente da noi con un messaggio.
+              </p>
+
+              {/* Garanzie e Vantaggi */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs text-slate-700 shadow-2xs">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Protezione Acquisti</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs text-slate-700 shadow-2xs">
+                  <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Spedizione 24/48h</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs text-slate-700 shadow-2xs">
+                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Ritiro in Sede</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-white border border-slate-200/80 text-xs text-slate-700 shadow-2xs">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>Pezzi Autentici</span>
+                </div>
               </div>
             </div>
 
-            <div className="flex-1 sm:w-48 taaaac-card p-4 flex items-center gap-3 bg-white/80">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900">Click & Collect</p>
-                <p className="text-[11px] text-slate-500">Ritiro Gratuito</p>
+            {/* Box Canali Attivi */}
+            <div className="lg:col-span-5">
+              <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Presidio Canali di Vendita
+                  </span>
+                  <span className="text-[11px] font-medium text-slate-500">
+                    {channelStats.total} Articoli Registrati
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    onClick={() => setSelectedChannel(selectedChannel === "SUBITO" ? "ALL" : "SUBITO")}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      selectedChannel === "SUBITO"
+                        ? "border-amber-500 bg-amber-50/50 shadow-2xs ring-1 ring-amber-500"
+                        : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-amber-700">Subito.it</span>
+                      <span className="text-[11px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-amber-200 text-amber-800">
+                        {channelStats.subito}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1">TuttoSubito & Ritiro a mano</p>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedChannel(selectedChannel === "VINTED" ? "ALL" : "VINTED")}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      selectedChannel === "VINTED"
+                        ? "border-cyan-500 bg-cyan-50/50 shadow-2xs ring-1 ring-cyan-500"
+                        : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-cyan-700">Vinted</span>
+                      <span className="text-[11px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-cyan-200 text-cyan-800">
+                        {channelStats.vinted}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1">Protezione & Lockers</p>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedChannel(selectedChannel === "EBAY" ? "ALL" : "EBAY")}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      selectedChannel === "EBAY"
+                        ? "border-blue-500 bg-blue-50/50 shadow-2xs ring-1 ring-blue-500"
+                        : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-blue-700">eBay</span>
+                      <span className="text-[11px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-blue-200 text-blue-800">
+                        {channelStats.ebay}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1">Garanzia Cliente eBay</p>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedChannel(selectedChannel === "FACEBOOK" ? "ALL" : "FACEBOOK")}
+                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                      selectedChannel === "FACEBOOK"
+                        ? "border-indigo-500 bg-indigo-50/50 shadow-2xs ring-1 ring-indigo-500"
+                        : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-indigo-700">Facebook</span>
+                      <span className="text-[11px] font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-indigo-200 text-indigo-800">
+                        {channelStats.facebook}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-1">Marketplace locale</p>
+                  </button>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-100/80 text-[11px] text-slate-600 flex items-center justify-between">
+                  <span>🏪 Disponibili per ritiro immediato in negozio:</span>
+                  <strong className="font-mono text-slate-900">{channelStats.negozio} articoli</strong>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Filtro Categorie Pillole */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-2 w-full">
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <button
-            onClick={() => setSelectedCategory("ALL")}
-            className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              selectedCategory === "ALL"
-                ? "bg-slate-900 text-white shadow-xs"
-                : "bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-100"
-            }`}
-          >
-            Tutti i Prodotti ({products.length})
-          </button>
-          {categories.map((cat) => (
+      {/* 4. Barra di Ricerca & Filtri Canale / Categoria */}
+      <div className="bg-white border-b border-slate-200/90 sticky top-[69px] z-30 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 space-y-3">
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+            {/* Input di Ricerca */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Cerca per nome, SKU o caratteristiche..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-100/90 border border-slate-200 focus:bg-white focus:border-emerald-500 focus:outline-none transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Filtri Canali Marketplace (Pills) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none text-xs">
+              <span className="text-slate-400 text-[11px] font-medium mr-1 hidden sm:inline">Canale:</span>
+              <button
+                onClick={() => setSelectedChannel("ALL")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+                  selectedChannel === "ALL"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                Tutti i Canali ({products.length})
+              </button>
+              <button
+                onClick={() => setSelectedChannel("SUBITO")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+                  selectedChannel === "SUBITO"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-amber-50 text-amber-800 border border-amber-200/80 hover:bg-amber-100"
+                }`}
+              >
+                Subito.it ({channelStats.subito})
+              </button>
+              <button
+                onClick={() => setSelectedChannel("VINTED")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+                  selectedChannel === "VINTED"
+                    ? "bg-cyan-600 text-white shadow-xs"
+                    : "bg-cyan-50 text-cyan-800 border border-cyan-200/80 hover:bg-cyan-100"
+                }`}
+              >
+                Vinted ({channelStats.vinted})
+              </button>
+              <button
+                onClick={() => setSelectedChannel("EBAY")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+                  selectedChannel === "EBAY"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "bg-blue-50 text-blue-800 border border-blue-200/80 hover:bg-blue-100"
+                }`}
+              >
+                eBay ({channelStats.ebay})
+              </button>
+              <button
+                onClick={() => setSelectedChannel("FACEBOOK")}
+                className={`px-3 py-1.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer text-xs ${
+                  selectedChannel === "FACEBOOK"
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-indigo-50 text-indigo-800 border border-indigo-200/80 hover:bg-indigo-100"
+                }`}
+              >
+                Facebook ({channelStats.facebook})
+              </button>
+            </div>
+          </div>
+
+          {/* Filtri Categoria */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs border-t border-slate-100 pt-2.5">
+            <span className="text-slate-400 text-[11px] font-medium mr-1">Categoria:</span>
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "bg-white text-slate-600 border border-slate-200/90 hover:bg-slate-100"
+              onClick={() => setSelectedCategory("ALL")}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                selectedCategory === "ALL"
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
-              {cat}
+              Tutte
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap ${
+                  selectedCategory === cat
+                    ? "bg-emerald-600 text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 5. Griglia Prodotti Vetrina */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map((product) => {
-            const hasDiscount = product.comparePrice && product.comparePrice > product.price;
-            const discountPercent = hasDiscount
-              ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
-              : 0;
+      {/* 5. Griglia Articoli Collettore */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Articoli Disponibili
+              {selectedChannel !== "ALL" && (
+                <span className="ml-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
+                  Filtro: {selectedChannel}
+                </span>
+              )}
+            </h2>
+            <p className="text-xs text-slate-500">
+              {filteredProducts.length} pezzi trovati nel catalogo multi-canale
+            </p>
+          </div>
+        </div>
 
-            return (
-              <div
-                key={product.id}
-                className="taaaac-card p-4 flex flex-col justify-between group hover:shadow-md transition-all relative overflow-hidden"
-              >
-                {/* Badge Sconto & Condizione */}
-                <div className="absolute top-6 left-6 z-10 flex flex-col gap-1.5 items-start">
-                  {hasDiscount && (
-                    <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-md shadow-xs">
-                      -{discountPercent}%
-                    </span>
-                  )}
-                  <span className="bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
-                    {product.condition === "NUOVO"
-                      ? "NUOVO"
-                      : product.condition === "USATO_COME_NUOVO"
-                      ? "COME NUOVO"
-                      : "OTTIMO STATO"}
-                  </span>
-                </div>
+        {filteredProducts.length === 0 ? (
+          <div className="taaaac-card text-center py-16 px-4">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <Package className="w-7 h-7" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800">Nessun articolo trovato</h3>
+            <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              Nessun articolo corrisponde ai filtri selezionati. Prova a reimpostare la ricerca o a selezionare un altro canale.
+            </p>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedCategory("ALL");
+                setSelectedChannel("ALL");
+              }}
+              className="mt-4 px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 transition-colors cursor-pointer"
+            >
+              Azzera Tutti i Filtri
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {filteredProducts.map((product) => {
+              const images = getProductImages(product);
+              const mainImage = images[0];
+              const isLowStock = product.stock === 1;
 
-                {/* Immagine con click per dettaglio */}
+              return (
                 <div
-                  onClick={() => setSelectedProduct(product)}
-                  className="aspect-square rounded-xl overflow-hidden bg-slate-100 cursor-pointer relative mb-3 group-hover:opacity-95 transition-opacity"
+                  key={product.id}
+                  className="group taaaac-card p-0 overflow-hidden flex flex-col hover:border-slate-300 hover:shadow-md transition-all"
                 >
-                  <img
-                    src={getProductImage(product)}
-                    alt={product.title}
-                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                  />
-                  {product.stock <= 3 && product.stock > 0 && (
-                    <div className="absolute bottom-2 left-2 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                      Solo {product.stock} rimasti!
-                    </div>
-                  )}
-                  {product.stock <= 0 && (
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center text-white font-bold text-xs uppercase tracking-wider">
-                      Esaurito
-                    </div>
-                  )}
-                </div>
+                  {/* Immagine con badge sovrapposti */}
+                  <div className="relative aspect-square bg-slate-100 overflow-hidden">
+                    <img
+                      src={mainImage}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
 
-                {/* Info Prodotto */}
-                <div>
-                  <span className="text-[11px] font-medium text-slate-600 block mb-0.5">
-                    {product.category}
-                  </span>
-                  <h3
-                    onClick={() => setSelectedProduct(product)}
-                    className="font-bold text-sm text-slate-900 line-clamp-2 hover:text-emerald-600 cursor-pointer leading-tight mb-1.5"
-                  >
-                    {product.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mb-3">
-                    {product.description}
-                  </p>
-                </div>
-
-                {/* Prezzo e Azioni */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <div>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-lg font-black text-slate-900">
-                        {formatCurrency(product.price)}
+                    {/* Badge Condizione */}
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-slate-800 border border-slate-200/80 shadow-2xs">
+                        {getConditionText(product.condition)}
                       </span>
-                      {hasDiscount && (
-                        <span className="text-xs text-slate-600 line-through font-medium">
-                          {formatCurrency(product.comparePrice!)}
+                    </div>
+
+                    {/* Badge Pezzo Unico / Scorta */}
+                    <div className="absolute top-2.5 right-2.5">
+                      {isLowStock ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-500 text-white shadow-2xs">
+                          Pezzo Unico
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500 text-white shadow-2xs">
+                          {product.stock} disp.
                         </span>
                       )}
                     </div>
                   </div>
 
-                  <button
-                    disabled={product.stock <= 0}
-                    onClick={() => addToCart(product)}
-                    className="taaaac-btn-primary py-2 px-3 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Aggiungi</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                  {/* Dettagli Articolo */}
+                  <div className="p-4 flex flex-col flex-1">
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
+                      <span className="font-medium text-slate-400">{product.category}</span>
+                      {product.sku && (
+                        <span className="font-mono text-[10px] text-slate-400">SKU: {product.sku}</span>
+                      )}
+                    </div>
 
-        {filteredProducts.length === 0 && (
-          <div className="taaaac-card p-12 text-center text-slate-500">
-            <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="font-bold text-slate-800 text-base">Nessun articolo trovato</h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Prova a cambiare termine di ricerca o rimuovi il filtro categoria.
-            </p>
+                    <h3 className="font-bold text-sm text-slate-900 line-clamp-2 mb-2 leading-snug group-hover:text-emerald-700 transition-colors">
+                      {product.title}
+                    </h3>
+
+                    {/* Prezzo */}
+                    <div className="flex items-baseline gap-2 mb-3">
+                      <span className="text-lg font-black text-slate-900">
+                        {formatCurrency(product.price)}
+                      </span>
+                      {product.comparePrice && product.comparePrice > product.price && (
+                        <span className="text-xs text-slate-400 line-through">
+                          {formatCurrency(product.comparePrice)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Presenza Marketplace (Badge Canali Attivi) */}
+                    <div className="pt-2 border-t border-slate-100 mt-auto mb-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+                        Disponibile su:
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {product.syncSubito && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200/70">
+                            Subito
+                          </span>
+                        )}
+                        {product.syncVinted && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-50 text-cyan-800 border border-cyan-200/70">
+                            Vinted
+                          </span>
+                        )}
+                        {product.syncEbay && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200/70">
+                            eBay
+                          </span>
+                        )}
+                        {product.syncFacebook && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200/70">
+                            Facebook
+                          </span>
+                        )}
+                        {product.stock > 0 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/70">
+                            In Negozio
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottoni Azione (Zero Carrello: Dettagli / Marketplace o WhatsApp) */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          setActiveImageIndex(0);
+                        }}
+                        className="py-2.5 px-3 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <span>Dettagli</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+
+                      <a
+                        href={getWhatsAppInquiryUrl(product)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-2.5 px-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs flex items-center justify-center gap-1 cursor-pointer text-center"
+                        title="Blocca o richiedi informazioni su WhatsApp"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">Blocca</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>
 
-      {/* 6. Scheda Dettaglio Prodotto (Modal) */}
+      {/* 6. Modale Scheda Dettaglio Articolo & Hub Acquisto Multi-Canale */}
       {selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-start pb-4 border-b border-slate-100">
-              <div>
-                <span className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
-                  {selectedProduct.category}
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto animate-in fade-in zoom-in duration-200">
+            {/* Header Modale */}
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Scheda Articolo Collettore
                 </span>
-                <h2 className="text-xl font-bold text-slate-900 mt-0.5">
-                  {selectedProduct.title}
-                </h2>
+                {selectedProduct.sku && (
+                  <span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">
+                    {selectedProduct.sku}
+                  </span>
+                )}
               </div>
               <button
                 onClick={() => setSelectedProduct(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
-              <div className="aspect-square rounded-2xl overflow-hidden bg-slate-100">
-                <img
-                  src={getProductImage(selectedProduct)}
-                  alt={selectedProduct.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+            <div className="p-5 sm:p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
+                {/* Galleria Immagini */}
+                <div className="space-y-2">
+                  <div className="aspect-square rounded-2xl bg-slate-100 overflow-hidden border border-slate-200/80">
+                    <img
+                      src={getProductImages(selectedProduct)[activeImageIndex] || getProductImages(selectedProduct)[0]}
+                      alt={selectedProduct.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {getProductImages(selectedProduct).length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {getProductImages(selectedProduct).map((img, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setActiveImageIndex(idx)}
+                          className={`w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                            activeImageIndex === idx
+                              ? "border-emerald-500 shadow-xs"
+                              : "border-transparent opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex flex-col justify-between space-y-4">
+                {/* Info Prodotto */}
                 <div className="space-y-3">
-                  <div className="flex items-baseline gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                      {getConditionText(selectedProduct.condition)}
+                    </span>
+                    <span className="text-xs text-slate-500">{selectedProduct.category}</span>
+                  </div>
+
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+                    {selectedProduct.title}
+                  </h3>
+
+                  <div className="flex items-baseline gap-2 py-1">
                     <span className="text-2xl font-black text-slate-900">
                       {formatCurrency(selectedProduct.price)}
                     </span>
-                    {selectedProduct.comparePrice && (
+                    {selectedProduct.comparePrice && selectedProduct.comparePrice > selectedProduct.price && (
                       <span className="text-sm text-slate-400 line-through">
                         {formatCurrency(selectedProduct.comparePrice)}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    <span className="px-2.5 py-1 rounded-lg bg-slate-100 font-semibold text-slate-700">
-                      Condizione: {selectedProduct.condition}
-                    </span>
-                    <span
-                      className={`px-2.5 py-1 rounded-lg font-semibold ${
-                        selectedProduct.stock > 0
-                          ? "bg-emerald-50 text-emerald-800"
-                          : "bg-rose-50 text-rose-800"
-                      }`}
-                    >
-                      {selectedProduct.stock > 0
-                        ? `Disponibili: ${selectedProduct.stock} pz`
-                        : "Esaurito"}
-                    </span>
-                    {selectedProduct.sku && (
-                      <span className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 font-mono">
-                        SKU: {selectedProduct.sku}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-slate-600 leading-relaxed pt-2 border-t border-slate-100">
+                  <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
                     {selectedProduct.description}
                   </p>
-                </div>
 
-                <div className="space-y-2 pt-4">
-                  <button
-                    disabled={selectedProduct.stock <= 0}
-                    onClick={() => {
-                      addToCart(selectedProduct);
-                      setSelectedProduct(null);
-                    }}
-                    className="taaaac-btn-primary w-full py-3 text-xs flex items-center justify-center gap-2"
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                    Aggiungi al Carrello
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      addToCart(selectedProduct);
-                      setSelectedProduct(null);
-                      handleOrderWhatsApp();
-                    }}
-                    className="w-full py-2.5 rounded-xl font-semibold text-xs border border-emerald-500 text-emerald-700 hover:bg-emerald-50 flex items-center justify-center gap-2 transition-colors cursor-pointer"
-                  >
-                    <MessageCircle className="w-4 h-4 text-emerald-600" />
-                    Ordina Subito su WhatsApp
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 7. Drawer Carrello & Checkout */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex justify-end">
-          <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col p-6 animate-in slide-in-from-right duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-base text-slate-900">
-                  Il tuo Carrello ({cartItemsCount})
-                </h3>
-              </div>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Lista Articoli Carrello */}
-            <div className="flex-1 overflow-y-auto py-4 space-y-3">
-              {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center text-slate-400">
-                  <ShoppingBag className="w-12 h-12 stroke-[1.2] mb-2 text-slate-300" />
-                  <p className="font-bold text-sm text-slate-700">Il carrello è vuoto</p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Aggiungi qualche capo o accessorio dalla vetrina
-                  </p>
-                </div>
-              ) : (
-                cart.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-3"
-                  >
-                    <img
-                      src={getProductImage(item.product)}
-                      alt={item.product.title}
-                      className="w-12 h-12 rounded-xl object-cover"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-xs text-slate-900 truncate">
-                        {item.product.title}
-                      </p>
-                      <p className="text-[11px] text-slate-500">
-                        {formatCurrency(item.product.price)} cad.
-                      </p>
+                  <div className="text-[11px] text-slate-500 space-y-1 pt-1">
+                    <div className="flex justify-between">
+                      <span>Disponibilità fisica:</span>
+                      <strong className="text-slate-800">
+                        {selectedProduct.stock === 1 ? "Pezzo Unico Rimasto" : `${selectedProduct.stock} unità`}
+                      </strong>
                     </div>
-
-                    <div className="flex items-center gap-1.5 bg-white border border-slate-200 rounded-lg px-1">
-                      <button
-                        onClick={() => updateQuantity(item.product.id, -1)}
-                        className="p-1 text-slate-600 hover:text-slate-900"
-                      >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                      <span className="text-xs font-bold px-1">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.product.id, 1)}
-                        className="p-1 text-slate-600 hover:text-slate-900"
-                      >
-                        <Plus className="w-3 h-3" />
-                      </button>
+                    <div className="flex justify-between">
+                      <span>Stato sincronizzazione:</span>
+                      <strong className="text-emerald-700 font-semibold">Attivo in tempo reale</strong>
                     </div>
-
-                    <button
-                      onClick={() => removeFromCart(item.product.id)}
-                      className="text-slate-400 hover:text-rose-600 p-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Dati Cliente e Checkout */}
-            {cart.length > 0 && (
-              <div className="border-t border-slate-100 pt-4 space-y-3">
-                {/* Selezione Metodo di Consegna */}
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1.5">
-                    Metodo di Ricezione:
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setFulfillmentType("SPEDIZIONE")}
-                      className={`p-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
-                        fulfillmentType === "SPEDIZIONE"
-                          ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                          : "bg-slate-50 text-slate-700 border-slate-200"
-                      }`}
-                    >
-                      <Truck className="w-3.5 h-3.5" />
-                      Spedizione
-                    </button>
-                    <button
-                      onClick={() => setFulfillmentType("RITIRO_IN_NEGOZIO")}
-                      className={`p-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
-                        fulfillmentType === "RITIRO_IN_NEGOZIO"
-                          ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                          : "bg-slate-50 text-slate-700 border-slate-200"
-                      }`}
-                    >
-                      <MapPin className="w-3.5 h-3.5" />
-                      Ritiro in Negozio
-                    </button>
                   </div>
                 </div>
+              </div>
 
-                {/* Form Campi Cliente */}
-                <div className="space-y-2 text-xs">
-                  <input
-                    type="text"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    placeholder="Nome e Cognome *"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-slate-400"
-                  />
-                  <input
-                    type="tel"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    placeholder="Cellulare (per WhatsApp / Corriere) *"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-slate-400"
-                  />
-                  {fulfillmentType === "SPEDIZIONE" && (
-                    <input
-                      type="text"
-                      value={shippingAddress}
-                      onChange={(e) => setShippingAddress(e.target.value)}
-                      placeholder="Indirizzo completo di spedizione, Città e CAP *"
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-slate-400"
-                    />
+              {/* SEZIONE HUB CANALI & ACQUISTO */}
+              <div className="pt-4 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <Globe className="w-4 h-4 text-emerald-600" />
+                    Scegli Dove Acquistare Questo Articolo
+                  </h4>
+                  <span className="text-[11px] text-slate-500">Transazione protetta</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Opzione Subito.it */}
+                  {selectedProduct.syncSubito && (
+                    <a
+                      href={getMarketplaceSearchUrl("SUBITO", selectedProduct)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3.5 rounded-2xl border border-amber-200 bg-amber-50/40 hover:bg-amber-50 hover:border-amber-400 transition-all flex flex-col justify-between group shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-amber-800">Acquista su Subito.it</span>
+                        <ArrowUpRight className="w-4 h-4 text-amber-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Protezione TuttoSubito con spedizione rapida tracciata o ritiro a mano
+                      </p>
+                    </a>
+                  )}
+
+                  {/* Opzione Vinted */}
+                  {selectedProduct.syncVinted && (
+                    <a
+                      href={getMarketplaceSearchUrl("VINTED", selectedProduct)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3.5 rounded-2xl border border-cyan-200 bg-cyan-50/40 hover:bg-cyan-50 hover:border-cyan-400 transition-all flex flex-col justify-between group shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-cyan-800">Acquista su Vinted</span>
+                        <ArrowUpRight className="w-4 h-4 text-cyan-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Protezione Acquisti Vinted con spedizione InPost, BRT o Fermopoint
+                      </p>
+                    </a>
+                  )}
+
+                  {/* Opzione eBay */}
+                  {selectedProduct.syncEbay && (
+                    <a
+                      href={getMarketplaceSearchUrl("EBAY", selectedProduct)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3.5 rounded-2xl border border-blue-200 bg-blue-50/40 hover:bg-blue-50 hover:border-blue-400 transition-all flex flex-col justify-between group shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-blue-800">Acquista su eBay</span>
+                        <ArrowUpRight className="w-4 h-4 text-blue-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Garanzia Cliente eBay con pagamento sicuro PayPal o Carta
+                      </p>
+                    </a>
+                  )}
+
+                  {/* Opzione Facebook Marketplace */}
+                  {selectedProduct.syncFacebook && (
+                    <a
+                      href={getMarketplaceSearchUrl("FACEBOOK", selectedProduct)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3.5 rounded-2xl border border-indigo-200 bg-indigo-50/40 hover:bg-indigo-50 hover:border-indigo-400 transition-all flex flex-col justify-between group shadow-2xs"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-indigo-800">Facebook Marketplace</span>
+                        <ArrowUpRight className="w-4 h-4 text-indigo-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      </div>
+                      <p className="text-[11px] text-slate-600">
+                        Visualizza l'inserzione e contatta direttamente su Messenger
+                      </p>
+                    </a>
                   )}
                 </div>
 
-                {/* Totale */}
-                <div className="flex justify-between items-baseline pt-2 border-t border-slate-100">
-                  <span className="text-xs font-semibold text-slate-500">Totale Ordine</span>
-                  <span className="text-xl font-black text-slate-900">
-                    {formatCurrency(cartTotal)}
-                  </span>
-                </div>
+                {/* Opzione WhatsApp Diretto / Ritiro Negozio */}
+                <div className="mt-3 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="space-y-0.5 text-center sm:text-left">
+                    <p className="text-xs font-bold text-emerald-950 flex items-center justify-center sm:justify-start gap-1.5">
+                      <MessageCircle className="w-4 h-4 text-emerald-600" />
+                      Preferisci comprare direttamente da noi?
+                    </p>
+                    <p className="text-[11px] text-emerald-800">
+                      Blocca subito il pezzo per il ritiro in sede o richiedi la spedizione diretta
+                    </p>
+                  </div>
 
-                {/* Pulsanti Azione */}
-                <div className="space-y-2 pt-1">
-                  <button
-                    onClick={handleOrderWhatsApp}
-                    className="w-full py-3 rounded-xl font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                  <a
+                    href={getWhatsAppInquiryUrl(selectedProduct)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4" />
-                    Ordina Subito su WhatsApp
-                  </button>
-
-                  <button
-                    disabled={isSubmitting}
-                    onClick={handleOnlineCheckout}
-                    className="taaaac-btn-secondary w-full py-2.5 text-xs text-slate-700 font-semibold"
-                  >
-                    Conferma Ordine Online
-                  </button>
+                    <span>Blocca su WhatsApp</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 8. Modale Conferma Ordine Ricevuto */}
-      {completedOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-
-            <h3 className="text-lg font-bold text-slate-900 text-center">
-              Ordine Confermato con Successo!
-            </h3>
-            <p className="text-xs text-slate-500 text-center mt-1">
-              Abbiamo registrato la tua richiesta. Ti contatteremo a breve via SMS o WhatsApp per la conferma.
-            </p>
-
-            <div className="mt-5 p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Numero Ordine:</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {completedOrder.orderNumber}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Cliente:</span>
-                <span className="font-semibold text-slate-900">
-                  {completedOrder.customerName}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Modalità Consegna:</span>
-                <span className="font-semibold text-slate-900">
-                  {completedOrder.fulfillmentType}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Importo Totale:</span>
-                <span className="font-bold text-slate-900 text-sm">
-                  {formatCurrency(completedOrder.totalAmount)}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button
-                onClick={() => setCompletedOrder(null)}
-                className="taaaac-btn-primary w-full py-3 text-xs"
-              >
-                Torna allo Shop
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 9. Footer */}
+      {/* 7. Footer con Link Discreto Commerciante */}
       <footer className="bg-white border-t border-slate-200/90 py-8 px-4 sm:px-6 mt-12 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -792,7 +845,7 @@ Vorrei confermare l'ordine e ricevere dettagli per il pagamento e la spedizione.
             <span className="font-bold text-slate-800">
               {tenantConfig.theme.brandName}
             </span>
-            <span>• Modulo E-Commerce & Marketplace Vendoly</span>
+            <span>• Collettore Vendite & Hub Multi-Marketplace Vendoly</span>
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <p>© {new Date().getFullYear()} Taaaac Modular Ecosystem. Tutti i diritti riservati.</p>
