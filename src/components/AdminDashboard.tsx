@@ -40,6 +40,7 @@ import {
   recordMarketplaceSale,
   createProduct,
   toggleProductReservation,
+  upsertChannelListing,
   CreateProductInput,
 } from "@/lib/store-actions";
 import { TenantConfigResponse } from "@/types/taaaac";
@@ -71,6 +72,9 @@ export default function AdminDashboard({
   const [listerProduct, setListerProduct] = useState<MockProduct | null>(null);
   const [selectedChannel, setSelectedChannel] = useState<SalesChannel>("SUBITO");
   const [copiedSuccess, setCopiedSuccess] = useState<string | null>(null);
+  const [listingUrlInput, setListingUrlInput] = useState("");
+  const [isSavingListing, setIsSavingListing] = useState(false);
+  const [listingSavedSuccess, setListingSavedSuccess] = useState(false);
 
   // Modale Registra Vendita Rapida (Anti-Doppia Vendita)
   const [saleProduct, setSaleProduct] = useState<MockProduct | null>(null);
@@ -366,6 +370,26 @@ export default function AdminDashboard({
     navigator.clipboard.writeText(text);
     setCopiedSuccess(type);
     setTimeout(() => setCopiedSuccess(null), 2500);
+  };
+
+  // Salva Link Inserzione Live sul Marketplace (Issue #6)
+  const handleSaveListingLink = async () => {
+    if (!listerProduct || !listingUrlInput.trim()) return;
+    setIsSavingListing(true);
+    try {
+      await upsertChannelListing({
+        productId: listerProduct.id,
+        channel: selectedChannel,
+        externalUrl: listingUrlInput.trim(),
+        listedPrice: listerProduct.price,
+        status: "ACTIVE",
+      });
+      setListingSavedSuccess(true);
+      setTimeout(() => setListingSavedSuccess(false), 3000);
+      setListingUrlInput("");
+    } finally {
+      setIsSavingListing(false);
+    }
   };
 
   // Logout / Blocco Cassa
@@ -1556,6 +1580,35 @@ export default function AdminDashboard({
                   </>
                 );
               })()}
+            </div>
+
+            {/* Step 3: Registra Link Annuncio Live (Issue #6) */}
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <label className="block text-[11px] font-bold text-slate-700">
+                3. Hai pubblicato l&apos;annuncio? Incolla il link per tracciarlo su Vendoly:
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={listingUrlInput}
+                  onChange={(e) => setListingUrlInput(e.target.value)}
+                  placeholder="https://www.subito.it/... o https://www.vinted.it/..."
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-slate-300"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveListingLink}
+                  disabled={!listingUrlInput.trim() || isSavingListing}
+                  className="taaaac-btn-accent text-xs px-3.5 py-2 shrink-0 cursor-pointer disabled:opacity-40"
+                >
+                  {isSavingListing ? "Salvataggio..." : listingSavedSuccess ? "Salvato! ✓" : "Registra Annuncio"}
+                </button>
+              </div>
+              {listingSavedSuccess && (
+                <p className="text-[11px] text-emerald-600 font-semibold">
+                  ✓ Annuncio salvato nel registro marketplace! Monitorabile dalla sezione Canali.
+                </p>
+              )}
             </div>
           </div>
         </div>

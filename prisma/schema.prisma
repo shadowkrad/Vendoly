@@ -8,19 +8,28 @@ datasource db {
 }
 
 model Product {
-  id           String      @id @default(cuid())
-  title        String
-  description  String
-  price        Float
-  comparePrice Float?
-  stock        Int         @default(1)
-  category     String
-  images       String      // JSON array di URL immagini
-  sku          String?     @unique
-  condition    String      @default("NUOVO") // NUOVO, USATO_COME_NUOVO, OTTIME_CONDIZIONI
-  isActive     Boolean     @default(true)
-  isReserved   Boolean     @default(false)
-  reservedNote String?
+  id             String      @id @default(cuid())
+  title          String
+  description    String
+  price          Float
+  comparePrice   Float?
+  stock          Int         @default(1)
+  category       String
+  images         String      // JSON array di URL immagini
+  sku            String?     @unique
+  condition      String      @default("NUOVO") // NUOVO, COME_NUOVO, OTTIMO, BUONO
+  isActive       Boolean     @default(true)
+  isReserved     Boolean     @default(false)
+  reservedNote   String?
+
+  // Campi dettaglio prodotto (Issue #9)
+  brand          String?     // Marca (Nike, Gucci, ecc.)
+  size           String?     // Taglia (M, 42, 38 EU)
+  color          String?     // Colore primario
+  material       String?     // Materiale/tessuto
+  weight         Float?      // Peso in grammi (per spedizione)
+  conditionNotes String?     // Note difetti/usura (trasparenza marketplace)
+  tags           String?     // JSON array tag (["vintage","lana","inverno"])
 
   // Flag canali marketplace (Issue #5)
   syncFacebook Boolean     @default(false)
@@ -28,9 +37,10 @@ model Product {
   syncEbay     Boolean     @default(false)
   syncVinted   Boolean     @default(false)
 
-  orderItems   OrderItem[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  orderItems       OrderItem[]
+  channelListings  ChannelListing[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 }
 
 model Order {
@@ -72,4 +82,54 @@ model TenantLocalCache {
   contactEmail   String?
   phone          String?
   lastSyncedAt   DateTime @default(now())
+}
+
+// Annunci pubblicati sui marketplace (Issue #6)
+model ChannelListing {
+  id           String    @id @default(cuid())
+  productId    String
+  channel      String    // SUBITO, VINTED, EBAY, FACEBOOK
+  status       String    @default("DRAFT") // DRAFT, ACTIVE, SOLD, ARCHIVED
+  externalUrl  String?   // Link annuncio live sul marketplace
+  externalId   String?   // ID annuncio sulla piattaforma esterna
+  listedPrice  Float     // Prezzo specifico su quel canale
+  notes        String?   // Note operative del commerciante
+  publishedAt  DateTime?
+  soldAt       DateTime? // Quando è stato venduto (analytics)
+  product      Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([productId, channel])
+}
+
+// Template descrizioni vincenti (Issue #9)
+model DescriptionTemplate {
+  id           String   @id @default(cuid())
+  name         String   // Es. "Sneakers Vintage Nike"
+  category     String   // Categoria prodotto associata
+  channel      String?  // Canale specifico o null=universale
+  templateText String   // Testo con placeholder {{titolo}}, {{brand}}, ecc.
+  usageCount   Int      @default(0)  // Quante volte è stato usato
+  salesCount   Int      @default(0)  // Quante vendite ha generato
+  isDefault    Boolean  @default(false) // Template pre-installato da Vendoly
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Referenze prezzo per categoria/brand/condizione (Issue #9)
+model PriceReference {
+  id         String   @id @default(cuid())
+  category   String   // "Sneakers", "Borse", "Giacche"
+  brand      String?  // Marca specifica o null=generico
+  condition  String   // NUOVO, COME_NUOVO, OTTIMO, BUONO
+  avgPrice   Float    // Prezzo medio di mercato
+  minPrice   Float    // Range minimo
+  maxPrice   Float    // Range massimo
+  source     String   @default("VENDOLY") // VENDOLY (dalle vendite), MANUAL
+  sampleSize Int      @default(0) // Su quante vendite è basato
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  @@unique([category, brand, condition])
 }

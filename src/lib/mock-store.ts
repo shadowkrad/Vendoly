@@ -12,6 +12,15 @@ export interface MockProduct {
   isActive: boolean;
   isReserved?: boolean;
   reservedNote?: string | null;
+  // Campi dettaglio prodotto (Issue #9)
+  brand?: string | null;
+  size?: string | null;
+  color?: string | null;
+  material?: string | null;
+  weight?: number | null;
+  conditionNotes?: string | null;
+  tags?: string | null; // JSON array string
+  // Sync canali
   syncFacebook: boolean;
   syncSubito: boolean;
   syncEbay: boolean;
