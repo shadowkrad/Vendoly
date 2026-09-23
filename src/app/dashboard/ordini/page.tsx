@@ -1,6 +1,6 @@
 import React from "react";
 import { getStoreOrders } from "@/lib/store-actions";
-import { ShoppingBag, Truck, CheckCircle2, Clock, MapPin } from "lucide-react";
+import { Truck, CheckCircle2, Clock, MapPin, Package } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +11,7 @@ export default async function OrdiniPage() {
     <div className="space-y-6">
       <div className="pb-4 border-b border-slate-200">
         <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2.5">
-          <ShoppingBag className="w-6 h-6 text-emerald-600" />
+          <Truck className="w-6 h-6 text-emerald-600" />
           Ordini & Spedizioni
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -22,7 +22,7 @@ export default async function OrdiniPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {orders.length === 0 ? (
           <div className="col-span-full p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-500">
-            <ShoppingBag className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <Package className="w-10 h-10 text-slate-300 mx-auto mb-2" />
             <p className="font-semibold">Nessun ordine presente</p>
           </div>
         ) : (

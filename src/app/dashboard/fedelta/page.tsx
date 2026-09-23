@@ -8,7 +8,7 @@ export default function FedeltaAddonPage() {
     <AddonModuleGuard
       addonId={TAAAAC_ADDONS.LOYALTY_CARD}
       title="Programma Fedeltà & Punti Spesa"
-      description="Premia i tuoi acquirenti con punti spesa convertibili in buoni sconto sul carrello."
+      description="Premia i tuoi acquirenti con punti spesa convertibili in sconti dedicati e vantaggi esclusivi."
       icon="🎖️"
     >
       <div className="space-y-6">
@@ -19,7 +19,7 @@ export default function FedeltaAddonPage() {
               Programma Fedeltà & Punti Spesa
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Fidelizza gli acquirenti con sconti a scaglioni e cashback sul carrello.
+              Fidelizza gli acquirenti con sconti a scaglioni e vantaggi riservati sui prossimi acquisti.
             </p>
           </div>
           <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto">

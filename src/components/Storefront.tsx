@@ -20,7 +20,6 @@ import {
   ArrowUpRight,
   Phone,
   Clock,
-  ShoppingBag,
   Star,
 } from "lucide-react";
 import { MockProduct } from "@/lib/mock-store";
@@ -165,7 +164,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
-              <ShoppingBag className="w-5 h-5" />
+              <Store className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -985,7 +984,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-white font-bold text-base">
-                <ShoppingBag className="w-5 h-5 text-emerald-400" />
+                <Store className="w-5 h-5 text-emerald-400" />
                 <span>{tenantConfig.theme.brandName}</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed">

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Package,
-  ShoppingBag,
   Globe,
   Truck,
   Search,
@@ -458,10 +457,10 @@ export default function AdminDashboard({
               onClick={handleLogout}
               disabled={isLoggingOut}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition-colors cursor-pointer disabled:opacity-50"
-              title="Blocca sessione cassa e richiedi PIN"
+              title="Blocca sessione gestionale e richiedi PIN"
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>{isLoggingOut ? "Uscita..." : "Blocca Cassa"}</span>
+              <span>{isLoggingOut ? "Uscita..." : "Blocca Sessione"}</span>
             </button>
           </div>
         </div>

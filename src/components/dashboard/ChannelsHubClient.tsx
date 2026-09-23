@@ -7,7 +7,7 @@ import {
   Copy,
   Check,
   Zap,
-  ShoppingBag,
+  Package,
   DollarSign,
   ShieldCheck,
   ChevronDown,
@@ -429,7 +429,7 @@ export default function ChannelsHubClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-emerald-600" />
+              <Package className="w-4 h-4 text-emerald-600" />
               Registro Inserzioni Marketplace Tracciate ({listings.length})
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -533,7 +533,7 @@ export default function ChannelsHubClient({
           </div>
         ) : (
           <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200 space-y-2">
-            <ShoppingBag className="w-8 h-8 text-slate-300 mx-auto" />
+            <Package className="w-8 h-8 text-slate-300 mx-auto" />
             <p className="text-xs font-semibold text-slate-600">Nessuna inserzione registrata per questo filtro</p>
             <p className="text-[11px] text-slate-400">
               Quando pubblichi un articolo con il Quick Lister, incolla il link dell&apos;annuncio per vederlo apparire qui in tempo reale.

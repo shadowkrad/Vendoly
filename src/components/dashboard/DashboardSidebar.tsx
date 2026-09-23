@@ -10,8 +10,9 @@ import { TAAAAC_ADDONS } from "@/lib/taaaac-client";
 import {
   LayoutDashboard,
   Package,
-  ShoppingBag,
+  Truck,
   Globe,
+  Zap,
   Store,
   Users,
   Settings,
@@ -26,9 +27,9 @@ import {
 const baseNavLinks = [
   { href: "/dashboard", label: "Panoramica & KPI", icon: LayoutDashboard },
   { href: "/dashboard/prodotti", label: "Catalogo & Scorte", icon: Package },
-  { href: "/dashboard/ordini", label: "Ordini & Spedizioni", icon: ShoppingBag },
+  { href: "/dashboard/ordini", label: "Ordini & Spedizioni", icon: Truck },
   { href: "/dashboard/canali", label: "Canali & Marketplace", icon: Globe },
-  { href: "/dashboard/cassa", label: "Cassa Veloce POS", icon: Store },
+  { href: "/dashboard/cassa", label: "Scarico Vendite Rapido", icon: Zap },
   { href: "/dashboard/clienti", label: "Clienti (CRM)", icon: Users },
 ];
 
@@ -127,7 +128,7 @@ export default function DashboardSidebar() {
         {/* User Card */}
         <div className="px-3 py-2.5 mx-3 my-3 bg-slate-800/80 rounded-2xl border border-slate-700/60 flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black flex items-center justify-center shrink-0 shadow-xs">
-            🛍️
+            🏪
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-white truncate">

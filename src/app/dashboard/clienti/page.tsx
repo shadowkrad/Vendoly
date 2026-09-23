@@ -1,6 +1,6 @@
 import React from "react";
 import { getStoreOrders } from "@/lib/store-actions";
-import { Users, Mail, MapPin, ShoppingBag } from "lucide-react";
+import { Users, Mail, MapPin, Package } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -72,7 +72,7 @@ export default async function ClientiPage() {
                   {c.address}
                 </p>
                 <p className="flex items-center gap-2">
-                  <ShoppingBag className="w-3.5 h-3.5 text-slate-400" />
+                  <Package className="w-3.5 h-3.5 text-slate-400" />
                   {c.ordersCount} {c.ordersCount === 1 ? "ordine completato" : "ordini completati"}
                 </p>
               </div>
