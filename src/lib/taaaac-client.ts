@@ -20,6 +20,8 @@ export interface TenantConfig {
   moduliAttivi: string[];
   tokenDisponibili: number;
   theme?: TenantTheme;
+  customDomain?: string | null;
+  customDomainStatus?: string | null;
 }
 
 export const TAAAAC_ADDONS = {

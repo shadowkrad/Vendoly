@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Settings, Save, Store, Truck, Shield, CheckCircle2 } from "lucide-react";
+import { Settings, Save, Store, Truck, Shield, CheckCircle2, Globe, ExternalLink, ShieldCheck } from "lucide-react";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
 
 export default function ImpostazioniPage() {
@@ -16,6 +16,8 @@ export default function ImpostazioniPage() {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
+
+  const displayDomain = config?.customDomain || (config?.sottodominio ? `${config.sottodominio}.taaaac.eu` : "littlecreations.family");
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -35,6 +37,57 @@ export default function ImpostazioniPage() {
           Configurazioni salvate con successo per il tenant corrente!
         </div>
       )}
+
+      {/* Sezione Dominio & Vetrina Online */}
+      <div className="p-6 bg-gradient-to-br from-emerald-50/60 to-slate-50 rounded-2xl border border-emerald-200/80 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200/50 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Globe className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-slate-900">Vetrina Online & Dominio Personalizzato</h2>
+              <p className="text-xs text-slate-500">
+                Indirizzo pubblico del negozio con certificato SSL Let's Encrypt automatico.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-300 w-fit">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            SSL Attivo & Sicuro
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+            <span className="text-[10px] font-bold uppercase text-slate-400">Indirizzo Vetrina Ufficiale</span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-mono text-xs font-bold text-slate-900 truncate">
+                https://{displayDomain}
+              </span>
+              <a
+                href={`https://${displayDomain}`}
+                target="_blank"
+                rel="noreferrer"
+                className="shrink-0 p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+                title="Apri vetrina in una nuova scheda"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 space-y-1">
+            <span className="text-[10px] font-bold uppercase text-slate-400">Puntamenti DNS Server</span>
+            <p className="font-mono text-xs text-slate-700">
+              IP VPS: <strong className="text-emerald-700">80.211.130.61</strong> (Record A @)
+            </p>
+            <p className="text-[10px] text-slate-400">
+              Gestibile e modificabile dal <strong>Portale Taaaac</strong> (taaaac.eu/portal).
+            </p>
+          </div>
+        </div>
+      </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         <div className="p-6 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
