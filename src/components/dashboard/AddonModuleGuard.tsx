@@ -32,7 +32,7 @@ export default function AddonModuleGuard({
         <div className="space-y-2 max-w-lg mx-auto">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-            <span>Prossimamente • Studio di Fattibilità</span>
+            <span>Prossimamente</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{title}</h1>
           <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
@@ -41,10 +41,10 @@ export default function AddonModuleGuard({
         <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 text-left max-w-lg mx-auto space-y-3">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-900">
             <Clock className="w-4 h-4 text-amber-600" />
-            <span>Stato: In fase di analisi e progettazione tecnica</span>
+            <span>Stato: In arrivo nei prossimi aggiornamenti</span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Stiamo conducendo uno studio di fattibilità tecnica per integrare questo modulo in modo fluido, veloce e senza complicazioni operative. Verrà reso disponibile nei prossimi aggiornamenti dell'ecosistema Taaaac.
+            Stiamo perfezionando questo modulo per renderlo fluido, immediato e perfettamente integrato. Verrà rilasciato nei prossimi aggiornamenti dell&apos;ecosistema Taaaac.
           </p>
           <div className="pt-2 border-t border-slate-200/70 text-[11px] text-slate-500 flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
