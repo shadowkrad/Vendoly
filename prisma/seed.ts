@@ -35,6 +35,17 @@ async function main() {
   await prisma.order.deleteMany();
   await prisma.product.deleteMany();
 
+  // Verifica modalità Produzione vs Demo (Issue #16)
+  const isDemo = process.env.IS_DEMO === "true" || (process.env.NODE_ENV !== "production" && process.env.IS_DEMO !== "false");
+
+  if (!isDemo) {
+    console.log("🔒 Modalità PRODUZIONE rilevata (IS_DEMO=false): database vergine inizializzato senza prodotti o ordini demo.");
+    console.log("✅ Seed completato con successo (Zero Mock Data per produzione GDPR compliant)!");
+    return;
+  }
+
+  console.log("✨ Modalità DEMO attiva: inserimento catalogo prodotti ed ordini di prova...");
+
   // 3. Creazione Prodotti da MOCK_PRODUCTS
   for (const p of MOCK_PRODUCTS) {
     await prisma.product.create({

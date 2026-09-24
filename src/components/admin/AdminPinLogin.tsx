@@ -149,12 +149,14 @@ export function AdminPinLogin({ brandName }: AdminPinLoginProps) {
         </div>
 
         <div className="pt-2 border-t border-slate-100">
-          <p className="text-[11px] text-slate-400">
-            PIN di default per il test: <strong className="text-slate-600 font-mono">1234</strong>
-          </p>
+          {process.env.NEXT_PUBLIC_IS_DEMO !== "false" && (
+            <p className="text-[11px] text-slate-400 mb-2">
+              PIN di default per il test: <strong className="text-slate-600 font-mono">1234</strong>
+            </p>
+          )}
           <a
             href="/"
-            className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold block mt-2"
+            className="text-[11px] text-emerald-600 hover:text-emerald-700 font-semibold block mt-1"
           >
             ← Torna alla Vetrina Pubblica
           </a>
