@@ -234,8 +234,11 @@ export default function DashboardSidebar() {
             </span>
             <ChevronRight className="w-3.5 h-3.5" />
           </Link>
-          <div className="text-[10px] text-slate-400/60 text-center font-mono">
-            Vendoly Core · Taaaac Engine
+          <div className="flex items-center justify-between px-1 text-[10px] text-slate-400/70 font-mono">
+            <span>Vendoly · Taaaac</span>
+            <span className="bg-slate-800/80 text-slate-400 border border-slate-700/60 px-1.5 py-0.5 rounded text-[9px] font-mono">
+              v{process.env.NEXT_PUBLIC_APP_VERSION || "1.0.0"}{process.env.NEXT_PUBLIC_GIT_COMMIT ? ` · ${process.env.NEXT_PUBLIC_GIT_COMMIT}` : ""}
+            </span>
           </div>
         </div>
       </aside>
