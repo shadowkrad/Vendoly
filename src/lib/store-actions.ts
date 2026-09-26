@@ -5,34 +5,64 @@ import { MOCK_PRODUCTS, MOCK_ORDERS, MockProduct, MockOrder } from "@/lib/mock-s
 import { revalidatePath } from "next/cache";
 
 /**
+ * Determina se l'ambiente corrente è una DEMO dimostrativa (es. Vercel)
+ * oppure un cliente reale in produzione su VPS (Taaaac Cloud).
+ */
+export function isDemoEnvironment(): boolean {
+  if (process.env.IS_DEMO === "true" || process.env.NEXT_PUBLIC_IS_DEMO === "true") {
+    return true;
+  }
+  if (process.env.IS_DEMO === "false" || process.env.NEXT_PUBLIC_IS_DEMO === "false") {
+    return false;
+  }
+  return process.env.VERCEL === "1" || process.env.NEXT_PUBLIC_VERCEL_ENV !== undefined;
+}
+
+/**
  * Recupera tutti i prodotti per la Vetrina E-Commerce e l'Admin (Issue #5).
- * Include try/catch con fallback immediato su MOCK_PRODUCTS per evitare errori 500 su Vercel.
+ * Separa rigorosamente l'ambiente Demo su Vercel dai Clienti Reali su VPS.
  */
 export async function getStoreProducts(): Promise<MockProduct[]> {
+  const isDemo = isDemoEnvironment();
+
   try {
     const dbProducts = await prisma.product.findMany({
       where: { isActive: true },
       orderBy: { createdAt: "desc" },
     });
 
-    if (dbProducts && dbProducts.length > 0) {
-      return dbProducts.map((p) => ({
-        ...p,
-        createdAt: p.createdAt.toISOString(),
-        updatedAt: p.updatedAt.toISOString(),
-      }));
+    if (dbProducts) {
+      if (dbProducts.length > 0) {
+        return dbProducts.map((p) => ({
+          ...p,
+          createdAt: p.createdAt.toISOString(),
+          updatedAt: p.updatedAt.toISOString(),
+        }));
+      }
+      // Se il DB è attivo e la tabella è vuota: per un cliente reale ritorna lista vuota!
+      if (!isDemo) {
+        return [];
+      }
     }
   } catch (error: any) {
-    console.warn("⚠️ Fallback prodotti mock (DB SQLite vergine o serverless):", error?.message || error);
+    if (!isDemo) {
+      console.warn("⚠️ Errore lettura prodotti DB reale (restituisco vuoto per cliente):", error?.message || error);
+      return [];
+    }
+    console.warn("⚠️ Fallback prodotti mock per ambiente demo Vercel:", error?.message || error);
   }
 
-  return MOCK_PRODUCTS;
+  // Fallback ai dati mock SOLO in ambiente DEMO
+  return isDemo ? MOCK_PRODUCTS : [];
 }
 
 /**
  * Recupera tutti gli ordini per la Dashboard Commerciante (/admin).
+ * Separa rigorosamente l'ambiente Demo su Vercel dai Clienti Reali su VPS.
  */
 export async function getStoreOrders(): Promise<MockOrder[]> {
+  const isDemo = isDemoEnvironment();
+
   try {
     const dbOrders = await prisma.order.findMany({
       include: {
@@ -45,27 +75,38 @@ export async function getStoreOrders(): Promise<MockOrder[]> {
       orderBy: { createdAt: "desc" },
     });
 
-    if (dbOrders && dbOrders.length > 0) {
-      return dbOrders.map((o) => ({
-        ...o,
-        createdAt: o.createdAt.toISOString(),
-        items: o.items.map((it) => ({
-          ...it,
-          product: it.product
-            ? {
-                ...it.product,
-                createdAt: it.product.createdAt.toISOString(),
-                updatedAt: it.product.updatedAt.toISOString(),
-              }
-            : undefined,
-        })),
-      }));
+    if (dbOrders) {
+      if (dbOrders.length > 0) {
+        return dbOrders.map((o) => ({
+          ...o,
+          createdAt: o.createdAt.toISOString(),
+          items: o.items.map((it) => ({
+            ...it,
+            product: it.product
+              ? {
+                  ...it.product,
+                  createdAt: it.product.createdAt.toISOString(),
+                  updatedAt: it.product.updatedAt.toISOString(),
+                }
+              : undefined,
+          })),
+        }));
+      }
+      // Se il DB è attivo e non ci sono ordini: per un cliente reale ritorna lista vuota!
+      if (!isDemo) {
+        return [];
+      }
     }
   } catch (error: any) {
-    console.warn("⚠️ Fallback ordini mock (DB SQLite vergine o serverless):", error?.message || error);
+    if (!isDemo) {
+      console.warn("⚠️ Errore lettura ordini DB reale (restituisco vuoto per cliente):", error?.message || error);
+      return [];
+    }
+    console.warn("⚠️ Fallback ordini mock per ambiente demo Vercel:", error?.message || error);
   }
 
-  return MOCK_ORDERS;
+  // Fallback agli ordini mock SOLO in ambiente DEMO
+  return isDemo ? MOCK_ORDERS : [];
 }
 
 export interface CreateOrderInput {
@@ -135,6 +176,10 @@ export async function createOrder(input: CreateOrderInput) {
     revalidatePath("/admin");
     return { success: true, order };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore salvataggio ordine database reale:", err);
+      return { success: false, error: err.message || "Errore durante il salvataggio dell'ordine" };
+    }
     console.warn("⚠️ Salvataggio ordine in fallback mock per ambiente Vercel demo:", err?.message || err);
     return {
       success: true,
@@ -175,6 +220,10 @@ export async function updateOrderStatus(
     revalidatePath("/admin");
     return { success: true, order: updated };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore aggiornamento ordine database reale:", err);
+      return { success: false, error: err.message || "Errore aggiornamento ordine" };
+    }
     console.warn("Simulazione aggiornamento stato ordine mock:", err?.message || err);
     return { success: true, orderId, status, trackingCode };
   }
@@ -194,6 +243,10 @@ export async function updateProductStock(productId: string, newStock: number) {
     revalidatePath("/admin");
     return { success: true, product: updated };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore aggiornamento scorte database reale:", err);
+      return { success: false, error: err.message || "Errore aggiornamento scorte" };
+    }
     console.warn("Simulazione aggiornamento stock mock:", err?.message || err);
     return { success: true, productId, stock: newStock };
   }
@@ -375,6 +428,10 @@ export async function createProduct(input: CreateProductInput) {
       },
     };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore creazione prodotto database reale:", err);
+      return { success: false, error: err.message || "Errore creazione prodotto nel database" };
+    }
     console.warn("Simulazione createProduct mock:", err?.message || err);
     const mockCreated: MockProduct = {
       id: `prod-${Date.now()}`,
@@ -427,6 +484,10 @@ export async function toggleProductReservation(
     revalidatePath("/admin");
     return { success: true, product: updated };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore toggleProductReservation database reale:", err);
+      return { success: false, error: err.message || "Errore aggiornamento riserva" };
+    }
     console.warn("Simulazione toggleProductReservation mock:", err?.message || err);
     return { success: true, productId, isReserved, reservedNote };
   }
@@ -475,6 +536,10 @@ export async function updateProduct(productId: string, input: Partial<CreateProd
       },
     };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore updateProduct database reale:", err);
+      return { success: false, error: err.message || "Errore aggiornamento prodotto" };
+    }
     console.warn("Simulazione updateProduct mock:", err?.message || err);
     return { success: true, productId };
   }
@@ -508,6 +573,10 @@ export async function deleteProduct(productId: string) {
     revalidatePath("/dashboard/prodotti");
     return { success: true };
   } catch (err: any) {
+    if (!isDemoEnvironment()) {
+      console.error("❌ Errore deleteProduct database reale:", err);
+      return { success: false, error: err.message || "Errore eliminazione prodotto" };
+    }
     console.warn("Simulazione deleteProduct mock:", err?.message || err);
     return { success: true, productId };
   }
