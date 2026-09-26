@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
  * Determina se l'ambiente corrente è una DEMO dimostrativa (es. Vercel)
  * oppure un cliente reale in produzione su VPS (Taaaac Cloud).
  */
-export function isDemoEnvironment(): boolean {
+function isDemoEnvironment(): boolean {
   if (process.env.IS_DEMO === "true" || process.env.NEXT_PUBLIC_IS_DEMO === "true") {
     return true;
   }
