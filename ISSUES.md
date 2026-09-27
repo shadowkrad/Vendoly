@@ -6,22 +6,22 @@ Registro ufficiale delle issue, feature request e standard di piattaforma del ge
 
 ## 🟢 Issue Attive / In Backlog
 
-### 📌 Issue #PWA-1: Shortcut App Desktop/Mobile con Banner Intelligente a Scomparsa (Android & iOS)
+### 📌 Issue #PWA-1: Shortcut App Desktop/Mobile integrata nel Menu Laterale (Standard Suite Taaaac)
 - **Modulo:** `Dashboard > UI/UX & PWA` (Standard suite Taaaac)
 - **Priorità:** Alta
 - **Stato:** 📝 Pianificata / In Backlog
 
-#### Descrizione
-Implementare la funzionalità PWA cross-platform introdotta in Schedly, per consentire all'esercente di utilizzare Vendoly (punto cassa e vendite) come un'applicazione nativa a tutto schermo sul proprio registratore di cassa, tablet Android/iPad o computer desktop.
+#### Descrizione & Principi UX
+Implementare la funzionalità PWA cross-platform (testata e perfezionata su Schedly) per consentire all'esercente di utilizzare Vendoly (punto cassa e vendite) come un'applicazione nativa a tutto schermo sul proprio registratore di cassa, tablet Android/iPad o computer desktop.
 
-#### Specifiche Tecniche & User Story
-1. **Pulsante PWA nella Sidebar:**
-   - Voce fissa nella dashboard navigation per installare Vendoly su PC o dispositivi mobili.
-2. **Banner a Scomparsa per Smartphone/Tablet (Android & iOS):**
-   - Rilevamento automatico del dispositivo mobile (`isAndroid || isIos`).
-   - Se non già installata in modalità standalone e non dismessa in precedenza (`localStorage.pwa_banner_dismissed`), visualizzazione di un floating banner discreto con invito:
-     *"Vuoi installare l'app nel tuo dispositivo per averla comoda sul desktop? Clicca qui per installare"*.
-   - Gestione dismiss con pulsante "✕" o "Più tardi".
-3. **Flussi di Installazione Integrati:**
-   - **Android / Chrome / Edge:** Cattura dell'evento `beforeinstallprompt` con apertura del prompt di sistema.
-   - **iOS / Safari:** Modale guidato per l'aggiunta rapida alla schermata Home.
+#### Linee Guida di Design & Requisiti
+1. **Zero Banner Invasivi sulla Schermata Operativa**:
+   - Nessun banner fisso o barra in cima alla pagina: la testata del menu e l'area di cassa/vendita devono mantenere il **100% dell'altezza dello schermo** senza ingombri visivi.
+2. **Integrazione Pulita nel Drawer Laterale (`☰`)**:
+   - Inserire la voce *"📲 Installa App · Aggiungi a Home / Desktop [PWA]"* all'interno del menu laterale a scomparsa.
+   - Se l'applicazione è già aperta in modalità autonoma (`display-mode: standalone`), il pulsante si nasconde automaticamente.
+3. **Modale Guidato Centrato a Tutto Schermo (`createPortal`)**:
+   - Al tocco di *"Installa App"*, il drawer si chiude e il modale compare **immediatamente al centro dello schermo** sopra a tutto (`createPortal` su `document.body`, `z-[9999]`), senza rimanere schiacciato o vincolato alla colonna del menu.
+   - **iOS / Safari**: guida grafica a 3 passaggi (Condividi ➔ Aggiungi alla schermata Home).
+   - **Android / Chrome**: prompt nativo immediato di sistema (`beforeinstallprompt`).
+   - **Desktop**: istruzioni per installazione da barra degli indirizzi Chrome/Edge.
