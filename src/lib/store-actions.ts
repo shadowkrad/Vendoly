@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { MOCK_PRODUCTS, MOCK_ORDERS, MockProduct, MockOrder } from "@/lib/mock-store";
 import { revalidatePath } from "next/cache";
+import { sendNotificationMail } from "@/lib/taaaac-mailer";
 
 /**
  * Determina se l'ambiente corrente è una DEMO dimostrativa (es. Vercel)
@@ -171,6 +172,28 @@ export async function createOrder(input: CreateOrderInput) {
 
       return created;
     });
+
+    if (input.customerEmail) {
+      sendNotificationMail({
+        to: input.customerEmail,
+        subject: `Conferma Ordine ${orderNumber} — Vendoly Shop`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 16px; background: #ffffff;">
+            <h2 style="color: #0f172a; margin-top: 0;">🛍️ Grazie per il tuo ordine!</h2>
+            <p style="color: #334155; font-size: 15px;">Gentile <strong>${input.customerName}</strong>,</p>
+            <p style="color: #475569; font-size: 14px;">Il tuo ordine <strong>#${orderNumber}</strong> è stato registrato ed è in fase di preparazione.</p>
+            <div style="background: #f8fafc; border-left: 4px solid #10b981; padding: 14px 18px; border-radius: 8px; margin: 20px 0; font-size: 14px;">
+              <p style="margin: 4px 0; color: #065f46;"><strong>Numero Ordine:</strong> ${orderNumber}</p>
+              <p style="margin: 4px 0; color: #065f46;"><strong>Totale:</strong> ${totalAmount.toFixed(2)}€</p>
+              <p style="margin: 4px 0; color: #065f46;"><strong>Modalità:</strong> ${input.fulfillmentType === "SPEDIZIONE" ? "Spedizione a domicilio" : "Ritiro in negozio"}</p>
+              ${input.shippingAddress ? `<p style="margin: 4px 0; color: #065f46;"><strong>Indirizzo di consegna:</strong> ${input.shippingAddress}</p>` : ""}
+            </div>
+            <p style="color: #64748b; font-size: 13px;">Riceverai un nuovo aggiornamento non appena il tuo pacco sarà spedito o pronto per il ritiro.</p>
+          </div>
+        `,
+        senderName: "Vendoly Store",
+      }).catch((mailErr) => console.error("Errore invio email Vendoly:", mailErr));
+    }
 
     revalidatePath("/");
     revalidatePath("/admin");
