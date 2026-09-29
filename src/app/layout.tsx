@@ -17,8 +17,20 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: "/favicon.ico",
     },
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Vendoly",
+    },
   };
 }
+
+export const viewport = {
+  themeColor: "#059669",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export default async function RootLayout({
   children,

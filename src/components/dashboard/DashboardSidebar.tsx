@@ -7,6 +7,7 @@ import NotificationBell from "@/components/dashboard/NotificationBell";
 import { TaaaacLogo } from "@/components/common/TaaaacLogo";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
 import { TAAAAC_ADDONS } from "@/lib/taaaac-client";
+import SidebarPwaInstall from "@/components/dashboard/SidebarPwaInstall";
 import {
   LayoutDashboard,
   Package,
@@ -223,6 +224,7 @@ export default function DashboardSidebar() {
 
         {/* Bottom Bar: Link Vetrina & Info */}
         <div className="p-3 border-t border-slate-800 bg-slate-900/90 space-y-2">
+          <SidebarPwaInstall onAction={() => setMobileOpen(false)} />
           <Link
             href="/"
             target="_blank"
