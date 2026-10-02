@@ -23,4 +23,26 @@ export function verifyAdminPin(inputPin: string): boolean {
   return inputPin.trim() === DEFAULT_PIN.trim();
 }
 
+/**
+ * Imposta il cookie di sessione amministratore (validità 30 giorni)
+ */
+export async function setAdminSession(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set(ADMIN_COOKIE_NAME, "authenticated_admin", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 60 * 60 * 24 * 30, // 30 giorni
+    path: "/",
+  });
+}
+
+/**
+ * Elimina la sessione amministratore corrente
+ */
+export async function clearAdminSession(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(ADMIN_COOKIE_NAME);
+}
+
 export { ADMIN_COOKIE_NAME };

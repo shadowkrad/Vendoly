@@ -133,3 +133,34 @@ model PriceReference {
 
   @@unique([category, brand, condition])
 }
+
+// Dispositivi fidati registrati per accesso rapido PWA (WebAuthn/Biometria)
+model RegisteredDevice {
+  id           String    @id @default(cuid())
+  deviceName   String    // Es. "iPhone 15 Pro", "Galaxy Tab Cassa"
+  deviceType   String    @default("mobile") // "mobile" | "tablet" | "desktop"
+  credentialId String    @unique // Base64URL dell'ID credenziale FIDO2
+  publicKey    String    // Chiave pubblica FIDO2 codificata
+  counter      BigInt    @default(0) // Contatore anti-replay FIDO2
+  transports   String    @default("[]") // JSON string: ["internal", "hybrid"]
+  userAgent    String?
+  lastIp       String?
+  status       String    @default("ACTIVE") // "ACTIVE" | "REVOKED"
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+}
+
+// Challenge temporanee WebAuthn (durata 2 minuti)
+model WebAuthnChallenge {
+  id        String   @id @default(cuid())
+  challenge String   @unique
+  purpose   String   // "registration" | "authentication"
+  targetId  String?  // "admin" o identificativo
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}

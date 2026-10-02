@@ -16,6 +16,12 @@ export async function generateMetadata(): Promise<Metadata> {
     description: `Modulo gestionale cassa POS, fidelizzazione clienti e vendite integrato nell'ecosistema Taaaac. Licenza: ${tenant.licenseStatus}`,
     icons: {
       icon: "/favicon.ico",
+      apple: "/apple-touch-icon.png",
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: "Vendoly",
     },
     manifest: "/manifest.json",
     appleWebApp: {

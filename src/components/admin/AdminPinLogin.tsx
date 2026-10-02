@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, ArrowRight, Store } from "lucide-react";
+import { Lock, ArrowRight, Store, Fingerprint } from "lucide-react";
 
 interface AdminPinLoginProps {
   brandName: string;
@@ -11,8 +11,22 @@ interface AdminPinLoginProps {
 export function AdminPinLogin({ brandName }: AdminPinLoginProps) {
   const [pin, setPin] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [biometricLoading, setBiometricLoading] = useState<boolean>(false);
+  const [hasBiometricSupport, setHasBiometricSupport] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.PublicKeyCredential) {
+      if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === "function") {
+        PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+          .then((available) => setHasBiometricSupport(available))
+          .catch(() => setHasBiometricSupport(true));
+      } else {
+        setHasBiometricSupport(true);
+      }
+    }
+  }, []);
 
   const handleDigitClick = (digit: string) => {
     if (pin.length < 6) {
@@ -29,6 +43,42 @@ export function AdminPinLogin({ brandName }: AdminPinLoginProps) {
   const handleClear = () => {
     setPin("");
     setErrorMsg(null);
+  };
+
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    setErrorMsg(null);
+    try {
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const optRes = await fetch("/api/auth/device/login-options", { method: "POST" });
+      if (!optRes.ok) {
+        const errJson = await optRes.json();
+        throw new Error(errJson.error || "Nessun dispositivo registrato per questo negozio");
+      }
+      const options = await optRes.json();
+      const authResp = await startAuthentication(options);
+
+      const verifyRes = await fetch("/api/auth/device/login-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response: authResp }),
+      });
+
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok) {
+        throw new Error(verifyData.error || "Sblocco non riuscito");
+      }
+
+      router.refresh();
+    } catch (err: any) {
+      if (err.name === "NotAllowedError") {
+        setErrorMsg("Sblocco annullato dall'utente");
+      } else {
+        setErrorMsg(err.message || "Errore durante lo sblocco biometrico");
+      }
+    } finally {
+      setBiometricLoading(false);
+    }
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -136,7 +186,7 @@ export function AdminPinLogin({ brandName }: AdminPinLoginProps) {
         </div>
 
         {/* Action Button */}
-        <div>
+        <div className="space-y-2.5">
           <button
             type="button"
             disabled={pin.length < 4 || loading}
@@ -146,6 +196,18 @@ export function AdminPinLogin({ brandName }: AdminPinLoginProps) {
             {loading ? "Verifica..." : "Accedi alla Gestione"}
             <ArrowRight className="w-4 h-4 ml-1" />
           </button>
+
+          {hasBiometricSupport && (
+            <button
+              type="button"
+              disabled={biometricLoading}
+              onClick={handleBiometricLogin}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold transition shadow-2xs cursor-pointer active:scale-98"
+            >
+              <Fingerprint className={`w-4 h-4 text-emerald-600 ${biometricLoading ? "animate-pulse" : ""}`} />
+              {biometricLoading ? "Sblocco in corso..." : "Accedi con FaceID / Impronta / PIN"}
+            </button>
+          )}
         </div>
 
         <div className="pt-2 border-t border-slate-100">

@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
+import RegisteredDevicesCard from "@/components/dashboard/RegisteredDevicesCard";
 
-type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "aspetto";
+type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "dispositivi" | "aspetto";
 
 interface TabItem {
   id: SettingsTab;
@@ -57,6 +58,13 @@ const TABS: TabItem[] = [
     shortLabel: "Email",
     icon: "📧",
     description: "Canale email Taaaac Mail Engine e notifiche di conferma ordine al cliente",
+  },
+  {
+    id: "dispositivi",
+    label: "Dispositivi PWA",
+    shortLabel: "Dispositivi",
+    icon: "📱",
+    description: "Accesso rapido biometrico (FaceID, TouchID, PIN) e revoca smartphone da remoto",
   },
   {
     id: "aspetto",
@@ -457,6 +465,13 @@ export default function VendolyImpostazioniPage() {
       {activeTab === "email" && (
         <div className="space-y-4">
           <EmailSettingsCard />
+        </div>
+      )}
+
+      {/* TAB: DISPOSITIVI PWA & BIOMETRIA */}
+      {activeTab === "dispositivi" && (
+        <div className="space-y-4">
+          <RegisteredDevicesCard />
         </div>
       )}
 
