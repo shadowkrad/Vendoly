@@ -43,9 +43,29 @@ model Product {
   updatedAt        DateTime    @updatedAt
 }
 
+model Customer {
+  id              String   @id @default(cuid())
+  firstName       String
+  lastName        String?
+  phone           String
+  email           String?
+  address         String?
+  fiscalCode      String?  // Codice Fiscale o P.IVA per fatturazione
+  clothingSize    String?  // Taglia abiti abituale (S, M, L, XL, 48, ecc.)
+  shoeSize        String?  // Taglia scarpe/sneakers (41, 42, 43, ecc.)
+  preferredBrands String?  // Brand preferiti (es. Nike, Carhartt, Gucci)
+  notes           String?  // Note su preferenze, taglie o wishlist
+  loyaltyPoints   Int      @default(0) // Punti fedeltà accumulati
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orders          Order[]
+}
+
 model Order {
   id              String      @id @default(cuid())
   orderNumber     String      @unique
+  customerId      String?
   customerName    String
   customerPhone   String
   customerEmail   String?
@@ -53,8 +73,9 @@ model Order {
   fulfillmentType String      @default("SPEDIZIONE") // SPEDIZIONE, RITIRO_IN_NEGOZIO
   status          String      @default("IN_ATTESA")   // IN_ATTESA, PAGATO, SPEDITO, COMPLETATO
   totalAmount     Float
-  channel         String      @default("SITO_WEB")    // SITO_WEB, SUBITO, VINTED, EBAY, FACEBOOK
+  channel         String      @default("MARKETPLACE")    // MARKETPLACE, SUBITO, VINTED, EBAY, FACEBOOK, CASSA, WHATSAPP
   trackingCode    String?
+  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   items           OrderItem[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @default(now()) @updatedAt
