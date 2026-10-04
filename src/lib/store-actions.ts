@@ -241,6 +241,7 @@ export async function updateOrderStatus(
     });
 
     revalidatePath("/admin");
+    revalidatePath("/dashboard/ordini");
     return { success: true, order: updated };
   } catch (err: any) {
     if (!isDemoEnvironment()) {
