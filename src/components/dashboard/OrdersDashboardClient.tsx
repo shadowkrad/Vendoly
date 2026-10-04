@@ -24,10 +24,12 @@ import {
   Calendar,
   Send,
   Eye,
+  Printer,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { updateOrderStatus } from "@/lib/store-actions";
 import UniversalTrackingRadar from "./UniversalTrackingRadar";
+import ShippingLabelModal from "./ShippingLabelModal";
 import {
   detectCarrier,
   cleanTrackingCode,
@@ -74,6 +76,7 @@ export default function OrdersDashboardClient({
   const [inputTrackingCode, setInputTrackingCode] = useState("");
   const [selectedCarrierKey, setSelectedCarrierKey] = useState<string>("AUTO");
   const [radarTrackingOrder, setRadarTrackingOrder] = useState<MockOrder | null>(null);
+  const [shippingLabelOrder, setShippingLabelOrder] = useState<MockOrder | null>(null);
   const [updating, setUpdating] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -545,6 +548,18 @@ export default function OrdersDashboardClient({
                               <MessageCircle className="w-3.5 h-3.5" />
                             </a>
 
+                            {/* Generazione / Stampa Etichetta Spedizione */}
+                            {!isPickup && (
+                              <button
+                                type="button"
+                                onClick={() => setShippingLabelOrder(order)}
+                                className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 transition cursor-pointer"
+                                title="Genera o Ristampa Lettera di Vettura 10x15cm"
+                              >
+                                <Printer className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+
                             {/* Avanzamento Fase */}
                             {col.id === "IN_ATTESA" && (
                               <button
@@ -692,6 +707,16 @@ export default function OrdersDashboardClient({
                           >
                             <MessageCircle className="w-3.5 h-3.5" />
                           </a>
+                          {order.fulfillmentType === "SPEDIZIONE" && (
+                            <button
+                              type="button"
+                              onClick={() => setShippingLabelOrder(order)}
+                              className="p-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 transition cursor-pointer"
+                              title="Genera / Ristampa Lettera di Vettura (10x15)"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             onClick={() => setSelectedOrder(order)}
                             className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
@@ -828,6 +853,22 @@ export default function OrdersDashboardClient({
                       </button>
                     </div>
                   )}
+
+                  {/* Bottone Stampa / Ristampa Lettera di Vettura 10x15 */}
+                  <div className="pt-1.5 border-t border-teal-100">
+                    <button
+                      type="button"
+                      onClick={() => setShippingLabelOrder(selectedOrder)}
+                      className="w-full py-2 px-3 bg-white hover:bg-teal-50 border border-teal-200 text-teal-800 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-teal-600" />
+                      <span>
+                        {selectedOrder.trackingCode
+                          ? "Ristampa Lettera di Vettura (10x15cm)"
+                          : "Genera Etichetta Termica Spedizione (10x15cm)"}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -1039,6 +1080,21 @@ export default function OrdersDashboardClient({
             setTrackingModalOrder(o);
             setInputTrackingCode(o.trackingCode || "");
             setSelectedCarrierKey("AUTO");
+          }}
+        />
+      )}
+
+      {/* 8. Modale Generazione e Stampa Lettera di Vettura (Etichetta Termica 10x15cm) */}
+      {shippingLabelOrder && (
+        <ShippingLabelModal
+          order={shippingLabelOrder}
+          isOpen={Boolean(shippingLabelOrder)}
+          onClose={() => setShippingLabelOrder(null)}
+          storeName={storeName}
+          storePhone={storePhone}
+          onConfirmShipping={async (orderId, waybillCode) => {
+            await handleUpdateStatus(orderId, "SPEDITO", waybillCode);
+            showFeedback(`Lettera di vettura ${waybillCode} generata e associata all'ordine #${shippingLabelOrder.orderNumber}`);
           }}
         />
       )}
