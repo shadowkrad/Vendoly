@@ -381,10 +381,12 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
                 </div>
 
                 <PriceAdvisor 
+                  title={formData.title || ""}
                   category={formData.category || CATEGORIES[0]}
                   brand={formData.brand}
                   condition={formData.condition || "NUOVO"}
                   basePrice={formData.price || 0}
+                  onApplyPrice={(suggested) => handleChange("price", suggested)}
                 />
               </div>
             )}
