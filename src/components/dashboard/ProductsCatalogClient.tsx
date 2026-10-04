@@ -463,6 +463,7 @@ export default function ProductsCatalogClient({
           onClose={() => setIsEditorOpen(false)}
           onSave={handleSaveProduct}
           storeName={storeName}
+          existingProducts={products}
         />
       )}
     </div>

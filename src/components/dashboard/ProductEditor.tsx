@@ -13,6 +13,7 @@ interface ProductEditorProps {
   onClose: () => void;
   onSave: (product: MockProduct) => void;
   storeName: string;
+  existingProducts?: MockProduct[];
 }
 
 const CATEGORIES = [
@@ -28,7 +29,7 @@ const CONDITIONS = [
   { value: "BUONO", label: "Buono Stato" }
 ];
 
-export default function ProductEditor({ product, isOpen, onClose, onSave, storeName }: ProductEditorProps) {
+export default function ProductEditor({ product, isOpen, onClose, onSave, storeName, existingProducts = [] }: ProductEditorProps) {
   const [activeTab, setActiveTab] = useState("dati");
   const [formData, setFormData] = useState<Partial<MockProduct>>({});
   const [imageUrlInput, setImageUrlInput] = useState("");
@@ -281,6 +282,7 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
                   />
                   <DescriptionEngine 
                     product={{
+                      id: formData.id,
                       title: formData.title || "",
                       brand: formData.brand,
                       category: formData.category || "",
@@ -293,6 +295,7 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
                       comparePrice: formData.comparePrice,
                       sku: formData.sku
                     }}
+                    existingProducts={existingProducts}
                     onDescriptionSelect={(desc) => handleChange("description", desc)}
                   />
                 </div>
