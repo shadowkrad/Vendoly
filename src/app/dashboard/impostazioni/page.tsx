@@ -7,6 +7,7 @@ import {
   Truck,
   Globe,
   Mail,
+  Smartphone,
   Palette,
   Save,
   CheckCircle2,
@@ -15,6 +16,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   Share2,
+  ChevronRight,
 } from "lucide-react";
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
@@ -26,7 +28,8 @@ interface TabItem {
   id: SettingsTab;
   label: string;
   shortLabel: string;
-  icon: string;
+  iconComponent: React.ElementType;
+  shortDescription: string;
   description: string;
 }
 
@@ -35,43 +38,49 @@ const TABS: TabItem[] = [
     id: "negozio",
     label: "Negozio & Vetrina",
     shortLabel: "Negozio",
-    icon: "🏪",
+    iconComponent: Store,
+    shortDescription: "Anagrafica, P.IVA e orari",
     description: "Ragione sociale, P.IVA, sede operativa, contatti e dati punto cassa",
   },
   {
     id: "vendita",
     label: "Vendita & Spedizioni",
-    shortLabel: "Vendita",
-    icon: "📦",
+    shortLabel: "Spedizioni",
+    iconComponent: Truck,
+    shortDescription: "Soglie, corrieri e scorte",
     description: "Soglie spedizione gratuita, costi corriere e sincronizzazione automatica scorte",
   },
   {
     id: "dominio",
     label: "Dominio & SSL",
     shortLabel: "Dominio",
-    icon: "🌐",
+    iconComponent: Globe,
+    shortDescription: "Vetrina online e DNS",
     description: "Indirizzo vetrina pubblica, certificato Let's Encrypt e puntamenti DNS",
   },
   {
     id: "email",
     label: "Email & Notifiche",
     shortLabel: "Email",
-    icon: "📧",
+    iconComponent: Mail,
+    shortDescription: "Gateway email e ricevute",
     description: "Canale email Taaaac Mail Engine e notifiche di conferma ordine al cliente",
   },
   {
     id: "dispositivi",
     label: "Dispositivi PWA",
     shortLabel: "Dispositivi",
-    icon: "📱",
+    iconComponent: Smartphone,
+    shortDescription: "Biometria e PIN cassa",
     description: "Accesso rapido biometrico (FaceID, TouchID, PIN) e revoca smartphone da remoto",
   },
   {
     id: "aspetto",
     label: "Aspetto & Brand",
-    shortLabel: "Aspetto",
-    icon: "🎨",
-    description: "Personalizzazione tema punto cassa POS, colori vetrina e logo del brand",
+    shortLabel: "Brand",
+    iconComponent: Palette,
+    shortDescription: "Logo, favicon e colori",
+    description: "Personalizzazione tema punto cassa POS, colori vetrina, logo e favicon",
   },
 ];
 
@@ -245,9 +254,10 @@ export default function VendolyImpostazioniPage() {
     (config?.sottodominio ? `${config.sottodominio}.taaaac.eu` : "littlecreations.family");
 
   const currentTab = TABS.find((t) => t.id === activeTab);
+  const ActiveIcon = currentTab?.iconComponent || Store;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-12">
+    <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Intestazione Principale */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -310,46 +320,87 @@ export default function VendolyImpostazioniPage() {
         </div>
       )}
 
-      {/* SOTTOMENU / TABS BAR */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-1.5 sm:p-2 shadow-xs">
-        <nav
-          className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth"
-          aria-label="Impostazioni Vendoly"
-        >
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-emerald-600 text-white font-bold shadow-xs shadow-emerald-600/30"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <span className="text-base">{tab.icon}</span>
-                <span className="hidden sm:inline">{tab.label}</span>
-                <span className="sm:hidden">{tab.shortLabel}</span>
-              </button>
-            );
-          })}
-        </nav>
-      </div>
+      {/* LAYOUT A 2 COLONNE: NAVIGAZIONE VERTICALE A SINISTRA + CONTENUTI A DESTRA */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* COLONNA SINISTRA: MENU SEZIONI IMPOSTAZIONI */}
+        <aside className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-6 space-y-3">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs">
+            <div className="px-3 py-2 border-b border-slate-100 hidden lg:block">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Sezioni Impostazioni
+              </span>
+            </div>
 
-      {/* Intestazione Sottomenu Corrente */}
-      {currentTab && (
-        <div className="flex items-center justify-between px-1">
-          <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <span>{currentTab.icon}</span>
-              <span>{currentTab.label}</span>
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{currentTab.description}</p>
+            <nav
+              className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible no-scrollbar pt-1 lg:pt-2"
+              aria-label="Sezioni Impostazioni Vendoly"
+            >
+              {TABS.map((tab) => {
+                const isActive = activeTab === tab.id;
+                const IconComp = tab.iconComponent;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`group flex items-center justify-between w-full p-2.5 sm:p-3 rounded-xl text-left transition-all cursor-pointer shrink-0 lg:shrink ${
+                      isActive
+                        ? "bg-emerald-50 text-emerald-950 font-semibold border border-emerald-200/80 shadow-xs"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                          isActive
+                            ? "bg-emerald-600 text-white shadow-xs shadow-emerald-600/30"
+                            : "bg-slate-100 text-slate-500 group-hover:bg-slate-200 group-hover:text-slate-700"
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs sm:text-sm font-semibold truncate flex items-center gap-1.5">
+                          <span className="hidden sm:inline">{tab.label}</span>
+                          <span className="sm:hidden">{tab.shortLabel}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-normal truncate hidden lg:block">
+                          {tab.shortDescription}
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronRight
+                      className={`w-4 h-4 shrink-0 transition-transform hidden lg:block ${
+                        isActive
+                          ? "text-emerald-600 translate-x-0.5"
+                          : "text-slate-300 opacity-0 group-hover:opacity-100"
+                      }`}
+                    />
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-        </div>
-      )}
+        </aside>
+
+        {/* COLONNA DESTRA: PANNELLO CONTENUTI */}
+        <main className="lg:col-span-8 xl:col-span-9 space-y-6">
+          {/* Header contestuale scheda attiva */}
+          {currentTab && (
+            <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center shrink-0">
+                  <ActiveIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900">
+                    {currentTab.label}
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">{currentTab.description}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
       {/* CONTENUTO SCHEDE */}
 
@@ -1007,6 +1058,8 @@ export default function VendolyImpostazioniPage() {
           </div>
         </div>
       )}
+        </main>
+      </div>
     </div>
   );
 }
