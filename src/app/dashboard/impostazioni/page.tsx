@@ -84,16 +84,22 @@ export default function VendolyImpostazioniPage() {
   // Form State
   const [form, setForm] = useState({
     nomeAttivita: config?.nomeAttivita || "Vendoly Retail Store",
-    ragioneSociale: "Vendoly Store S.r.l.",
-    partitaIva: "IT09876543210",
-    indirizzo: "Via del Commercio, 45 - 20121 Milano (MI)",
-    telefono: "+39 02 8976543",
-    emailContatto: "ordini@vendolystore.it",
+    ragioneSociale: "",
+    partitaIva: "",
+    indirizzo: "",
+    titolare: "",
+    telefono: "",
+    emailContatto: "",
+    orariFeriali: "09:30 – 13:00 / 15:30 – 19:30",
+    orariSabato: "09:30 – 19:30 (Continuato)",
+    orariDomenica: "Chiuso",
     sogliaSpedizioneGratis: "50",
     costoSpedizioneStandard: "5.90",
     ritiroInSede: true,
     sincronizzazioneScorte: true,
     notificaScorteBassecritiche: true,
+    politicaReso:
+      "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
     colorePrimario: "#059669",
     coloreTema: "emerald",
     logoUrl: "",
@@ -116,11 +122,23 @@ export default function VendolyImpostazioniPage() {
           setForm((f) => ({
             ...f,
             nomeAttivita: data.brandName || f.nomeAttivita,
+            ragioneSociale: data.ragioneSociale || "",
+            partitaIva: data.partitaIva || "",
+            indirizzo: data.indirizzo || "",
+            titolare: data.titolare || "",
             logoUrl: data.logoUrl || "",
             faviconUrl: data.faviconUrl || "",
             colorePrimario: data.accentColor || f.colorePrimario,
             emailContatto: data.contactEmail || f.emailContatto,
             telefono: data.phone || f.telefono,
+            orariFeriali: data.orariFeriali || f.orariFeriali,
+            orariSabato: data.orariSabato || f.orariSabato,
+            orariDomenica: data.orariDomenica || f.orariDomenica,
+            sogliaSpedizioneGratis: String(data.sogliaSpedizioneGratis ?? f.sogliaSpedizioneGratis),
+            costoSpedizioneStandard: String(data.costoSpedizioneStandard ?? f.costoSpedizioneStandard),
+            ritiroInSede: data.ritiroInSede !== undefined ? data.ritiroInSede : f.ritiroInSede,
+            politicaReso: data.politicaReso || f.politicaReso,
+            messaggioScontrino: data.messaggioScontrino || f.messaggioScontrino,
           }));
         }
       })
@@ -189,11 +207,23 @@ export default function VendolyImpostazioniPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           brandName: form.nomeAttivita,
+          ragioneSociale: form.ragioneSociale,
+          partitaIva: form.partitaIva,
+          indirizzo: form.indirizzo,
+          titolare: form.titolare,
           logoUrl: form.logoUrl || null,
           faviconUrl: form.faviconUrl || null,
           accentColor: form.colorePrimario,
           contactEmail: form.emailContatto,
           phone: form.telefono,
+          orariFeriali: form.orariFeriali,
+          orariSabato: form.orariSabato,
+          orariDomenica: form.orariDomenica,
+          sogliaSpedizioneGratis: form.sogliaSpedizioneGratis,
+          costoSpedizioneStandard: form.costoSpedizioneStandard,
+          ritiroInSede: form.ritiroInSede,
+          politicaReso: form.politicaReso,
+          messaggioScontrino: form.messaggioScontrino,
         }),
       });
 
@@ -379,25 +409,92 @@ export default function VendolyImpostazioniPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Telefono Negozio / Supporto Ordini
+                Titolare / Referente Negozio
               </label>
               <input
                 type="text"
+                placeholder="Es. Sonia Moscaritolo"
+                value={form.titolare}
+                onChange={(e) => setForm({ ...form, titolare: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Telefono Negozio & WhatsApp Assistenza
+              </label>
+              <input
+                type="text"
+                placeholder="+39 02 ..."
                 value={form.telefono}
                 onChange={(e) => setForm({ ...form, telefono: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
                 Email Contatto Clienti
               </label>
               <input
                 type="email"
+                placeholder="ordini@tuosito.it"
                 value={form.emailContatto}
                 onChange={(e) => setForm({ ...form, emailContatto: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
               />
+            </div>
+          </div>
+
+          {/* Orari di Apertura Negozio (Issue #11) */}
+          <div className="pt-4 border-t border-slate-200/80 space-y-4">
+            <div>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                ⏰ Orari di Apertura Negozio Fisico
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Mostrati nel footer e nella sezione &quot;Negozio &amp; Orari&quot; della vetrina online.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Lunedì – Venerdì
+                </label>
+                <input
+                  type="text"
+                  placeholder="09:30 – 13:00 / 15:30 – 19:30"
+                  value={form.orariFeriali}
+                  onChange={(e) => setForm({ ...form, orariFeriali: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Sabato
+                </label>
+                <input
+                  type="text"
+                  placeholder="09:30 – 19:30 (Continuato)"
+                  value={form.orariSabato}
+                  onChange={(e) => setForm({ ...form, orariSabato: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Domenica / Festivi
+                </label>
+                <input
+                  type="text"
+                  placeholder="Chiuso"
+                  value={form.orariDomenica}
+                  onChange={(e) => setForm({ ...form, orariDomenica: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -494,6 +591,23 @@ export default function VendolyImpostazioniPage() {
                 className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
               />
             </div>
+          </div>
+
+          {/* Condizioni di Vendita & Reso (Issue #11) */}
+          <div className="pt-2 space-y-2">
+            <label className="block text-xs font-semibold text-slate-700">
+              Politica di Reso &amp; Diritto di Recesso
+            </label>
+            <p className="text-[11px] text-slate-500">
+              Testo legale e informativo visibile ai clienti sulle schede prodotto della vetrina e nelle conferme d&apos;ordine.
+            </p>
+            <textarea
+              rows={3}
+              value={form.politicaReso}
+              onChange={(e) => setForm({ ...form, politicaReso: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+              placeholder="Es. Reso garantito entro 14 giorni lavorativi..."
+            />
           </div>
         </div>
       )}

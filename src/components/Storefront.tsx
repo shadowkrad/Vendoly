@@ -727,17 +727,22 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
             <div className="space-y-3 pt-2 text-xs sm:text-sm text-slate-700">
               <div className="flex items-center gap-3">
                 <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>Via Garibaldi 42, Arezzo (AR)</span>
+                <span>
+                  {tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
+                </span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
-                <a href={`tel:${tenantConfig.contact?.phone || "+390289015678"}`} className="hover:text-emerald-700 font-semibold">
+                <a
+                  href={`tel:${tenantConfig.contact?.phone || "+390289015678"}`}
+                  className="hover:text-emerald-700 font-semibold"
+                >
                   {tenantConfig.contact?.phone || "+39 02 8901 5678"}
                 </a>
               </div>
               <div className="flex items-center gap-3">
                 <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>WhatsApp attivo per foto e misure dal vivo</span>
+                <span>WhatsApp attivo per info e disponibilità immediata</span>
               </div>
             </div>
           </div>
@@ -750,15 +755,17 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
             <div className="space-y-2.5 text-xs text-slate-600">
               <div className="flex justify-between py-1.5 border-b border-slate-200">
                 <span className="font-semibold text-slate-800">Lunedì – Venerdì</span>
-                <span>09:30 – 13:00 / 15:30 – 19:30</span>
+                <span>{tenantConfig.contact?.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30"}</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="font-semibold text-slate-800">Sabato (Orario Continuato)</span>
-                <span className="font-semibold text-emerald-700">09:30 – 19:30</span>
+                <span className="font-semibold text-slate-800">Sabato</span>
+                <span className="font-semibold text-emerald-700">
+                  {tenantConfig.contact?.orariSabato || "09:30 – 19:30 (Continuato)"}
+                </span>
               </div>
               <div className="flex justify-between py-1.5 text-slate-400">
-                <span>Domenica</span>
-                <span>Chiuso</span>
+                <span>Domenica / Festivi</span>
+                <span>{tenantConfig.contact?.orariDomenica || "Chiuso"}</span>
               </div>
             </div>
           </div>
@@ -1024,7 +1031,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               <p className="text-xs text-slate-400">
                 Telefono: {tenantConfig.contact?.phone || "+39 02 8901 5678"}<br />
                 WhatsApp: Attivo per info e foto dal vivo<br />
-                Indirizzo: Via Garibaldi 42, Arezzo
+                {tenantConfig.contact?.indirizzo ? `Indirizzo: ${tenantConfig.contact.indirizzo}` : "Assistenza Clienti Online & Negozio Fisico"}
               </p>
             </div>
           </div>

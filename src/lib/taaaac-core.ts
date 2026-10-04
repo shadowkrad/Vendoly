@@ -114,6 +114,18 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
         contact: {
           email: cached.contactEmail || undefined,
           phone: cached.phone || undefined,
+          indirizzo: cached.indirizzo || undefined,
+          ragioneSociale: cached.ragioneSociale || undefined,
+          partitaIva: cached.partitaIva || undefined,
+          titolare: cached.titolare || undefined,
+          orariFeriali: cached.orariFeriali || undefined,
+          orariSabato: cached.orariSabato || undefined,
+          orariDomenica: cached.orariDomenica || undefined,
+          politicaReso: cached.politicaReso || undefined,
+          sogliaSpedizioneGratis: cached.sogliaSpedizioneGratis ?? undefined,
+          costoSpedizioneStandard: cached.costoSpedizioneStandard ?? undefined,
+          ritiroInSede: cached.ritiroInSede ?? undefined,
+          messaggioScontrino: cached.messaggioScontrino || undefined,
         },
       };
     }

@@ -83,6 +83,24 @@ model TenantLocalCache {
   contactEmail   String?
   phone          String?
   lastSyncedAt   DateTime @default(now())
+
+  // Dati Attività & Fiscale (Issue #11)
+  ragioneSociale String?
+  partitaIva     String?
+  indirizzo      String?
+  titolare       String?
+
+  // Orari Negozio (Issue #11)
+  orariFeriali   String?  @default("09:30 – 13:00 / 15:30 – 19:30")
+  orariSabato    String?  @default("09:30 – 19:30 (Continuato)")
+  orariDomenica  String?  @default("Chiuso")
+
+  // Politiche di Vendita & Spedizione (Issue #11)
+  sogliaSpedizioneGratis  Float?   @default(50)
+  costoSpedizioneStandard Float?   @default(5.90)
+  ritiroInSede            Boolean  @default(true)
+  politicaReso            String?  @default("Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.")
+  messaggioScontrino      String?  @default("Grazie per il tuo acquisto su Vendoly! Torna a trovarci.")
 }
 
 // Annunci pubblicati sui marketplace (Issue #6)

@@ -26,6 +26,18 @@ export interface TenantConfigResponse {
   contact?: {
     email?: string;
     phone?: string;
+    indirizzo?: string;
+    ragioneSociale?: string;
+    partitaIva?: string;
+    titolare?: string;
+    orariFeriali?: string;
+    orariSabato?: string;
+    orariDomenica?: string;
+    politicaReso?: string;
+    sogliaSpedizioneGratis?: number;
+    costoSpedizioneStandard?: number;
+    ritiroInSede?: boolean;
+    messaggioScontrino?: string;
   };
 }
 
