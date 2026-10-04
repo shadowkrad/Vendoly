@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Settings,
   Store,
@@ -96,16 +96,112 @@ export default function VendolyImpostazioniPage() {
     notificaScorteBassecritiche: true,
     colorePrimario: "#059669",
     coloreTema: "emerald",
+    logoUrl: "",
+    faviconUrl: "",
     messaggioScontrino: "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
   });
+
+  // Brand Assets State & Refs
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
+  const faviconInputRef = useRef<HTMLInputElement | null>(null);
+  const [dragActiveLogo, setDragActiveLogo] = useState(false);
+  const [dragActiveFavicon, setDragActiveFavicon] = useState(false);
+  const [imageProcessing, setImageProcessing] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/impostazioni")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setForm((f) => ({
+            ...f,
+            nomeAttivita: data.brandName || f.nomeAttivita,
+            logoUrl: data.logoUrl || "",
+            faviconUrl: data.faviconUrl || "",
+            colorePrimario: data.accentColor || f.colorePrimario,
+            emailContatto: data.contactEmail || f.emailContatto,
+            telefono: data.phone || f.telefono,
+          }));
+        }
+      })
+      .catch((err) => console.error("Errore caricamento impostazioni:", err));
+  }, []);
+
+  const processImageFile = (
+    file: File,
+    maxSize: number,
+    format: "image/webp" | "image/png",
+    callback: (dataUrl: string) => void
+  ) => {
+    if (!file.type.startsWith("image/")) {
+      setFeedback({ type: "error", text: "Il file selezionato non è un'immagine valida." });
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setFeedback({ type: "error", text: "L'immagine supera gli 8MB. Seleziona un file più leggero." });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL(format, format === "image/webp" ? 0.9 : undefined);
+        callback(dataUrl);
+      };
+      img.onerror = () => {
+        setFeedback({ type: "error", text: "Impossibile elaborare l'immagine caricata." });
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setSaving(true);
     setFeedback(null);
     try {
-      await new Promise((r) => setTimeout(r, 600));
-      setFeedback({ type: "success", text: "Impostazioni del negozio salvate con successo!" });
+      const res = await fetch("/api/impostazioni", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brandName: form.nomeAttivita,
+          logoUrl: form.logoUrl || null,
+          faviconUrl: form.faviconUrl || null,
+          accentColor: form.colorePrimario,
+          contactEmail: form.emailContatto,
+          phone: form.telefono,
+        }),
+      });
+
+      if (res.ok) {
+        setFeedback({ type: "success", text: "Impostazioni del negozio salvate con successo!" });
+      } else {
+        setFeedback({ type: "error", text: "Errore durante il salvataggio." });
+      }
     } catch {
       setFeedback({ type: "error", text: "Errore durante il salvataggio." });
     } finally {
@@ -477,51 +573,323 @@ export default function VendolyImpostazioniPage() {
 
       {/* TAB 5: ASPETTO & BRAND */}
       {activeTab === "aspetto" && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Colore Tema Principale
-              </label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={form.colorePrimario}
-                  onChange={(e) => setForm({ ...form, colorePrimario: e.target.value })}
-                  className="w-10 h-10 rounded-xl border border-slate-300 cursor-pointer p-0.5"
-                />
-                <span className="font-mono text-xs text-slate-600 font-bold uppercase">
-                  {form.colorePrimario}
-                </span>
-                <span className="text-[11px] text-slate-400">(Emerald Retail Vendoly)</span>
+        <div className="space-y-6">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+              <span>🎨</span> Colori Negozio & Cassa
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Colore Accento / Brand Primario
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={form.colorePrimario}
+                    onChange={(e) => setForm({ ...form, colorePrimario: e.target.value })}
+                    className="w-10 h-10 rounded-xl border border-slate-300 cursor-pointer p-0.5"
+                  />
+                  <span className="font-mono text-xs text-slate-600 font-bold uppercase">
+                    {form.colorePrimario}
+                  </span>
+                  <span className="text-[11px] text-slate-400">(Emerald Retail Vendoly)</span>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Icona Default Punto Cassa
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                    🏪
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    Icona di sistema usata come fallback in assenza di logo caricato.
+                  </div>
+                </div>
               </div>
             </div>
+
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Icona & Logo Punto Cassa
+                Messaggio di Cortesia Scontrino / Footer Ordini
               </label>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shadow-xs">
-                  🏪
-                </div>
-                <div className="text-xs text-slate-500">
-                  Logo gestito da <span className="font-mono text-slate-700 font-bold">public/icons</span> e sincronizzato su vetrina e app PWA installata.
-                </div>
-              </div>
+              <textarea
+                rows={3}
+                value={form.messaggioScontrino}
+                onChange={(e) => setForm({ ...form, messaggioScontrino: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                placeholder="Testo stampato in calce allo scontrino o alle email di conferma ordine..."
+              />
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              Messaggio di Cortesia Scontrino / Footer Ordini
-            </label>
-            <textarea
-              rows={3}
-              value={form.messaggioScontrino}
-              onChange={(e) => setForm({ ...form, messaggioScontrino: e.target.value })}
-              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-              placeholder="Testo stampato in calce allo scontrino o alle email di conferma ordine..."
-            />
+          {/* Brand & Identità Visiva (Logo & Favicon) */}
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-3 flex items-center justify-between flex-wrap gap-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>✨</span> Brand & Identità Visiva (Logo & Favicon)
+              </h3>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Novità v1.0.2
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* LOGO */}
+              <div className="space-y-4 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>🖼️</span> Logo Negozio / Boutique
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Visibile nella barra di navigazione del catalogo pubblico e comunicazioni.
+                    </p>
+                  </div>
+                  {form.logoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, logoUrl: "" })}
+                      className="text-xs text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 rounded-md hover:bg-rose-50 transition border border-rose-200 cursor-pointer"
+                    >
+                      Rimuovi Logo
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={logoInputRef}
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageProcessing("logo");
+                      processImageFile(file, 512, "image/webp", (dataUrl) => {
+                        setForm((f) => ({ ...f, logoUrl: dataUrl }));
+                        setImageProcessing(null);
+                      });
+                    }
+                  }}
+                />
+
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragActiveLogo(true);
+                  }}
+                  onDragLeave={() => setDragActiveLogo(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActiveLogo(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      setImageProcessing("logo");
+                      processImageFile(file, 512, "image/webp", (dataUrl) => {
+                        setForm((f) => ({ ...f, logoUrl: dataUrl }));
+                        setImageProcessing(null);
+                      });
+                    }
+                  }}
+                  onClick={() => logoInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                    dragActiveLogo
+                      ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/30"
+                      : "border-slate-300 hover:border-emerald-400 bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <span className="text-3xl">📁</span>
+                    <div className="text-xs text-slate-700 font-medium">
+                      <span className="text-emerald-600 font-bold underline">Clicca per caricare</span> o trascina qui il file
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      PNG, SVG, JPG o WebP (ottimizzato automaticamente a max 512px WebP)
+                    </p>
+                    {imageProcessing === "logo" && (
+                      <span className="text-xs font-semibold text-emerald-600 animate-pulse">
+                        Elaborazione immagine in corso...
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Oppure inserisci URL Logo
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    placeholder="https://tuosito.it/logo.png"
+                    value={form.logoUrl}
+                    onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
+                  />
+                </div>
+
+                {/* Anteprima Live Header */}
+                <div className="mt-3 pt-3 border-t border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Anteprima Navbar Vetrina</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Live Preview</span>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {form.logoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={form.logoUrl}
+                            alt="Logo"
+                            className="h-8 max-w-[140px] object-contain rounded"
+                            onError={(e) => ((e.target as HTMLElement).style.display = "none")}
+                          />
+                        ) : (
+                          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
+                            <span className="w-6 h-6 rounded-md bg-emerald-600 flex items-center justify-center text-[10px] text-white">🏪</span>
+                            <span className="truncate">{form.nomeAttivita}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500 hidden sm:inline">Catalogo</span>
+                        <span className="text-[10px] text-slate-500 hidden sm:inline">Canali</span>
+                        <span
+                          style={{ backgroundColor: form.colorePrimario }}
+                          className="text-[10px] text-white font-bold px-2.5 py-1 rounded-full shadow-xs"
+                        >
+                          WhatsApp
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* FAVICON */}
+              <div className="space-y-4 p-4 rounded-xl border border-slate-200 bg-slate-50/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      <span>🌐</span> Favicon & Icona Browser
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Icona visibile nella scheda del browser, nei preferiti e nella barra indirizzi.
+                    </p>
+                  </div>
+                  {form.faviconUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, faviconUrl: "" })}
+                      className="text-xs text-rose-600 hover:text-rose-700 font-semibold px-2 py-1 rounded-md hover:bg-rose-50 transition border border-rose-200 cursor-pointer"
+                    >
+                      Rimuovi Favicon
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={faviconInputRef}
+                  accept="image/png,image/x-icon,image/svg+xml,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageProcessing("favicon");
+                      processImageFile(file, 128, "image/png", (dataUrl) => {
+                        setForm((f) => ({ ...f, faviconUrl: dataUrl }));
+                        setImageProcessing(null);
+                      });
+                    }
+                  }}
+                />
+
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragActiveFavicon(true);
+                  }}
+                  onDragLeave={() => setDragActiveFavicon(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragActiveFavicon(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) {
+                      setImageProcessing("favicon");
+                      processImageFile(file, 128, "image/png", (dataUrl) => {
+                        setForm((f) => ({ ...f, faviconUrl: dataUrl }));
+                        setImageProcessing(null);
+                      });
+                    }
+                  }}
+                  onClick={() => faviconInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all ${
+                    dragActiveFavicon
+                      ? "border-emerald-500 bg-emerald-50 ring-2 ring-emerald-500/30"
+                      : "border-slate-300 hover:border-emerald-400 bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <span className="text-3xl">🔖</span>
+                    <div className="text-xs text-slate-700 font-medium">
+                      <span className="text-emerald-600 font-bold underline">Carica icona</span> o trascina qui
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      PNG, ICO o SVG quadrata (ottimizzata automaticamente a 128x128 PNG)
+                    </p>
+                    {imageProcessing === "favicon" && (
+                      <span className="text-xs font-semibold text-emerald-600 animate-pulse">
+                        Elaborazione icona in corso...
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                    Oppure inserisci URL Favicon
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                    placeholder="https://tuosito.it/favicon.png"
+                    value={form.faviconUrl}
+                    onChange={(e) => setForm({ ...form, faviconUrl: e.target.value })}
+                  />
+                </div>
+
+                {/* Anteprima Live Browser Tab */}
+                <div className="mt-3 pt-3 border-t border-slate-200">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Anteprima Scheda Browser</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Live Preview</span>
+                  </div>
+                  <div className="rounded-xl border border-slate-200 bg-slate-100 p-2.5">
+                    <div className="inline-flex items-center gap-2 bg-white px-3 py-1.5 rounded-t-lg border border-slate-200 shadow-2xs max-w-full">
+                      {form.faviconUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={form.faviconUrl}
+                          alt="Favicon"
+                          className="w-4 h-4 object-contain rounded-xs"
+                          onError={(e) => ((e.target as HTMLElement).style.display = "none")}
+                        />
+                      ) : (
+                        <span className="text-xs">🏪</span>
+                      )}
+                      <span className="text-xs font-medium text-slate-700 truncate max-w-[150px]">
+                        {form.nomeAttivita} - Cassa POS
+                      </span>
+                      <span className="text-[10px] text-slate-400 ml-1">✕</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

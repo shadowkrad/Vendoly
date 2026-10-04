@@ -163,9 +163,17 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
-              <Store className="w-5 h-5" />
-            </div>
+            {tenantConfig.theme.logoUrl ? (
+              <img
+                src={tenantConfig.theme.logoUrl}
+                alt={tenantConfig.theme.brandName}
+                className="h-10 max-w-[140px] sm:max-w-[180px] object-contain rounded-xl"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
+                <Store className="w-5 h-5" />
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 block leading-tight">

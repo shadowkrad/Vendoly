@@ -11,12 +11,14 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = await getTenantConfig();
+  const favicon = tenant.theme.faviconUrl || "/favicon.ico";
+
   return {
     title: `${tenant.theme.brandName} - Cassa Touch POS & Vendite | Taaaac`,
     description: `Modulo gestionale cassa POS, fidelizzazione clienti e vendite integrato nell'ecosistema Taaaac. Licenza: ${tenant.licenseStatus}`,
     icons: {
-      icon: "/favicon.ico",
-      apple: "/apple-touch-icon.png",
+      icon: favicon,
+      apple: tenant.theme.faviconUrl || "/apple-touch-icon.png",
     },
     manifest: "/manifest.webmanifest",
     appleWebApp: {
@@ -39,6 +41,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const tenant = await getTenantConfig();
+  const favicon = tenant.theme.faviconUrl || "/favicon.ico";
 
   // Iniezione dinamica dei colori del brand ricevuti da Taaaac Core
   const dynamicCss = `
@@ -51,6 +54,8 @@ export default async function RootLayout({
   return (
     <html lang="it" className={inter.variable}>
       <head>
+        <link rel="icon" href={favicon} sizes="any" />
+        <link rel="apple-touch-icon" href={favicon} />
         <style dangerouslySetInnerHTML={{ __html: dynamicCss }} />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">

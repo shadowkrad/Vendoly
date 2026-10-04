@@ -13,6 +13,7 @@ export interface TenantThemeConfig {
   primaryColor: string;
   accentColor: string;
   logoUrl?: string | null;
+  faviconUrl?: string | null;
   brandName: string;
 }
 

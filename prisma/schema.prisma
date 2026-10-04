@@ -77,6 +77,7 @@ model TenantLocalCache {
   enabledModules String   @default("[]")     // JSON stringified array
   brandName      String   @default("Vendoly Store")
   logoUrl        String?
+  faviconUrl     String?
   primaryColor   String   @default("#0f172a")
   accentColor    String   @default("#059669")
   contactEmail   String?
