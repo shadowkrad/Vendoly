@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { MOCK_PRODUCTS, MOCK_ORDERS, MockProduct, MockOrder } from "@/lib/mock-store";
 import { revalidatePath } from "next/cache";
 import { sendNotificationMail } from "@/lib/taaaac-mailer";
+import { executeKillSwitch } from "@/lib/kill-switch";
 
 /**
  * Determina se l'ambiente corrente è una DEMO dimostrativa (es. Vercel)
@@ -364,6 +365,15 @@ export async function recordMarketplaceSale(input: RecordMarketplaceSaleInput) {
       return created;
     });
 
+    // Se il prodotto è esaurito, aziona il Kill-Switch anti-doppia vendita
+    if (shouldDeactivate) {
+      await executeKillSwitch({
+        productId: product.id,
+        triggerChannel: input.channel,
+        salePrice: price,
+      });
+    }
+
     revalidatePath("/");
     revalidatePath("/admin");
     return { success: true, order, newStock, shouldDeactivate };
@@ -706,9 +716,16 @@ export async function markListingAsSold(listingId: string) {
       data: { status: "SOLD", soldAt: new Date() },
     });
 
+    // Aziona immediatamente il Kill-Switch anti-doppia vendita
+    const ksRes = await executeKillSwitch({
+      productId: listing.productId,
+      triggerChannel: listing.channel,
+      salePrice: listing.listedPrice,
+    });
+
     revalidatePath("/admin");
     revalidatePath("/dashboard/canali");
-    return { success: true, listing };
+    return { success: true, listing, killSwitch: ksRes.event };
   } catch (err: any) {
     console.warn("Simulazione markListingAsSold mock:", err?.message || err);
     return { success: true, listingId };
