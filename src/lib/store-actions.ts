@@ -148,7 +148,7 @@ export async function createOrder(input: CreateOrderInput) {
           fulfillmentType: input.fulfillmentType,
           status: "IN_ATTESA",
           totalAmount,
-          channel: input.channel || "SITO_WEB",
+          channel: input.channel || "MARKETPLACE",
           items: {
             create: input.items.map((it) => ({
               productId: it.productId,
@@ -216,7 +216,7 @@ export async function createOrder(input: CreateOrderInput) {
         fulfillmentType: input.fulfillmentType,
         status: "IN_ATTESA",
         totalAmount,
-        channel: input.channel || "SITO_WEB",
+        channel: input.channel || "MARKETPLACE",
         createdAt: new Date().toISOString(),
       },
     };

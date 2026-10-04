@@ -35,7 +35,7 @@ interface OrdersDashboardClientProps {
 }
 
 type ViewMode = "kanban" | "table";
-type ChannelFilter = "ALL" | "SITO_WEB" | "VINTED" | "SUBITO" | "EBAY" | "FACEBOOK";
+type ChannelFilter = "ALL" | "VINTED" | "SUBITO" | "EBAY" | "FACEBOOK" | "CASSA" | "WHATSAPP";
 type FulfillmentFilter = "ALL" | "SPEDIZIONE" | "RITIRO_IN_NEGOZIO";
 
 const STATUS_COLUMNS = [
@@ -107,7 +107,18 @@ export default function OrdersDashboardClient({
         o.customerPhone.includes(q) ||
         (o.trackingCode && o.trackingCode.toLowerCase().includes(q));
 
-      const matchChannel = selectedChannel === "ALL" || o.channel === selectedChannel;
+      let matchChannel = true;
+      if (selectedChannel === "ALL") {
+        matchChannel = true;
+      } else if (selectedChannel === "CASSA") {
+        matchChannel =
+          o.channel === "CASSA" ||
+          o.channel === "CASSA_CONTANTI" ||
+          o.channel === "CASSA_POS" ||
+          o.channel === "NEGOZIO";
+      } else {
+        matchChannel = o.channel === selectedChannel;
+      }
       const matchFulfillment = selectedFulfillment === "ALL" || o.fulfillmentType === selectedFulfillment;
       const matchStatus = statusFilter === "ALL" || o.status === statusFilter;
 
@@ -194,8 +205,15 @@ export default function OrdersDashboardClient({
         return { label: "eBay", bg: "bg-blue-50 text-blue-800 border-blue-200" };
       case "FACEBOOK":
         return { label: "Facebook", bg: "bg-indigo-50 text-indigo-800 border-indigo-200" };
+      case "CASSA_CONTANTI":
+      case "CASSA_POS":
+      case "CASSA":
+      case "NEGOZIO":
+        return { label: "Cassa Negozio", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" };
+      case "WHATSAPP":
+        return { label: "WhatsApp", bg: "bg-green-50 text-green-800 border-green-200" };
       default:
-        return { label: "Vetrina Web", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" };
+        return { label: "Marketplace", bg: "bg-purple-50 text-purple-800 border-purple-200" };
     }
   }
 
@@ -207,14 +225,14 @@ export default function OrdersDashboardClient({
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-1">
             <span>📦 Gestione Evasione & Ordini</span>
             <span>•</span>
-            <span>Pipeline Multi-Canale</span>
+            <span>Pipeline Multi-Marketplace &amp; Negozio</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
             <Truck className="w-7 h-7 text-emerald-600" />
             Hub Ordini &amp; Spedizioni
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Visualizza a colpo d&apos;occhio tutti gli ordini in corso, prepara i ritiri al banco e traccia le spedizioni dei corrieri.
+            Visualizza tutti gli ordini generati dai marketplace integrati (Vinted, Subito, eBay, Facebook) e registrati in negozio fisico. Nessun checkout diretto dal sito.
           </p>
         </div>
 
@@ -337,12 +355,13 @@ export default function OrdersDashboardClient({
             onChange={(e) => setSelectedChannel(e.target.value as ChannelFilter)}
             className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white text-slate-700 focus:outline-hidden"
           >
-            <option value="ALL">Tutti i Canali</option>
-            <option value="SITO_WEB">Solo Vetrina Web</option>
+            <option value="ALL">Tutti i Canali Marketplace & Negozio</option>
             <option value="VINTED">Solo Vinted</option>
             <option value="SUBITO">Solo Subito.it</option>
             <option value="EBAY">Solo eBay</option>
             <option value="FACEBOOK">Solo Facebook</option>
+            <option value="CASSA">Solo Cassa Negozio</option>
+            <option value="WHATSAPP">Solo Accordi WhatsApp</option>
           </select>
 
           <select

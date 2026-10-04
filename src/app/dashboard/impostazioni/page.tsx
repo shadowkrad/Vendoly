@@ -518,7 +518,7 @@ export default function VendolyImpostazioniPage() {
                 <span className="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">€</span>
               </div>
               <p className="text-[11px] text-slate-400 mt-1">
-                Ordini con carrello superiore a questa cifra ottengono spedizione a costo zero.
+                Ordini e spedizioni superiori a questo importo ottengono spedizione gratuita.
               </p>
             </div>
             <div>
@@ -547,7 +547,7 @@ export default function VendolyImpostazioniPage() {
                   Ritiro Gratuito in Sede (Click & Collect)
                 </p>
                 <p className="text-xs text-slate-500">
-                  Consenti al cliente di completare l'ordine online e ritirare direttamente in negozio.
+                  Consenti al cliente di concordare il ritiro direttamente al banco per articoli visti in vetrina o bloccati su WhatsApp/marketplace.
                 </p>
               </div>
               <input
