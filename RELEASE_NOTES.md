@@ -1,4 +1,36 @@
-# 🏪 Vendoly — Release Notes v1.0.2
+# 🏪 Vendoly — Release Notes
+
+## Novità della Versione 1.0.3
+
+### 1. 🖼️ Sistema Brand & Vetrina Adattiva (Zero Deformazioni)
+Standardizzazione completa degli asset grafici per il Punto Vendita / Store con salvataggio, compressione automatica client-side WebP e proporzioni protette su qualsiasi dispositivo:
+- **Logo Navbar, Header & Ricevute Cassa (`logoUrl`)**:
+  - **Dimensione consigliata**: `400 × 100 px` (aspect ratio 4:1 o 3:1).
+  - **Vincoli & Rendering**: altezza massima bloccata a 80 px con proprietà CSS `object-contain`, assicurando massima leggibilità e nitidezza senza stiramenti o deformazioni sia su schermi mobile che su monitor da banco cassa.
+  - **Formato raccomandato**: PNG con sfondo trasparente o SVG vettoriale.
+- **Favicon Browser Ultra-Visibile (`faviconUrl`)**:
+  - **Dimensione consigliata**: `128 × 128 px` o `256 × 256 px` (rapporto 1:1 quadrato).
+  - **Resa grafica**: sagoma ad alto contrasto con margine di sicurezza per renderla immediatamente distinguibile a 16×16 px sulla tab del browser sia in Dark Mode che in Light Mode. Funge da icona ufficiale per la Web App installata sui dispositivi POS.
+- **Logo Insegna / Banner Principale Hero (`logoHeroUrl` + `mostraLogoInHero`)**:
+  - Possibilità di sostituire il testo del nome del negozio con un'insegna grafica o banner promozionale al centro della vetrina prodotti.
+  - **Dimensione consigliata**: `800 × 240 px` (insegna orizzontale) oppure `400 × 400 px` (marchi, stemmi o loghi tondi).
+  - **Adattamento fluido**: auto-scale fino all'85vw su smartphone e massimo 480 px su desktop con proporzioni protette. Fallback automatico sul logo navbar in assenza di insegna separata.
+- **Immagine Copertina Vetrina (Hero Background) (`fotoHeroUrl`)**:
+  - **Dimensione consigliata**: `1920 × 800 px` (panoramica 16:9 / 21:9).
+  - **Formato raccomandato**: JPG o WebP compresso (peso massimo 2 MB).
+  - **Resa grafica**: sfondo panoramico a tutta larghezza con filtro protettivo scuro/sfumato (`bg-gradient-to-t` da nero/60% a nero/30%), per garantire il massimo contrasto per titoli, categorie in vetrina, pulsanti d'acquisto e insegna del negozio.
+
+### 2. 🏷️ Esperienza 100% White-Label (Nessun Riferimento al Modulo)
+- **Titolo scheda browser dinamico (`generateMetadata`)**: visualizzazione esclusiva di `{Nome Negozio} — {Slogan / Categoria}` nella homepage e nel catalogo, eliminando ogni traccia del nome gestionale o piattaforma.
+- **Sottopagine con template coerente**: `{Nome Prodotto / Pagina} | {Nome Negozio}` per un'esperienza d'acquisto totalmente personalizzata.
+- **Footer e interfacce clienti pulite**: rimozione totale di link a terze parti o diciture "Powered by". Footer con dicitura istituzionale `© 2026 {Nome Negozio}. Tutti i diritti riservati.`
+- **Accesso Staff & Cassa**: dicitura neutrale e professionale `"Area Riservata Staff"`.
+
+### 3. 🎨 Motore Colori Brand Dinamici & Caricamento Drag & Drop
+- Sincronizzazione in tempo reale del colore Primario e di Accento direttamente applicati su pulsanti di cassa, carrello, schede prodotto e badge promozionali.
+- Pannello impostazioni brand aggiornato con caricamento drag & drop fino a 16 MB con compressione WebP e badge con dimensioni ottimali raccomandate.
+
+---
 
 ## Novità della Versione 1.0.2
 

@@ -185,7 +185,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
                 </span>
               </div>
               <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-                Vetrina Ufficiale &amp; Disponibilità Live • Powered by Taaaac
+                Vetrina Ufficiale &amp; Catalogo Disponibilità Live
               </span>
             </div>
           </div>
@@ -1037,7 +1037,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
           </div>
 
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-            <p>© {new Date().getFullYear()} {tenantConfig.theme.brandName}. Tutti i diritti riservati. Powered by Taaaac.</p>
+            <p>© {new Date().getFullYear()} {tenantConfig.theme.brandName}. Tutti i diritti riservati.</p>
             <div className="flex items-center gap-4">
               <Link
                 href="/admin"

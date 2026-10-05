@@ -11,11 +11,15 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = await getTenantConfig();
+  const brand = tenant.theme.brandName || "Punto Vendita";
   const favicon = tenant.theme.faviconUrl || "/favicon.ico";
 
   return {
-    title: `${tenant.theme.brandName} - Cassa Touch POS & Vendite | Taaaac`,
-    description: `Modulo gestionale cassa POS, fidelizzazione clienti e vendite integrato nell'ecosistema Taaaac. Licenza: ${tenant.licenseStatus}`,
+    title: {
+      default: brand,
+      template: `%s | ${brand}`,
+    },
+    description: `Catalogo prodotti e cassa punto vendita per ${brand}`,
     icons: {
       icon: favicon,
       apple: tenant.theme.faviconUrl || "/apple-touch-icon.png",
@@ -24,7 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
-      title: "Vendoly",
+      title: brand,
     },
   };
 }
