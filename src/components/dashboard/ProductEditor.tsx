@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { MockProduct } from "@/lib/mock-store";
-import { X, Save, Image as ImageIcon, Tag as TagIcon, Globe, Box, Plus, Minus } from "lucide-react";
+import { X, Save, Image as ImageIcon, Tag as TagIcon, Globe, Box, Plus, Minus, Zap } from "lucide-react";
 import { generateChannelListing } from "@/lib/channel-manager";
 import PriceAdvisor from "./PriceAdvisor";
 import DescriptionEngine from "./DescriptionEngine";
+import VintedPublishModal from "./VintedPublishModal";
 
 interface ProductEditorProps {
   product?: MockProduct | null;
@@ -36,6 +37,7 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [images, setImages] = useState<string[]>([]);
+  const [isVintedModalOpen, setIsVintedModalOpen] = useState(false);
 
   useEffect(() => {
     if (product) {
@@ -425,6 +427,16 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
                           <div className="flex gap-2">
                             <button type="button" onClick={() => navigator.clipboard.writeText(listing.title)} className="taaaac-btn-primary flex-1 py-1.5 text-xs">Copia Titolo</button>
                             <button type="button" onClick={() => navigator.clipboard.writeText(listing.formattedText)} className="taaaac-btn-primary flex-1 py-1.5 text-xs">Copia Testo</button>
+                            {platform.id === "syncVinted" && (
+                              <button
+                                type="button"
+                                onClick={() => setIsVintedModalOpen(true)}
+                                className="px-3 py-1.5 text-xs font-bold rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white flex items-center justify-center gap-1.5 cursor-pointer shadow-sm shrink-0"
+                              >
+                                <Zap className="w-3.5 h-3.5 fill-cyan-300 text-cyan-200" />
+                                <span>⚡ Quick-Bridge</span>
+                              </button>
+                            )}
                           </div>
                           <div>
                             <input type="text" placeholder="Incolla link annuncio qui una volta pubblicato..." className="w-full px-3 py-2 border border-slate-200 rounded-md text-sm" />
@@ -450,6 +462,32 @@ export default function ProductEditor({ product, isOpen, onClose, onSave, storeN
           </button>
         </div>
       </div>
+
+      {/* Modale Vinted Quick-Bridge */}
+      {isVintedModalOpen && (
+        <VintedPublishModal
+          product={{
+            id: formData.id || "temp-new",
+            title: formData.title || "",
+            description: formData.description,
+            price: formData.price || 0,
+            comparePrice: formData.comparePrice,
+            sku: formData.sku,
+            category: formData.category,
+            brand: formData.brand,
+            size: formData.size,
+            color: formData.color,
+            material: formData.material,
+            weight: formData.weight,
+            condition: formData.condition,
+            conditionNotes: formData.conditionNotes,
+            images: images,
+            tags: tags,
+          }}
+          isOpen={isVintedModalOpen}
+          onClose={() => setIsVintedModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

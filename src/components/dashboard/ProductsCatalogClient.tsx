@@ -14,8 +14,10 @@ import {
   Globe,
   Share2,
   Lock,
+  Zap,
 } from "lucide-react";
 import ProductEditor from "./ProductEditor";
+import VintedPublishModal from "./VintedPublishModal";
 import {
   createProduct,
   updateProduct,
@@ -44,6 +46,10 @@ export default function ProductsCatalogClient({
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<MockProduct | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  // Stato Modale Vinted Quick-Bridge
+  const [isVintedModalOpen, setIsVintedModalOpen] = useState(false);
+  const [vintedModalProduct, setVintedModalProduct] = useState<MockProduct | null>(null);
 
   // Lista categorie uniche per il filtro
   const categories = useMemo(() => {
@@ -410,8 +416,20 @@ export default function ProductsCatalogClient({
                   </button>
                 </div>
 
-                {/* Pulsanti Modifica / Cancella */}
+                {/* Pulsanti Azioni: Vinted Quick-Bridge, Modifica, Cancella */}
                 <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => {
+                      setVintedModalProduct(p);
+                      setIsVintedModalOpen(true);
+                    }}
+                    title="Vinted Quick-Bridge (Pubblicazione rapida)"
+                    className="px-2 py-1 text-cyan-700 hover:text-cyan-950 bg-cyan-50 hover:bg-cyan-100/80 border border-cyan-200 rounded-lg transition-colors cursor-pointer flex items-center gap-1 font-bold text-[11px]"
+                  >
+                    <Zap className="w-3 h-3 fill-cyan-500 text-cyan-600" />
+                    <span>Vinted</span>
+                  </button>
+
                   <button
                     onClick={() => handleOpenEdit(p)}
                     title="Modifica articolo e annunci marketplace"
@@ -464,6 +482,36 @@ export default function ProductsCatalogClient({
           onSave={handleSaveProduct}
           storeName={storeName}
           existingProducts={products}
+        />
+      )}
+
+      {/* Modale Vinted Quick-Bridge */}
+      {isVintedModalOpen && vintedModalProduct && (
+        <VintedPublishModal
+          product={{
+            id: vintedModalProduct.id,
+            title: vintedModalProduct.title,
+            description: vintedModalProduct.description,
+            price: vintedModalProduct.price,
+            comparePrice: vintedModalProduct.comparePrice,
+            sku: vintedModalProduct.sku,
+            category: vintedModalProduct.category,
+            brand: vintedModalProduct.brand,
+            size: vintedModalProduct.size,
+            color: vintedModalProduct.color,
+            material: vintedModalProduct.material,
+            weight: vintedModalProduct.weight,
+            condition: vintedModalProduct.condition,
+            conditionNotes: vintedModalProduct.conditionNotes,
+            images: vintedModalProduct.images,
+            tags: vintedModalProduct.tags,
+          }}
+          isOpen={isVintedModalOpen}
+          onClose={() => {
+            setIsVintedModalOpen(false);
+            setVintedModalProduct(null);
+          }}
+          onSuccess={(msg) => showFeedback(msg)}
         />
       )}
     </div>

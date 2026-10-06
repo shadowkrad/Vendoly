@@ -30,6 +30,20 @@ Standardizzazione completa degli asset grafici per il Punto Vendita / Store con 
 - Sincronizzazione in tempo reale del colore Primario e di Accento direttamente applicati su pulsanti di cassa, carrello, schede prodotto e badge promozionali.
 - Pannello impostazioni brand aggiornato con caricamento drag & drop fino a 16 MB con compressione WebP e badge con dimensioni ottimali raccomandate.
 
+### 4. ⚡ Integrazione Vinted Quick-Bridge & Estensione Vendoly Assistant (Cross-Listing 1-Click)
+Nuovo ecosistema a due livelli per la pubblicazione rapida dei capi su **Vinted** a commissione 0%:
+- **PWA Native Quick-Bridge (Opzione 2 - Zero Installazioni)**:
+  - Funziona al 100% da qualsiasi dispositivo (smartphone PWA, iPad/tablet, desktop).
+  - Su **smartphone/tablet PWA**: integrazione con la *Web Share API* nativa (`navigator.share`) per trasferire foto in alta definizione e descrizione formattata direttamente nella schermata di nuovo annuncio dell'app ufficiale Vinted in soli 2 tocchi.
+  - Su **desktop web**: download rapido sequenziale delle foto numerate e apertura automatica di `vinted.it/items/new` con testo e hashtag già negli appunti.
+- **Calcolo Automatico Formato Pacco Vinted**:
+  - Determinazione intelligente del formato di spedizione: **Pacco Piccolo** (<500g: top, accessori, intimo), **Pacco Medio** (<1kg: maglioni, pantaloni, felpe, scarpe) e **Pacco Grande** (<2kg: giacche, cappotti, stivali).
+- **Protezione Kill-Switch Anti-Doppia Vendita**:
+  - Possibilità di associare l'URL dell'annuncio Vinted a Vendoly: alla vendita di un pezzo unico al banco cassa o tramite altro marketplace, il gestionale segnala immediatamente il de-listing e fornisce il link diretto per rimuovere il capo da Vinted.
+- **Vendoly Assistant (Estensione Chrome / Edge Manifest V3)**:
+  - Repository dedicato `https://github.com/shadowkrad/vendoly-assistant.git` nella cartella `Vendoly Assistant`.
+  - Iniezione automatica delle foto tramite `DataTransfer` e compilazione 1-click di titolo, descrizione, prezzo e formati pacco sul sito Vinted con Review Mode per il controllo preventivo.
+
 ---
 
 ## Novità della Versione 1.0.2
