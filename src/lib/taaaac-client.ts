@@ -9,6 +9,14 @@ export interface TenantTheme {
   surfaceColor?: string;
 }
 
+export interface ActiveMaintenanceConfig {
+  id: string;
+  adminNome: string;
+  adminEmail: string;
+  motivo: string;
+  startedAt: string;
+}
+
 export interface TenantConfig {
   id: string;
   nomeAttivita: string;
@@ -22,6 +30,7 @@ export interface TenantConfig {
   theme?: TenantTheme;
   customDomain?: string | null;
   customDomainStatus?: string | null;
+  activeMaintenance?: ActiveMaintenanceConfig | null;
 }
 
 export const TAAAAC_ADDONS = {
@@ -95,7 +104,10 @@ export async function fetchTenantConfig(domain?: string): Promise<TenantConfig> 
     targetDomain.includes("localhost") ||
     targetDomain.includes("127.0.0.1");
 
-  const coreApiUrl = process.env.TAAAAC_CORE_URL?.trim() || "https://taaaac.eu";
+  const coreApiUrl =
+    process.env.TAAAAC_CORE_API_URL?.trim() ||
+    process.env.TAAAAC_CORE_URL?.trim() ||
+    "https://taaaac.eu";
 
   try {
     const endpoint = `${coreApiUrl}/api/public/tenant-config?domain=${encodeURIComponent(targetDomain)}`;
