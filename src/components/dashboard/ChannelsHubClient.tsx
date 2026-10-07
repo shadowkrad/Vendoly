@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Globe,
   ExternalLink,
@@ -21,6 +21,9 @@ import {
   RefreshCw,
   X,
   Radio,
+  Sparkles,
+  Download,
+  Puzzle,
 } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import {
@@ -28,6 +31,7 @@ import {
   deleteChannelListing,
 } from "@/lib/store-actions";
 import type { KillSwitchEvent } from "@/lib/kill-switch";
+import VendolyAssistantGuideModal from "./VendolyAssistantGuideModal";
 
 interface ChannelStat {
   channel: "SUBITO" | "VINTED" | "EBAY" | "FACEBOOK";
@@ -87,6 +91,40 @@ export default function ChannelsHubClient({
   const [activeGuide, setActiveGuide] = useState<string | null>("subito");
   const [selectedFilterChannel, setSelectedFilterChannel] = useState<string>("ALL");
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+
+  // Stato Vendoly Assistant Estensione
+  const [isExtensionActive, setIsExtensionActive] = useState(false);
+  const [isCheckingExtension, setIsCheckingExtension] = useState(false);
+  const [isExtensionGuideOpen, setIsExtensionGuideOpen] = useState(false);
+
+  const checkExtension = () => {
+    setIsCheckingExtension(true);
+    if (typeof window !== "undefined") {
+      const hasExt = document.documentElement.getAttribute("data-vendoly-assistant") === "installed";
+      setIsExtensionActive(hasExt);
+      window.postMessage({ type: "PING_VENDOLY_ASSISTANT", source: "vendoly-web" }, "*");
+      setTimeout(() => {
+        const recheck = document.documentElement.getAttribute("data-vendoly-assistant") === "installed";
+        setIsExtensionActive(recheck);
+        setIsCheckingExtension(false);
+      }, 500);
+    } else {
+      setIsCheckingExtension(false);
+    }
+  };
+
+  useEffect(() => {
+    checkExtension();
+
+    const handleExtMsg = (e: MessageEvent) => {
+      if (e.data?.type === "VENDOLY_ASSISTANT_AVAILABLE") {
+        setIsExtensionActive(true);
+        setIsCheckingExtension(false);
+      }
+    };
+    window.addEventListener("message", handleExtMsg);
+    return () => window.removeEventListener("message", handleExtMsg);
+  }, []);
 
   // Modal Simulatore Kill-Switch
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
@@ -428,6 +466,64 @@ export default function ChannelsHubClient({
               <span>Crea</span>
               <ExternalLink className="w-3 h-3" />
             </a>
+          </div>
+        </div>
+      </div>
+
+      {/* 3.1 Vendoly Assistant — Estensione Desktop per Vinted */}
+      <div className="taaaac-card p-5 bg-gradient-to-r from-cyan-950 via-slate-900 to-slate-950 text-white border border-cyan-800/40 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300 font-bold text-lg shrink-0">
+              ⚡
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-base text-white">Vendoly Assistant — Estensione Desktop</h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-400/20 text-cyan-300 border border-cyan-400/30">
+                  v1.0.3 Canary
+                </span>
+                {isExtensionActive ? (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Attiva nel browser
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3 text-amber-400" /> Non rilevata
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-cyan-200/90 mt-0.5">
+                Autocompila foto, titoli, descrizioni, condizioni e prezzi direttamente nel modulo di pubblicazione Vinted con 1 click.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              onClick={checkExtension}
+              disabled={isCheckingExtension}
+              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              title="Verifica se l'estensione è attiva nel browser"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isCheckingExtension ? "animate-spin text-cyan-400" : ""}`} />
+              <span>{isCheckingExtension ? "Verifica..." : "Rileva"}</span>
+            </button>
+            <a
+              href="/downloads/vendoly-assistant.zip"
+              download="vendoly-assistant.zip"
+              className="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Scarica .ZIP (15 KB)</span>
+            </a>
+            <button
+              onClick={() => setIsExtensionGuideOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Puzzle className="w-3.5 h-3.5" />
+              <span>Guida Installazione</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1022,6 +1118,12 @@ export default function ChannelsHubClient({
           </div>
         </div>
       )}
+
+      {/* Modal Guida Installazione Estensione Desktop */}
+      <VendolyAssistantGuideModal
+        isOpen={isExtensionGuideOpen}
+        onClose={() => setIsExtensionGuideOpen(false)}
+      />
     </div>
   );
 }

@@ -28,6 +28,7 @@ import {
 } from "@/lib/vinted-bridge";
 import { upsertChannelListing } from "@/lib/store-actions";
 import { formatCurrency } from "@/lib/utils";
+import VendolyAssistantGuideModal from "./VendolyAssistantGuideModal";
 
 interface VintedPublishModalProps {
   product: VintedProductInput | null;
@@ -48,17 +49,22 @@ export default function VintedPublishModal({
   const [externalUrl, setExternalUrl] = useState("");
   const [isSavingUrl, setIsSavingUrl] = useState(false);
   const [isExtensionActive, setIsExtensionActive] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
   const isMobile = typeof window !== "undefined" ? isMobileDevice() : false;
 
   useEffect(() => {
     // Controlla se Vendoly Assistant Extension è installata
-    if (typeof document !== "undefined") {
+    if (typeof window !== "undefined") {
       const hasExt = document.documentElement.getAttribute("data-vendoly-assistant") === "installed";
       setIsExtensionActive(hasExt);
+      window.postMessage({ type: "PING_VENDOLY_ASSISTANT", source: "vendoly-web" }, "*");
     }
 
     // Ascolta eventuale callback dall'estensione
     const handleExtensionMessage = (event: MessageEvent) => {
+      if (event.data?.type === "VENDOLY_ASSISTANT_AVAILABLE") {
+        setIsExtensionActive(true);
+      }
       if (event.data?.source === "vendoly-assistant" && event.data?.type === "VINTED_LISTING_CONFIRMED") {
         const payload = event.data.payload;
         if (payload?.externalUrl) {
@@ -270,6 +276,38 @@ export default function VintedPublishModal({
                 <span>{isCopied ? "Copiato!" : "Copia solo descrizione"}</span>
               </button>
             </div>
+
+            {/* Suggerimento Estensione se su Desktop senza estensione */}
+            {!isMobile && !isExtensionActive && (
+              <div className="p-3 rounded-xl bg-cyan-50/70 border border-cyan-200/80 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-700 shrink-0" />
+                    <span className="font-bold text-cyan-950 text-[11px] truncate">
+                      Vuoi l&apos;autocompilazione 1-click?
+                    </span>
+                  </div>
+                  <a
+                    href="/downloads/vendoly-assistant.zip"
+                    download="vendoly-assistant.zip"
+                    className="px-2.5 py-1 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-[10px] flex items-center gap-1 transition-colors shrink-0 cursor-pointer shadow-2xs"
+                  >
+                    <Download className="w-3 h-3" />
+                    <span>Scarica .ZIP</span>
+                  </a>
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-cyan-800">
+                  <span>Installa l&apos;estensione per caricare foto e dati in automatico.</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowGuideModal(true)}
+                    className="text-cyan-900 underline font-semibold hover:text-cyan-950 cursor-pointer shrink-0 ml-2"
+                  >
+                    Guida 1 minuto
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sezione Chiusura Cerchio: Salva Link Annuncio per Kill-Switch */}
@@ -303,6 +341,12 @@ export default function VintedPublishModal({
           </div>
         </div>
       </div>
+
+      {/* Modal Guida Installazione Estensione */}
+      <VendolyAssistantGuideModal
+        isOpen={showGuideModal}
+        onClose={() => setShowGuideModal(false)}
+      />
     </div>
   );
 }

@@ -43,6 +43,8 @@ Nuovo ecosistema a due livelli per la pubblicazione rapida dei capi su **Vinted*
 - **Vendoly Assistant (Estensione Chrome / Edge Manifest V3)**:
   - Repository dedicato `https://github.com/shadowkrad/vendoly-assistant.git` nella cartella `Vendoly Assistant`.
   - Iniezione automatica delle foto tramite `DataTransfer` e compilazione 1-click di titolo, descrizione, prezzo e formati pacco sul sito Vinted con Review Mode per il controllo preventivo.
+  - **Pacchetto di installazione rapida integrato**: archivio ZIP scaricabile con 1 clic direttamente da Vendoly (`/downloads/vendoly-assistant.zip`).
+  - **Rilevamento Live & Guida Interattiva**: monitoraggio in tempo reale dello stato dell'estensione (Attiva/Non rilevata) sia nella sezione Canali che nel modal Vinted Quick-Bridge, con guida passo-passo a 3 passaggi per Chrome, Edge e Brave.
 
 ---
 
