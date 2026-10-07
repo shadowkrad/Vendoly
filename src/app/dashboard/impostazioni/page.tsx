@@ -797,7 +797,7 @@ export default function VendolyImpostazioniPage() {
                 <span>✨</span> Brand & Identità Visiva (Logo & Favicon)
               </h3>
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Novità v1.0.2
+                Novità v1.0.3
               </span>
             </div>
 

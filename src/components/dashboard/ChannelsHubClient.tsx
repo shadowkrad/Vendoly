@@ -784,14 +784,20 @@ export default function ChannelsHubClient({
         {activeGuide === "vinted" && (
           <div className="space-y-3 pt-2 text-xs text-slate-600">
             <div className="p-4 rounded-xl bg-cyan-50/60 border border-cyan-200 space-y-2">
-              <h4 className="font-bold text-cyan-900 text-sm">Strategia Vinted (0% Commissioni per il venditore)</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-bold text-cyan-900 text-sm">Strategia Vinted (0% Commissioni per il venditore)</h4>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-200 text-cyan-950 border border-cyan-300">
+                  Novità v1.0.3
+                </span>
+              </div>
               <p>Vinted è la piattaforma moda per eccellenza: il compratore paga la protezione acquisti e la spedizione, tu ricevi il 100% dell&apos;incasso netto.</p>
             </div>
             <ol className="space-y-2.5 list-decimal pl-4">
-              <li><b>Compila Brand e Taglia su Vendoly</b>: Vinted richiede obbligatoriamente marca e taglia per posizionare l&apos;annuncio nei filtri di ricerca.</li>
-              <li><b>Foto Reali su Sfondo Pulito</b>: inserisci almeno 3-5 foto dettagliate (dettaglio etichetta interna, fondo suola o finiture).</li>
-              <li><b>Sconti sui Set</b>: incoraggia i clienti a scegliere più capi dal tuo catalogo offrendo sconti bundle dal 10% al 20%.</li>
-              <li><b>Punti di Ritiro Locker</b>: spedisci entro 48 ore tramite InPost o Fermopoint per mantenere il badge venditore a 5 stelle.</li>
+              <li><b>⚡ Vinted Quick-Bridge PWA (Mobile & Web)</b>: clicca sul pulsante &quot;⚡ Vinted&quot; accanto a qualsiasi capo nel catalogo. Su smartphone PWA condivide foto e descrizione direttamente nell&apos;app Vinted in soli 2 tocchi!</li>
+              <li><b>🚀 Vendoly Assistant (Estensione Chrome/Edge)</b>: installa l&apos;estensione per compilare automaticamente foto (via DataTransfer), titolo, descrizione e prezzo su vinted.it con 1 click.</li>
+              <li><b>📦 Formato Pacco Automatico</b>: Vendoly calcola in automatico se il capo richiede Pacco Piccolo (&lt;500g), Medio (&lt;1kg) o Grande (&lt;2kg).</li>
+              <li><b>🛡️ Protezione Kill-Switch Anti-Doppia Vendita</b>: se vendi un pezzo unico in negozio fisico al banco cassa, Vendoly ti segnala l&apos;annuncio Vinted con link diretto per rimuoverlo in 1 secondo ed evitare contestazioni.</li>
+              <li><b>Foto Reali & Dettagli</b>: inserisci almeno 3-5 foto (etichetta taglia/composizione, fondo e dettagli usura) per accelerare la vendita.</li>
             </ol>
           </div>
         )}
