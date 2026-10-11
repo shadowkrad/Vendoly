@@ -19,8 +19,10 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
 
-  // Security Headers
-  response.headers.set('X-Frame-Options', 'DENY');
+  // Security Headers (X-Frame-Options solo su dashboard per consentire showcase iframe su taaaac.eu)
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+    response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  }
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
