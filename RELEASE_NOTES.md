@@ -1,5 +1,29 @@
 # 🏪 Vendoly — Release Notes
 
+## Novità della Versione 1.1.0 (In Sviluppo)
+
+### Novità in Lavorazione
+- Evoluzione vetrina interattiva e catalogo avanzato
+- Gestione promozioni, coupon e carrello touch
+
+---
+
+## Novità della Versione 1.0.4
+
+### 1. 📦 Ottimizzazione Catalogo & Varianti Prodotti
+- **Gestione Categorie e Varianti**: Creazione e modifica semplificata di prodotti con varianti di taglia/colore e gestione giacenze.
+- **Prezzi e Promozioni**: Visualizzazione chiara dei prezzi originali e scontati nella vetrina pubblica.
+
+### 2. 🛒 Carrello & Checkout Mobile-First
+- **Esperienza d'Acquisto Fluida**: Carrello intuitivo per clienti da smartphone con calcolo automatico spese di spedizione o ritiro in sede.
+- **Riepilogo Ordine 1-Click**: Schermata di riepilogo pulita e conferma immediata via email o WhatsApp.
+
+### 3. 📊 Dashboard Venditore Semplificata
+- **Monitoraggio Ordini in Entrata**: Avanzamento stato ordini (In Attesa, In Preparazione, Spedito, Consegnato) a 1-tap.
+- **Filtri e Ricerca Rapida**: Ricerca ordini per cliente, data o codice spedizione.
+
+---
+
 ## Novità della Versione 1.0.3
 
 ### 1. 🖼️ Sistema Brand & Vetrina Adattiva (Zero Deformazioni)
