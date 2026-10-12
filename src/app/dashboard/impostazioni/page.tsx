@@ -276,23 +276,25 @@ export default function VendolyImpostazioniPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => handleSave()}
-          disabled={saving}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-sm rounded-xl shadow-xs shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-60"
-        >
-          {saving ? (
-            <>
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Salvataggio...</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              <span>Salva Modifiche</span>
-            </>
-          )}
-        </button>
+        {activeTab !== "aspetto" && (
+          <button
+            onClick={() => handleSave()}
+            disabled={saving}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white font-bold text-sm rounded-xl shadow-xs shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-60"
+          >
+            {saving ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Salvataggio...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Salva Modifiche</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Feedback Alert */}
@@ -548,6 +550,25 @@ export default function VendolyImpostazioniPage() {
                 />
               </div>
             </div>
+
+            {/* Opzioni Ricevute & Cortesia Cassa POS */}
+            <div className="pt-4 border-t border-slate-100 space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span>🧾</span> Opzioni Ricevute & Cortesia Cassa POS
+              </h3>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Messaggio di Cortesia Scontrino / Footer Ordini
+                </label>
+                <textarea
+                  rows={3}
+                  value={form.messaggioScontrino}
+                  onChange={(e) => setForm({ ...form, messaggioScontrino: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                  placeholder="Testo stampato in calce allo scontrino o alle email di conferma ordine..."
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -739,28 +760,7 @@ export default function VendolyImpostazioniPage() {
 
       {/* TAB 5: ASPETTO & BRAND (LIVE SHOWCASE VISUAL STUDIO) */}
       {activeTab === "aspetto" && (
-        <div className="space-y-6">
-          <ShowcaseVisualStudio />
-
-          {/* Opzioni Aggiuntive Punto Cassa POS */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-5">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <span>🧾</span> Opzioni Ricevute & Cortesia Cassa POS
-            </h3>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Messaggio di Cortesia Scontrino / Footer Ordini
-              </label>
-              <textarea
-                rows={3}
-                value={form.messaggioScontrino}
-                onChange={(e) => setForm({ ...form, messaggioScontrino: e.target.value })}
-                className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
-                placeholder="Testo stampato in calce allo scontrino o alle email di conferma ordine..."
-              />
-            </div>
-          </div>
-        </div>
+        <ShowcaseVisualStudio />
       )}
         </main>
       </div>
