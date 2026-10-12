@@ -127,6 +127,7 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
           ritiroInSede: cached.ritiroInSede ?? undefined,
           messaggioScontrino: cached.messaggioScontrino || undefined,
         },
+        showcaseConfig: (cached as any).showcaseConfig || undefined,
       };
     }
   } catch (dbErr) {

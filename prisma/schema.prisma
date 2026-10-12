@@ -122,6 +122,9 @@ model TenantLocalCache {
   ritiroInSede            Boolean  @default(true)
   politicaReso            String?  @default("Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.")
   messaggioScontrino      String?  @default("Grazie per il tuo acquisto su Vendoly! Torna a trovarci.")
+
+  // Showcase & Visual Studio (v1.0.4)
+  showcaseConfig          String?  @default("{}")
 }
 
 // Annunci pubblicati sui marketplace (Issue #6)

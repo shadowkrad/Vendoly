@@ -21,23 +21,43 @@ import {
   Phone,
   Clock,
   Star,
+  Award,
+  Quote,
 } from "lucide-react";
 import { MockProduct } from "@/lib/mock-store";
 import { TenantConfigResponse } from "@/types/taaaac";
 import { formatCurrency } from "@/lib/utils";
+import {
+  ShowcaseConfig,
+  DEFAULT_VENDOLY_SHOWCASE_CONFIG,
+  parseShowcaseConfig,
+} from "@/lib/showcase-defaults";
 
 interface StorefrontProps {
   initialProducts: MockProduct[];
   tenantConfig: TenantConfigResponse;
+  initialShowcaseConfig?: ShowcaseConfig;
 }
 
 type ChannelFilter = "ALL" | "SUBITO" | "VINTED" | "EBAY" | "FACEBOOK" | "NEGOZIO";
 
-export default function Storefront({ initialProducts, tenantConfig }: StorefrontProps) {
+export default function Storefront({
+  initialProducts,
+  tenantConfig,
+  initialShowcaseConfig,
+}: StorefrontProps) {
+  const [showcase] = useState<ShowcaseConfig>(
+    initialShowcaseConfig || parseShowcaseConfig(tenantConfig.showcaseConfig)
+  );
   const [products] = useState<MockProduct[]>(initialProducts);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
   const [selectedChannel, setSelectedChannel] = useState<ChannelFilter>("ALL");
+
+  const brandName = showcase.brandName || tenantConfig.theme.brandName || "Vendoly Boutique & Store";
+  const logoUrl = showcase.logoUrl || tenantConfig.theme.logoUrl;
+  const primaryColor = showcase.primaryColor || tenantConfig.theme.primaryColor || "#0f172a";
+  const accentColor = showcase.accentColor || tenantConfig.theme.accentColor || "#059669";
 
   // Scheda Dettaglio Prodotto (Modal)
   const [selectedProduct, setSelectedProduct] = useState<MockProduct | null>(null);
@@ -157,27 +177,47 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
 
   const rawPhone = tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678";
 
+  const renderBadgeIcon = (iconName: string, isWhite = false) => {
+    const colorCls = isWhite ? "text-emerald-400" : "text-emerald-600";
+    switch (iconName) {
+      case "clock":
+        return <Clock className={`w-4 h-4 ${colorCls} shrink-0`} />;
+      case "shield":
+        return <ShieldCheck className={`w-4 h-4 ${colorCls} shrink-0`} />;
+      case "award":
+        return <Award className={`w-4 h-4 ${colorCls} shrink-0`} />;
+      case "star":
+        return <Star className={`w-4 h-4 ${colorCls} shrink-0`} />;
+      default:
+        return <CheckCircle2 className={`w-4 h-4 ${colorCls} shrink-0`} />;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 selection:bg-emerald-500 selection:text-white">
-      {/* 1. Header Principale Vetrina - Stile coordinato con Schedly, Barberly, Tavoly */}
+      {/* 1. Header Principale Vetrina */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            {tenantConfig.theme.logoUrl ? (
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={tenantConfig.theme.logoUrl}
-                alt={tenantConfig.theme.brandName}
+                src={logoUrl}
+                alt={brandName}
                 className="h-10 max-w-[140px] sm:max-w-[180px] object-contain rounded-xl"
               />
             ) : (
-              <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-600/20 shrink-0">
+              <div
+                style={{ backgroundColor: primaryColor }}
+                className="w-10 h-10 rounded-2xl text-white flex items-center justify-center shadow-md shrink-0"
+              >
                 <Store className="w-5 h-5" />
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 block leading-tight">
-                  {tenantConfig.theme.brandName}
+                  {brandName}
                 </span>
                 <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full">
                   <Globe className="w-3 h-3" />
@@ -192,15 +232,31 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
 
           {/* Navigazione Desktop */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
-            <a href="#catalogo" className="hover:text-emerald-600 transition-colors">
-              Catalogo Capi
-            </a>
-            <a href="#canali" className="hover:text-emerald-600 transition-colors">
-              I Nostri Canali
-            </a>
-            <a href="#info" className="hover:text-emerald-600 transition-colors">
-              Negozio &amp; Orari
-            </a>
+            {showcase.sections?.showCatalog && (
+              <a href="#catalogo" className="hover:text-emerald-600 transition-colors">
+                {showcase.customLabels?.catalogTitle || "Catalogo Capi"}
+              </a>
+            )}
+            {showcase.sections?.showChannels && (
+              <a href="#canali" className="hover:text-emerald-600 transition-colors">
+                I Nostri Canali
+              </a>
+            )}
+            {showcase.sections?.showGallery && showcase.gallery?.enabled && (
+              <a href="#galleria" className="hover:text-emerald-600 transition-colors">
+                Showroom
+              </a>
+            )}
+            {showcase.sections?.showAbout && showcase.about?.enabled && (
+              <a href="#chisiamo" className="hover:text-emerald-600 transition-colors">
+                Chi Siamo
+              </a>
+            )}
+            {showcase.sections?.showHours && (
+              <a href="#info" className="hover:text-emerald-600 transition-colors">
+                Negozio &amp; Orari
+              </a>
+            )}
           </nav>
 
           {/* Azione Contatto Rapido & Area Riservata */}
@@ -209,7 +265,8 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               href={`https://wa.me/${rawPhone}?text=${encodeURIComponent("👋 Ciao! Vorrei maggiori informazioni sui vostri capi e articoli in vetrina.")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md shadow-emerald-600/20 cursor-pointer"
+              style={{ backgroundColor: accentColor }}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold text-white transition-all shadow-md cursor-pointer hover:opacity-90"
             >
               <MessageCircle className="w-4 h-4" />
               <span className="hidden sm:inline">Scrivici su WhatsApp</span>
@@ -226,197 +283,231 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
         </div>
       </header>
 
-      {/* 2. Hero Section - Elegante, Accogliente e Coerente */}
-      <section className="relative py-14 sm:py-20 overflow-hidden bg-gradient-to-b from-white via-emerald-50/25 to-slate-50 border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            {/* Colonna Testo & Claim */}
-            <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-bold">
-                <Sparkles className="w-4 h-4 text-emerald-600" />
-                <span>Boutique &amp; Retail Store • Pezzi Unici Selezionati</span>
-              </div>
+      {/* 2. Hero Section - Dinamica con Cover e Darkness Overlay */}
+      {showcase.sections?.showHero && (
+        <section className={`relative py-14 sm:py-20 overflow-hidden border-b border-slate-200/80 ${
+          showcase.hero.coverImageUrl
+            ? "text-white"
+            : "bg-gradient-to-b from-white via-emerald-50/25 to-slate-50 text-slate-900"
+        }`}>
+          {/* Sfondo Foto con Overlay Regolabile */}
+          {showcase.hero.coverImageUrl && (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={showcase.hero.coverImageUrl}
+                alt="Boutique Cover"
+                className="absolute inset-0 w-full h-full object-cover z-0"
+              />
+              <div
+                className="absolute inset-0 bg-black z-0 transition-opacity"
+                style={{ opacity: (showcase.hero.overlayOpacity ?? 75) / 100 }}
+              />
+            </>
+          )}
 
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
-                Capi Selezionati &amp; Oggetti Unici, <br className="hidden sm:inline" />
-                <span className="text-emerald-600">sempre sincronizzati.</span>
-              </h1>
+          <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              {/* Colonna Testo & Claim */}
+              <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
+                {showcase.hero.badgeText && (
+                  <div className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold ${
+                    showcase.hero.coverImageUrl
+                      ? "bg-white/15 backdrop-blur-md border border-white/20 text-emerald-300"
+                      : "bg-emerald-50 border border-emerald-200/80 text-emerald-800"
+                  }`}>
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span>{showcase.hero.badgeText}</span>
+                  </div>
+                )}
 
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-                Scopri la selezione esclusiva di <strong className="text-slate-900">{tenantConfig.theme.brandName}</strong>: capi autentici, sneakers vintage e accessori ricercati. Acquistali con la protezione del tuo marketplace preferito oppure riservali direttamente in negozio via WhatsApp.
-              </p>
+                <h1 className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight ${
+                  showcase.hero.coverImageUrl ? "text-white" : "text-slate-900"
+                }`}>
+                  {showcase.hero.title}
+                </h1>
 
-              {/* Bottoni Call-to-Action */}
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3.5">
-                <a
-                  href="#catalogo"
-                  className="px-7 py-3.5 rounded-full font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 transition-all inline-flex items-center gap-2 cursor-pointer active:scale-95"
-                >
-                  <span>Esplora la Collezione</span>
-                  <ArrowDown className="w-4 h-4" />
-                </a>
-                <a
-                  href={`https://wa.me/${rawPhone}?text=${encodeURIComponent("👋 Ciao! Vorrei sapere se sono disponibili nuovi arrivi in negozio.")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-6 py-3.5 rounded-full font-bold text-sm bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer"
-                >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Chiedi in Negozio</span>
-                </a>
-              </div>
+                <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto lg:mx-0 ${
+                  showcase.hero.coverImageUrl ? "text-slate-200" : "text-slate-600"
+                }`}>
+                  {showcase.hero.subtitle}
+                </p>
 
-              {/* Trust Badges Orizzontali - identici al design system di Barberly, Schedly e Tavoly */}
-              <div className="pt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-slate-200/60 max-w-2xl mx-auto lg:mx-0 text-left">
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-semibold text-slate-700">Spedizione 24/48h</span>
+                {/* Bottoni Call-to-Action */}
+                <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3.5">
+                  <a
+                    href="#catalogo"
+                    style={{ backgroundColor: accentColor }}
+                    className="px-7 py-3.5 rounded-full font-bold text-sm text-white shadow-lg transition-all inline-flex items-center gap-2 cursor-pointer active:scale-95 hover:opacity-90"
+                  >
+                    <span>{showcase.hero.ctaPrimaryText}</span>
+                    <ArrowDown className="w-4 h-4" />
+                  </a>
+                  {showcase.hero.ctaSecondaryText && (
+                    <a
+                      href={`https://wa.me/${rawPhone}?text=${encodeURIComponent("👋 Ciao! Vorrei sapere se sono disponibili nuovi arrivi in negozio.")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`px-6 py-3.5 rounded-full font-bold text-sm transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer ${
+                        showcase.hero.coverImageUrl
+                          ? "bg-white/20 hover:bg-white/30 backdrop-blur-md text-white border border-white/20"
+                          : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200"
+                      }`}
+                    >
+                      <MessageCircle className="w-4 h-4 text-emerald-400" />
+                      <span>{showcase.hero.ctaSecondaryText}</span>
+                    </a>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-semibold text-slate-700">Acquisti Protetti</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-semibold text-slate-700">100% Autentici</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="text-xs font-semibold text-slate-700">Ritiro al Banco</span>
-                </div>
-              </div>
-            </div>
 
-            {/* Colonna Destra: Card Live Status Collettore (Visual Showcase Preview) */}
-            <div className="lg:col-span-5">
-              <div className="relative mx-auto max-w-md">
-                <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xl space-y-4 relative z-10">
-                  <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                        LIVE
+                {/* Trust Badges Orizzontali Dinamici */}
+                {showcase.sections?.showTrustBadges && showcase.trustBadges?.length > 0 && (
+                  <div className={`pt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 border-t max-w-2xl mx-auto lg:mx-0 text-left ${
+                    showcase.hero.coverImageUrl ? "border-white/20 text-white" : "border-slate-200/60 text-slate-700"
+                  }`}>
+                    {showcase.trustBadges.map((tb) => (
+                      <div key={tb.id} className="flex items-center gap-2 text-xs font-semibold">
+                        {renderBadgeIcon(tb.icon, !!showcase.hero.coverImageUrl)}
+                        <span>{tb.text}</span>
                       </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-900">Hub Sincronizzato</h4>
-                        <p className="text-[11px] text-slate-500">Giacenza unificata in tempo reale</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Colonna Destra: Card Live Status Collettore (Visual Showcase Preview) */}
+              <div className="lg:col-span-5">
+                <div className="relative mx-auto max-w-md">
+                  <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xl space-y-4 relative z-10 text-slate-800">
+                    <div className="flex items-center justify-between pb-3.5 border-b border-slate-100">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                          LIVE
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900">Hub Sincronizzato</h4>
+                          <p className="text-[11px] text-slate-500">Giacenza unificata in tempo reale</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        {channelStats.total} Articoli
+                      </span>
+                    </div>
+
+                    {/* Canali Connessi */}
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        Disponibilità Cross-Canale
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <button
+                          onClick={() => setSelectedChannel(selectedChannel === "SUBITO" ? "ALL" : "SUBITO")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            selectedChannel === "SUBITO"
+                              ? "border-amber-500 bg-amber-50/70 shadow-2xs ring-1 ring-amber-500"
+                              : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-amber-800 block text-xs">Subito.it</span>
+                            <span className="text-[10px] text-slate-500">TuttoSubito</span>
+                          </div>
+                          <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-200 text-amber-800">
+                            {channelStats.subito}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedChannel(selectedChannel === "VINTED" ? "ALL" : "VINTED")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            selectedChannel === "VINTED"
+                              ? "border-cyan-500 bg-cyan-50/70 shadow-2xs ring-1 ring-cyan-500"
+                              : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-cyan-800 block text-xs">Vinted</span>
+                            <span className="text-[10px] text-slate-500">Protezione &amp; Box</span>
+                          </div>
+                          <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-cyan-200 text-cyan-800">
+                            {channelStats.vinted}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedChannel(selectedChannel === "EBAY" ? "ALL" : "EBAY")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            selectedChannel === "EBAY"
+                              ? "border-blue-500 bg-blue-50/70 shadow-2xs ring-1 ring-blue-500"
+                              : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-blue-800 block text-xs">eBay</span>
+                            <span className="text-[10px] text-slate-500">Garanzia Cliente</span>
+                          </div>
+                          <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-blue-800">
+                            {channelStats.ebay}
+                          </span>
+                        </button>
+
+                        <button
+                          onClick={() => setSelectedChannel(selectedChannel === "NEGOZIO" ? "ALL" : "NEGOZIO")}
+                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            selectedChannel === "NEGOZIO"
+                              ? "border-emerald-500 bg-emerald-50/70 shadow-2xs ring-1 ring-emerald-500"
+                              : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-emerald-800 block text-xs">In Negozio</span>
+                            <span className="text-[10px] text-slate-500">Pronta Consegna</span>
+                          </div>
+                          <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800">
+                            {channelStats.negozio}
+                          </span>
+                        </button>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      {channelStats.total} Articoli
-                    </span>
-                  </div>
 
-                  {/* Canali Connessi */}
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Disponibilità Cross-Canale
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <button
-                        onClick={() => setSelectedChannel(selectedChannel === "SUBITO" ? "ALL" : "SUBITO")}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                          selectedChannel === "SUBITO"
-                            ? "border-amber-500 bg-amber-50/70 shadow-2xs ring-1 ring-amber-500"
-                            : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                        }`}
-                      >
-                        <div>
-                          <span className="font-bold text-amber-800 block text-xs">Subito.it</span>
-                          <span className="text-[10px] text-slate-500">TuttoSubito</span>
-                        </div>
-                        <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-amber-200 text-amber-800">
-                          {channelStats.subito}
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedChannel(selectedChannel === "VINTED" ? "ALL" : "VINTED")}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                          selectedChannel === "VINTED"
-                            ? "border-cyan-500 bg-cyan-50/70 shadow-2xs ring-1 ring-cyan-500"
-                            : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                        }`}
-                      >
-                        <div>
-                          <span className="font-bold text-cyan-800 block text-xs">Vinted</span>
-                          <span className="text-[10px] text-slate-500">Protezione &amp; Box</span>
-                        </div>
-                        <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-cyan-200 text-cyan-800">
-                          {channelStats.vinted}
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedChannel(selectedChannel === "EBAY" ? "ALL" : "EBAY")}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                          selectedChannel === "EBAY"
-                            ? "border-blue-500 bg-blue-50/70 shadow-2xs ring-1 ring-blue-500"
-                            : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                        }`}
-                      >
-                        <div>
-                          <span className="font-bold text-blue-800 block text-xs">eBay</span>
-                          <span className="text-[10px] text-slate-500">Garanzia Cliente</span>
-                        </div>
-                        <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-blue-800">
-                          {channelStats.ebay}
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={() => setSelectedChannel(selectedChannel === "NEGOZIO" ? "ALL" : "NEGOZIO")}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
-                          selectedChannel === "NEGOZIO"
-                            ? "border-emerald-500 bg-emerald-50/70 shadow-2xs ring-1 ring-emerald-500"
-                            : "border-slate-200 hover:border-slate-300 bg-slate-50/50"
-                        }`}
-                      >
-                        <div>
-                          <span className="font-bold text-emerald-800 block text-xs">In Negozio</span>
-                          <span className="text-[10px] text-slate-500">Pronta Consegna</span>
-                        </div>
-                        <span className="text-xs font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-200 text-emerald-800">
-                          {channelStats.negozio}
-                        </span>
-                      </button>
+                    <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-900 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Zero rischio di doppia vendita: venduto su un canale, scalato da tutti.</span>
                     </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-emerald-50/60 border border-emerald-100 text-xs text-emerald-900 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Zero rischio di doppia vendita: venduto su un canale, scalato da tutti.</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 3. Fascia Canali Connessi */}
-      <section id="canali" className="bg-white border-b border-slate-200/80 py-4 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
-          <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-            Sincronizzato in tempo reale su:
-          </span>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold flex items-center gap-1.5">
-              <span>🟠</span> Subito.it TuttoSubito
+      {showcase.sections?.showChannels && (
+        <section id="canali" className="bg-white border-b border-slate-200/80 py-4 px-4 sm:px-6">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+            <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              Sincronizzato in tempo reale su:
             </span>
-            <span className="px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 font-semibold flex items-center gap-1.5">
-              <span>🔵</span> Vinted Locker &amp; Home
-            </span>
-            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-semibold flex items-center gap-1.5">
-              <span>🌐</span> eBay Shopping Protetto
-            </span>
-            <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold flex items-center gap-1.5">
-              <span>🏪</span> Negozio Fisico &amp; Ritiro Banco
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 font-semibold flex items-center gap-1.5">
+                <span>🟠</span> Subito.it TuttoSubito
+              </span>
+              <span className="px-3 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 font-semibold flex items-center gap-1.5">
+                <span>🔵</span> Vinted Locker &amp; Home
+              </span>
+              <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-semibold flex items-center gap-1.5">
+                <span>🌐</span> eBay Shopping Protetto
+              </span>
+              <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold flex items-center gap-1.5">
+                <span>🏪</span> Negozio Fisico &amp; Ritiro Banco
+              </span>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 4. Barra di Ricerca & Filtri Canale / Categoria */}
       <section id="catalogo" className="bg-slate-50 border-b border-slate-200/80 sticky top-18 z-30 shadow-2xs">
@@ -709,68 +800,152 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
         )}
       </main>
 
-      {/* 6. Sezione Orari & Negozio (Stile coordinato con gli altri moduli) */}
-      <section id="info" className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-200/80">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
-              <Store className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Punto Vendita Fisico</span>
+      {/* 5. Galleria Showroom & Corner */}
+      {showcase.sections?.showGallery && showcase.gallery?.enabled && showcase.gallery?.images?.length > 0 && (
+        <section id="galleria" className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-t border-slate-200/80">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                <Store className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Showroom &amp; Spazi Boutique</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {showcase.gallery.title}
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                {showcase.gallery.subtitle}
+              </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Vieni a trovarci in Negozio
-            </h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco senza costi di spedizione. Puoi anche riservare un capo online e ritirarlo entro 24 ore.
-            </p>
 
-            <div className="space-y-3 pt-2 text-xs sm:text-sm text-slate-700">
-              <div className="flex items-center gap-3">
-                <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>
-                  {tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {showcase.gallery.images.map((img) => (
+                <div key={img.id} className="bg-white rounded-3xl overflow-hidden border border-slate-200/80 shadow-xs group">
+                  <div className="relative h-60 overflow-hidden bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img.url}
+                      alt={img.caption || "Showroom"}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  {img.caption && (
+                    <div className="p-3.5 text-xs font-semibold text-slate-700 bg-white">
+                      {img.caption}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 6. Chi Siamo & Filosofia Boutique */}
+      {showcase.sections?.showAbout && showcase.about?.enabled && (
+        <section id="chisiamo" className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-200/80">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{showcase.about.title}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
-                <a
-                  href={`tel:${tenantConfig.contact?.phone || "+390289015678"}`}
-                  className="hover:text-emerald-700 font-semibold"
-                >
-                  {tenantConfig.contact?.phone || "+39 02 8901 5678"}
-                </a>
-              </div>
-              <div className="flex items-center gap-3">
-                <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>WhatsApp attivo per info e disponibilità immediata</span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {showcase.about.subtitle}
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                {showcase.about.description}
+              </p>
+
+              {showcase.about.quoteText && (
+                <div className="p-4 rounded-2xl bg-slate-50 border-l-4 border-emerald-500 italic text-sm text-slate-700 space-y-1">
+                  <p>&ldquo;{showcase.about.quoteText}&rdquo;</p>
+                  {showcase.about.quoteAuthor && (
+                    <p className="text-xs font-bold text-slate-500 not-italic">
+                      — {showcase.about.quoteAuthor}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="lg:col-span-5">
+              <div className="rounded-3xl overflow-hidden border border-slate-200 shadow-xl bg-slate-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={showcase.about.imageUrl || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?auto=format&fit=crop&w=800&q=80"}
+                  alt="Chi Siamo"
+                  className="w-full h-80 object-cover"
+                />
               </div>
             </div>
           </div>
+        </section>
+      )}
 
-          <div className="bg-slate-50 border border-slate-200/80 rounded-3xl p-6 space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Clock className="w-4 h-4 text-emerald-600" />
-              Orari di Apertura Negozio
-            </h3>
-            <div className="space-y-2.5 text-xs text-slate-600">
-              <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="font-semibold text-slate-800">Lunedì – Venerdì</span>
-                <span>{tenantConfig.contact?.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30"}</span>
+      {/* 7. Sezione Orari & Negozio (Stile coordinato con gli altri moduli) */}
+      {showcase.sections?.showHours && (
+        <section id="info" className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50 border-t border-slate-200/80">
+          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                <Store className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Punto Vendita Fisico</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="font-semibold text-slate-800">Sabato</span>
-                <span className="font-semibold text-emerald-700">
-                  {tenantConfig.contact?.orariSabato || "09:30 – 19:30 (Continuato)"}
-                </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {showcase.customLabels?.hoursTitle || "Vieni a trovarci in Negozio"}
+              </h2>
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco senza costi di spedizione. Puoi anche riservare un capo online e ritirarlo entro 24 ore.
+              </p>
+
+              <div className="space-y-3 pt-2 text-xs sm:text-sm text-slate-700">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>
+                    {tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <a
+                    href={`tel:${tenantConfig.contact?.phone || "+390289015678"}`}
+                    className="hover:text-emerald-700 font-semibold"
+                  >
+                    {tenantConfig.contact?.phone || "+39 02 8901 5678"}
+                  </a>
+                </div>
+                <div className="flex items-center gap-3">
+                  <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>WhatsApp attivo per info e disponibilità immediata</span>
+                </div>
               </div>
-              <div className="flex justify-between py-1.5 text-slate-400">
-                <span>Domenica / Festivi</span>
-                <span>{tenantConfig.contact?.orariDomenica || "Chiuso"}</span>
+            </div>
+
+            <div className="bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-xs">
+              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-600" />
+                Orari di Apertura Negozio
+              </h3>
+              <div className="space-y-2.5 text-xs text-slate-600">
+                <div className="flex justify-between py-1.5 border-b border-slate-200">
+                  <span className="font-semibold text-slate-800">Lunedì – Venerdì</span>
+                  <span>{tenantConfig.contact?.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30"}</span>
+                </div>
+                <div className="flex justify-between py-1.5 border-b border-slate-200">
+                  <span className="font-semibold text-slate-800">Sabato</span>
+                  <span className="font-semibold text-emerald-700">
+                    {tenantConfig.contact?.orariSabato || "09:30 – 19:30 (Continuato)"}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1.5 text-slate-400">
+                  <span>Domenica / Festivi</span>
+                  <span>{tenantConfig.contact?.orariDomenica || "Chiuso"}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* 7. Modale Scheda Dettaglio Articolo & Hub Acquisto Multi-Canale */}
       {selectedProduct && (
@@ -993,14 +1168,14 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
         </div>
       )}
 
-      {/* 8. Footer Dark Coordinato - Identico a Barberly, Schedly, Tavoly e Taskly */}
+      {/* 8. Footer Dark Coordinato */}
       <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-white font-bold text-base">
                 <Store className="w-5 h-5 text-emerald-400" />
-                <span>{tenantConfig.theme.brandName}</span>
+                <span>{brandName}</span>
               </div>
               <p className="text-slate-400 text-xs leading-relaxed">
                 Boutique di moda &amp; accessori selezionati. Sincronizzazione multi-canale in tempo reale su Subito, Vinted, eBay e Negozio Fisico.
@@ -1012,6 +1187,12 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               <ul className="space-y-1.5 text-xs">
                 <li><a href="#catalogo" className="hover:text-emerald-400 transition-colors">Tutti i Capi</a></li>
                 <li><a href="#canali" className="hover:text-emerald-400 transition-colors">Marketplace Connessi</a></li>
+                {showcase.sections?.showGallery && showcase.gallery?.enabled && (
+                  <li><a href="#galleria" className="hover:text-emerald-400 transition-colors">Showroom &amp; Corner</a></li>
+                )}
+                {showcase.sections?.showAbout && showcase.about?.enabled && (
+                  <li><a href="#chisiamo" className="hover:text-emerald-400 transition-colors">La Nostra Filosofia</a></li>
+                )}
                 <li><a href="#info" className="hover:text-emerald-400 transition-colors">Orari &amp; Dove Siamo</a></li>
               </ul>
             </div>
@@ -1037,7 +1218,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
           </div>
 
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
-            <p>© {new Date().getFullYear()} {tenantConfig.theme.brandName}. Tutti i diritti riservati.</p>
+            <p>© {new Date().getFullYear()} {brandName}. Tutti i diritti riservati.</p>
             <div className="flex items-center gap-4">
               <Link
                 href="/admin"
