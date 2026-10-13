@@ -32,6 +32,7 @@ import {
   DEFAULT_VENDOLY_SHOWCASE_CONFIG,
   parseShowcaseConfig,
 } from "@/lib/showcase-defaults";
+import FloatingWhatsAppWidget from "@/components/public/FloatingWhatsAppWidget";
 
 interface StorefrontProps {
   initialProducts: MockProduct[];
@@ -1231,6 +1232,12 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
           </div>
         </div>
       </footer>
+
+      {/* Widget Flottante WhatsApp Vetrina */}
+      <FloatingWhatsAppWidget
+        phone={tenantConfig.contact?.phone}
+        brandName={brandName || "Vendoly Store"}
+      />
     </div>
   );
 }
