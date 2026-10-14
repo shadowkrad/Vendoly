@@ -1,6 +1,15 @@
 # 🏪 Vendoly — Release Notes
 
-## Novità della Versione 1.1.0 (In Sviluppo)
+## Novità della Versione 1.0.5 (In Sviluppo)
+
+### 1. 📱 Fix Icone PWA per Smartphone (iOS & Android) & Supporto Favicon Personalizzata
+- **Risoluzione Icone Vuote o Fallback su Mobile**: Risolto il problema per cui su iPhone e dispositivi Android le icone PWA apparivano come quadrati monocromatici vuoti o lettere di ripiego. iOS Safari richiede rigorosamente formati PNG raster per `apple-touch-icon`, scartando i file vettoriali SVG.
+- **Logica Intelligente di Fallback**:
+  - Se il cliente/tenant ha caricato un proprio logo o favicon personalizzato nelle impostazioni di brand, la PWA su smartphone adotta automaticamente l'immagine del cliente.
+  - Se il cliente non ha configurato una favicon, il sistema inietta l'icona ufficiale nativa in alta risoluzione (Shopping Bag moderna con badge cassa su Electric Indigo) con formati specifici (`apple-touch-icon.png` a 180x180 per Apple, `icon-192.png`, `icon-512.png` e `icon-maskable-512.png` per Android).
+- **Allineamento Universale Manifest**: Serviti contemporaneamente sia `/manifest.json` sia `/manifest.webmanifest` con MIME type standard e categorie W3C PWA valide.
+
+---
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
 - **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (`FloatingWhatsAppWidget`), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
