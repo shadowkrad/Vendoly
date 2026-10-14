@@ -24,7 +24,7 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: favicon,
       apple: tenant.theme.faviconUrl || "/apple-touch-icon.png",
     },
-    manifest: "/manifest.webmanifest",
+    manifest: "/manifest.json",
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
@@ -46,6 +46,7 @@ export default async function RootLayout({
 }>) {
   const tenant = await getTenantConfig();
   const favicon = tenant.theme.faviconUrl || "/favicon.ico";
+  const appleIcon = tenant.theme.faviconUrl || "/apple-touch-icon.png";
 
   // Iniezione dinamica dei colori del brand ricevuti da Taaaac Core
   const dynamicCss = `
@@ -59,7 +60,8 @@ export default async function RootLayout({
     <html lang="it" className={inter.variable}>
       <head>
         <link rel="icon" href={favicon} sizes="any" />
-        <link rel="apple-touch-icon" href={favicon} />
+        <link rel="apple-touch-icon" sizes="180x180" href={appleIcon} />
+        <link rel="manifest" href="/manifest.json" />
         <style dangerouslySetInnerHTML={{ __html: dynamicCss }} />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
