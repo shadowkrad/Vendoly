@@ -1,28 +1,33 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { verifyAdminPin, ADMIN_COOKIE_NAME } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { setAdminSession, verifyAdminPasswordOrPin, isDemoEnvironment } from "@/lib/auth";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { pin } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const host = req.headers.get("host");
 
-    if (!pin || !verifyAdminPin(pin)) {
+    // 1. Accesso 1-Click per ambiente Demo
+    if (body.demo) {
+      if (!isDemoEnvironment(host)) {
+        return NextResponse.json(
+          { error: "Accesso demo non consentito in questo ambiente" },
+          { status: 403 }
+        );
+      }
+      await setAdminSession();
+      return NextResponse.json({ success: true, isDemo: true });
+    }
+
+    // 2. Accesso con Password Master o PIN
+    const secret = body.password || body.pin || "";
+    if (!secret || !verifyAdminPasswordOrPin(secret)) {
       return NextResponse.json(
-        { error: "PIN non valido o errato" },
+        { error: "Password non valida o errata" },
         { status: 401 }
       );
     }
 
-    // Imposta cookie di sessione HTTP-only
-    const cookieStore = await cookies();
-    cookieStore.set(ADMIN_COOKIE_NAME, "authenticated_admin", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 24 * 7, // 7 giorni
-      path: "/",
-    });
-
+    await setAdminSession();
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("POST /api/admin/auth error:", error);
