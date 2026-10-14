@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   Share2,
   ChevronRight,
+  ChevronDown,
 } from "lucide-react";
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
@@ -326,16 +327,42 @@ export default function VendolyImpostazioniPage() {
       {/* LAYOUT A 2 COLONNE: NAVIGAZIONE VERTICALE A SINISTRA + CONTENUTI A DESTRA */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* COLONNA SINISTRA: MENU SEZIONI IMPOSTAZIONI */}
-        <aside className="lg:col-span-4 xl:col-span-3 lg:sticky lg:top-6 space-y-3">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs">
+        <aside className="lg:col-span-4 xl:col-span-3 sticky top-14 lg:top-6 z-30 lg:z-auto space-y-3">
+          <div className="bg-white/95 backdrop-blur-md lg:bg-white border border-slate-200/90 rounded-2xl p-2 sm:p-2.5 shadow-xs">
+            {/* Header Desktop */}
             <div className="px-3 py-2 border-b border-slate-100 hidden lg:block">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
                 Sezioni Impostazioni
               </span>
             </div>
 
+            {/* Menu a Tendina Compatto per Smartphone e PWA (< lg) */}
+            <div className="lg:hidden p-1">
+              <label htmlFor="settings-tab-select" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 px-1">
+                Sezione Impostazioni:
+              </label>
+              <div className="relative">
+                <select
+                  id="settings-tab-select"
+                  value={activeTab}
+                  onChange={(e) => setActiveTab(e.target.value as SettingsTab)}
+                  className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold py-2.5 pl-3.5 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition cursor-pointer"
+                >
+                  {TABS.map((tab) => (
+                    <option key={tab.id} value={tab.id}>
+                      {tab.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+
+            {/* Navigazione Verticale Completa per Desktop (lg:) */}
             <nav
-              className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible no-scrollbar pt-1 lg:pt-2"
+              className="hidden lg:flex flex-col gap-1.5 pt-2"
               aria-label="Sezioni Impostazioni Vendoly"
             >
               {TABS.map((tab) => {
@@ -346,7 +373,7 @@ export default function VendolyImpostazioniPage() {
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
-                    className={`group flex items-center justify-between w-full p-2.5 sm:p-3 rounded-xl text-left transition-all cursor-pointer shrink-0 lg:shrink ${
+                    className={`group flex items-center justify-between w-full p-2.5 sm:p-3 rounded-xl text-left transition-all cursor-pointer ${
                       isActive
                         ? "bg-emerald-50 text-emerald-950 font-semibold border border-emerald-200/80 shadow-xs"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent"
@@ -364,16 +391,15 @@ export default function VendolyImpostazioniPage() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-xs sm:text-sm font-semibold truncate flex items-center gap-1.5">
-                          <span className="hidden sm:inline">{tab.label}</span>
-                          <span className="sm:hidden">{tab.shortLabel}</span>
+                          <span>{tab.label}</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 font-normal truncate hidden lg:block">
+                        <p className="text-[11px] text-slate-400 font-normal truncate">
                           {tab.shortDescription}
                         </p>
                       </div>
                     </div>
                     <ChevronRight
-                      className={`w-4 h-4 shrink-0 transition-transform hidden lg:block ${
+                      className={`w-4 h-4 shrink-0 transition-transform ${
                         isActive
                           ? "text-emerald-600 translate-x-0.5"
                           : "text-slate-300 opacity-0 group-hover:opacity-100"
