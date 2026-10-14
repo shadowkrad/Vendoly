@@ -1,11 +1,11 @@
 import React from "react";
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { fetchTenantConfig, resolveTenantDomain } from "@/lib/taaaac-client";
 import { TenantConfigProvider } from "@/components/providers/TenantConfigProvider";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import MaintenanceBanner from "@/components/dashboard/MaintenanceBanner";
 import { isAdminAuthenticated, getMaintenanceSession } from "@/lib/auth";
-import { AdminPinLogin } from "@/components/admin/AdminPinLogin";
 
 export const dynamic = "force-dynamic";
 
@@ -21,11 +21,7 @@ export default async function DashboardLayout({
 
   const isAuth = await isAdminAuthenticated();
   if (!isAuth) {
-    return (
-      <TenantConfigProvider config={tenantConfig}>
-        <AdminPinLogin brandName={tenantConfig.nomeAttivita} />
-      </TenantConfigProvider>
-    );
+    redirect("/login");
   }
 
   const userMaintenance = await getMaintenanceSession();
