@@ -198,34 +198,34 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800 selection:bg-emerald-500 selection:text-white">
       {/* 1. Header Principale Vetrina */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 shrink">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={logoUrl}
                 alt={brandName}
-                className="h-10 max-w-[140px] sm:max-w-[180px] object-contain rounded-xl"
+                className="h-9 sm:h-10 max-w-[120px] sm:max-w-[180px] object-contain rounded-xl shrink-0"
               />
             ) : (
               <div
                 style={{ backgroundColor: primaryColor }}
-                className="w-10 h-10 rounded-2xl text-white flex items-center justify-center shadow-md shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl text-white flex items-center justify-center shadow-md shrink-0"
               >
                 <Store className="w-5 h-5" />
               </div>
             )}
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 block leading-tight">
+                <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 block leading-tight truncate">
                   {brandName}
                 </span>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
                   <Globe className="w-3 h-3" />
                   Hub Multi-Marketplace
                 </span>
               </div>
-              <span className="text-xs text-slate-500 flex items-center gap-1 font-medium">
+              <span className="text-[11px] sm:text-xs text-slate-500 truncate block font-medium">
                 Vetrina Ufficiale &amp; Catalogo Disponibilità Live
               </span>
             </div>
@@ -261,21 +261,29 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
           </nav>
 
           {/* Azione Contatto Rapido & Area Riservata */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <a
               href={`https://wa.me/${rawPhone}?text=${encodeURIComponent("👋 Ciao! Vorrei maggiori informazioni sui vostri capi e articoli in vetrina.")}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{ backgroundColor: accentColor }}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold text-white transition-all shadow-md cursor-pointer hover:opacity-90"
+              className="hidden md:inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold text-white transition-all shadow-md cursor-pointer hover:opacity-90 whitespace-nowrap"
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">Scrivici su WhatsApp</span>
-              <span className="sm:hidden">WhatsApp</span>
+              <span>Scrivici su WhatsApp</span>
             </a>
+            {showcase.sections?.showCatalog !== false && (
+              <a
+                href="#catalogo"
+                style={{ backgroundColor: primaryColor }}
+                className="md:hidden inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-xs cursor-pointer whitespace-nowrap"
+              >
+                <span>Catalogo</span>
+              </a>
+            )}
             <Link
               href="/admin"
-              className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              className="p-1.5 sm:p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0"
               title="Area Riservata Esercente"
             >
               <Lock className="w-4 h-4" />
