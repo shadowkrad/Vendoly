@@ -34,3 +34,22 @@ Prima di eseguire modifiche al codice di qualsiasi modulo applicativo (`Schedly`
   - Nel file `RELEASE_NOTES.md` del relativo repository.
   - Nella tabella `ModuleRelease` del database di Taaaac (campo `changelog`), in modo da alimentare la console SuperAdmin e la comunicazione al cliente finale.
 - I log devono indicare chiaramente: capitolo, motivazione, comportamento prima vs dopo e impatto sui tenant.
+
+---
+
+## 5. Strategia di Rilascio a Doppio Binario (Hotfix Produzione vs Demo Vercel)
+Quando una nuova MINOR/MAJOR (es. `1.1.0`) è già aperta in sviluppo, ma occorre rilasciare un **HOTFIX / PATCH (es. `1.0.5`)** per i clienti già in produzione su una versione sigillata (es. `1.0.4`), si applica tassativamente il **doppio binario**:
+
+1. **Canale Sviluppo & Demo Vercel (`main` & `cliente-demo`)**:
+   - Mantiene la versione target più avanzata (**`1.1.0`**).
+   - Contiene **SIA** le nuove feature della minor/major **SIA** tutti gli hotfix applicati nel tempo.
+   - Vercel compila e serve sempre questo canale per mostrare sia le nuove funzionalità sia le correzioni.
+   - La versione in `package.json` su `main` e `cliente-demo` **NON retrocede mai** (resta `1.1.0`).
+
+2. **Canale Hotfix Clienti Produzione (`hotfix/1.0.X`)**:
+   - Viene staccato direttamente dal tag sigillato di produzione precedente (es. `git checkout -b hotfix/1.0.5 v1.0.4`).
+   - Contiene **SOLO** le correzioni chirurgiche richieste, escludendo le feature non ancora pronte della 1.1.0.
+   - La versione in `package.json` su questo branch è impostata al numero di patch (es. **`1.0.5`**).
+   - Quando l'utente decide di rilasciare la patch ai clienti reali su VPS (`bfestetica`, `littlecreations`, ecc.), il deploy avverrà prelevando il codice da questo branch isolato.
+   - Ogni modifica apportata a `hotfix/1.0.X` deve essere contestualmente integrata (merge o cherry-pick) dentro `main` (sulla `1.1.0`), così che la versione futura erediti tutte le correzioni senza discrepanze.
+

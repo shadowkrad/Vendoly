@@ -1,6 +1,6 @@
 # 🏪 Vendoly — Release Notes
 
-## Novità della Versione 1.0.5 (In Sviluppo)
+## Novità della Versione 1.1.0 (In Sviluppo)
 
 ### 1. 📱 Fix Icone PWA per Smartphone (iOS & Android) & Supporto Favicon Personalizzata
 - **Risoluzione Icone Vuote o Fallback su Mobile**: Risolto il problema per cui su iPhone e dispositivi Android le icone PWA apparivano come quadrati monocromatici vuoti o lettere di ripiego. iOS Safari richiede rigorosamente formati PNG raster per `apple-touch-icon`, scartando i file vettoriali SVG.
