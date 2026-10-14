@@ -2,19 +2,35 @@
 
 ## Novità della Versione 1.1.0 (In Sviluppo)
 
-### 1. 📱 Fix Icone PWA per Smartphone (iOS & Android) & Supporto Favicon Personalizzata
-- **Risoluzione Icone Vuote o Fallback su Mobile**: Risolto il problema per cui su iPhone e dispositivi Android le icone PWA apparivano come quadrati monocromatici vuoti o lettere di ripiego. iOS Safari richiede rigorosamente formati PNG raster per `apple-touch-icon`, scartando i file vettoriali SVG.
-- **Logica Intelligente di Fallback**:
-  - Se il cliente/tenant ha caricato un proprio logo o favicon personalizzato nelle impostazioni di brand, la PWA su smartphone adotta automaticamente l'immagine del cliente.
-  - Se il cliente non ha configurato una favicon, il sistema inietta l'icona ufficiale nativa in alta risoluzione (Shopping Bag moderna con badge cassa su Electric Indigo) con formati specifici (`apple-touch-icon.png` a 180x180 per Apple, `icon-192.png`, `icon-512.png` e `icon-maskable-512.png` per Android).
-- **Allineamento Universale Manifest**: Serviti contemporaneamente sia `/manifest.json` sia `/manifest.webmanifest` con MIME type standard e categorie W3C PWA valide.
-
----
-
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
 - **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (`FloatingWhatsAppWidget`), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
 - **Pulsante Notifiche Spedizione & Ordini 1-Click**: Nella gestione ordini della dashboard, l'esercente può inviare con 1-click la notifica di merce pronta per il ritiro in sede o il messaggio di tracking con link universale ParcelsApp / 17Track.
 - **Client Standardizzato (`@/lib/whatsapp-client` & `@/lib/whatsapp-server`)**: Connessione diretta e leggera al micro-servizio centralizzato di Taaaac Core per le notifiche cloud.
+
+---
+
+## Novità della Versione 1.0.5 (Hotfix / Patch)
+
+### 1. 📱 Fix Icone PWA per Smartphone (iOS & Android) & Supporto Favicon Personalizzata
+- **Risoluzione Icone Vuote o Fallback su Mobile**: Risolto il problema per cui su iPhone e dispositivi Android le icone PWA apparivano come quadrati monocromatici vuoti o lettere di ripiego. iOS Safari richiede rigorosamente formati PNG raster per `apple-touch-icon`, scartando i file vettoriali SVG.
+- **Logica Intelligente di Fallback**:
+  - Se il cliente/tenant ha caricato un proprio logo o favicon personalizzato nelle impostazioni di brand (*Dashboard > Impostazioni > Aspetto & Brand*), la PWA su smartphone adotta automaticamente l'immagine del cliente.
+  - Se il cliente non ha configurato una favicon, il sistema inietta l'icona ufficiale nativa in alta risoluzione (Shopping Bag moderna con badge cassa su Electric Indigo) con formati specifici (`apple-touch-icon.png` a 180x180 per Apple, `icon-192.png`, `icon-512.png` e `icon-maskable-512.png` per Android).
+- **Allineamento Universale Manifest**: Serviti contemporaneamente sia `/manifest.json` sia `/manifest.webmanifest` con MIME type standard e categorie W3C PWA valide.
+
+### 2. 📲 Guida Rapida per il Cliente: Come Aggiornare l'Icona sul Tuo Smartphone
+> **⚠️ Nota Tecnica Importante sulla Cache dei Telefoni:**
+> I sistemi operativi mobili (Apple iOS e Android) memorizzano l'icona dell'applicazione nella cache locale permanente al momento del primo salvataggio sulla schermata Home. Pertanto, **le app già aggiunte in precedenza continueranno a mostrare la vecchia icona finché non vengono registrate nuovamente**.
+
+#### 🛠️ Istruzioni Passo-Passo per Sostituire la Vecchia Icona (30 secondi):
+1. **Elimina la vecchia icona dalla schermata Home**:
+   - Tieni premuto il dito sull'icona attuale dell'app sullo schermo del telefono fino a quando compare il menu a comparsa, quindi tocca **"Rimuovi app"** (oppure **"Elimina dalla schermata Home"**).
+2. **Apri il tuo gestionale nel browser**:
+   - Apri il browser dello smartphone (**Safari** su iPhone/iPad oppure **Chrome** su Android) e collegati all'indirizzo del tuo sito web.
+3. **Aggiungi nuovamente l'app alla schermata Home**:
+   - **Su iPhone (iOS / Safari)**: tocca l'icona di condivisione in basso al centro (il quadrato con la freccia verso l'alto ⬆️), scorri il menu verso il basso e tocca **"Aggiungi alla schermata Home"**, quindi conferma con **"Aggiungi"** in alto a destra.
+   - **Su Android (Chrome)**: tocca il menu con i tre puntini in alto a destra (⋮), seleziona **"Aggiungi a schermata Home"** (o **"Installa applicazione"**), e conferma con **"Aggiungi"**.
+4. **Fatto!** L'icona sulla schermata Home del tuo smartphone sarà ora perfettamente nitida, con la grafica dedicata o con il logo del tuo brand.
 
 ---
 

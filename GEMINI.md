@@ -53,3 +53,17 @@ Quando una nuova MINOR/MAJOR (es. `1.1.0`) è già aperta in sviluppo, ma occorr
    - Quando l'utente decide di rilasciare la patch ai clienti reali su VPS (`bfestetica`, `littlecreations`, ecc.), il deploy avverrà prelevando il codice da questo branch isolato.
    - Ogni modifica apportata a `hotfix/1.0.X` deve essere contestualmente integrata (merge o cherry-pick) dentro `main` (sulla `1.1.0`), così che la versione futura erediti tutte le correzioni senza discrepanze.
 
+---
+
+## 6. Separazione Rigida dei Contenuti Documentati (Hotfix vs Minor/Major)
+- Nelle note di rilascio (`RELEASE_NOTES.md`), nel database centrale (`ModuleRelease`) e nelle comunicazioni email:
+  - **I contenuti degli Hotfix / Patch (`0.0.X`) NON devono mai essere fusi o presentati all'interno delle note di una MINOR (`0.X.0`) o MAJOR (`X.0.0`)**.
+  - Ogni release documenta **esclusivamente** il proprio perimetro:
+    - **Minor / Major**: solo le nuove feature, i miglioramenti grafici e le evoluzioni funzionali (es. WhatsApp Hub per la `1.1.0`).
+    - **Patch / Hotfix**: solo le correzioni chirurgiche, bugfix mirati e guide tecniche di servizio (es. fix icone PWA per la `1.0.5`).
+  - Su `main` e `cliente-demo`, la sezione `1.1.0` conterrà unicamente le feature della 1.1.0; le correzioni della 1.0.5 compaiono nel capitolo dedicato `## Novità della Versione 1.0.5 (Hotfix / Patch)` collocato subito sotto.
+- **Guida Obbligatoria per Aggiornamento Icone PWA nei Hotfix**:
+  - Qualsiasi hotfix che tocchi icone, PWA, manifest o asset grafici memorizzati nella cache client dei telefoni DEVE includere obbligatoriamente una guida per il cliente finale con:
+    1. La spiegazione tecnica semplice che le app PWA già salvate sulla schermata Home mantengono la vecchia icona a causa della cache nativa permanente del dispositivo mobile (iOS Safari o Android Chrome).
+    2. Le istruzioni dettagliate passo-passo per eliminare la vecchia icona e salvare nuovamente l'app dalla finestra del browser su iPhone (Safari) e Android (Chrome).
+
