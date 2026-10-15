@@ -18,6 +18,10 @@ import {
   Share2,
   ChevronRight,
   ChevronDown,
+  MessageCircle,
+  Star,
+  RefreshCw,
+  Sparkles,
 } from "lucide-react";
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
@@ -125,7 +129,76 @@ export default function VendolyImpostazioniPage() {
   const [dragActiveFavicon, setDragActiveFavicon] = useState(false);
   const [imageProcessing, setImageProcessing] = useState<string | null>(null);
 
+  // Omnichannel State
+  const [channelStatus, setChannelStatus] = useState<any>(null);
+  const [syncingOmnichannel, setSyncingOmnichannel] = useState(false);
+
+  const handleSyncOmnichannel = async () => {
+    setSyncingOmnichannel(true);
+    setFeedback(null);
+    try {
+      const parseTimeSlots = (str: string) => {
+        if (!str || str.toLowerCase().includes("chiuso")) return [];
+        const parts = str.split("/").map((p) => p.trim());
+        const slots: { open: string; close: string }[] = [];
+        for (const p of parts) {
+          const match = p.match(/(\d{1,2}[:.]\d{2})\s*[-–—]\s*(\d{1,2}[:.]\d{2})/);
+          if (match) {
+            slots.push({
+              open: match[1].replace(".", ":").padStart(5, "0"),
+              close: match[2].replace(".", ":").padStart(5, "0"),
+            });
+          }
+        }
+        if (slots.length === 0) {
+          slots.push({ open: "09:30", close: "19:30" });
+        }
+        return slots;
+      };
+
+      const ferialiSlots = parseTimeSlots(form.orariFeriali);
+      const sabatoSlots = parseTimeSlots(form.orariSabato);
+      const domenicaSlots = parseTimeSlots(form.orariDomenica);
+
+      const weeklyHours = [
+        { dayOfWeek: "MONDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
+        { dayOfWeek: "TUESDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
+        { dayOfWeek: "WEDNESDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
+        { dayOfWeek: "THURSDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
+        { dayOfWeek: "FRIDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
+        { dayOfWeek: "SATURDAY" as const, isOpen: sabatoSlots.length > 0, slots: sabatoSlots },
+        { dayOfWeek: "SUNDAY" as const, isOpen: domenicaSlots.length > 0, slots: domenicaSlots },
+      ];
+
+      const res = await fetch("/api/sync/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weeklyHours }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Errore sincronizzazione canali");
+      }
+
+      setFeedback({
+        type: "success",
+        text: "🚀 Orari negozio sincronizzati all'unisono su Google Maps, Meta e WhatsApp!",
+      });
+      const st = await fetch("/api/sync/channels").then((r) => r.json()).catch(() => null);
+      if (st) setChannelStatus(st);
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Errore durante la sincronizzazione" });
+    } finally {
+      setSyncingOmnichannel(false);
+    }
+  };
+
   useEffect(() => {
+    fetch("/api/sync/channels")
+      .then((r) => r.json())
+      .then((st) => setChannelStatus(st))
+      .catch(() => {});
+
     fetch("/api/impostazioni")
       .then((r) => r.json())
       .then((data) => {
@@ -593,6 +666,106 @@ export default function VendolyImpostazioniPage() {
                   className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
                   placeholder="Testo stampato in calce allo scontrino o alle email di conferma ordine..."
                 />
+              </div>
+            </div>
+
+            {/* Hub Sincronizzazione Omnicanale */}
+            <div className="pt-4 border-t border-slate-100">
+              <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-500/30 rounded-2xl p-4 shadow-lg text-white">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                      <RefreshCw className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        Hub Sincronizzazione Omnicanale
+                        <span className="text-[10px] uppercase tracking-wider bg-emerald-500/20 text-emerald-300 font-black px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          v1.1.0 All'Unisono
+                        </span>
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Un solo click aggiorna orari negozio fisico su Google Maps, Meta (Facebook & IG) e WhatsApp Business.
+                      </p>
+                    </div>
+                  </div>
+                  {channelStatus?.lastOmnichannelSyncAt && (
+                    <div className="text-[11px] text-slate-400">
+                      Ultima sinc: <span className="text-slate-200 font-mono">{new Date(channelStatus.lastOmnichannelSyncAt).toLocaleString("it-IT")}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Canali Connessi */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-3">
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                      <Globe className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">Google Maps</div>
+                      <div className="text-[10px] text-slate-400 truncate flex items-center gap-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${channelStatus?.channels?.google?.enabled ? "bg-emerald-400" : "bg-emerald-400"}`} />
+                        {channelStatus?.channels?.google?.enabled ? "Collegato" : "Pronto (Core)"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                      <Share2 className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">Facebook & IG</div>
+                      <div className="text-[10px] text-slate-400 truncate flex items-center gap-1">
+                        <span className={`w-1.5 h-1.5 rounded-full ${channelStatus?.channels?.meta?.enabled ? "bg-emerald-400" : "bg-emerald-400"}`} />
+                        {channelStatus?.channels?.meta?.enabled ? "Collegato" : "Pronto (Core)"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <MessageCircle className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">WhatsApp</div>
+                      <div className="text-[10px] text-slate-400 truncate flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        Attivo 1-Click
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                      <Star className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold text-white truncate">Review Booster</div>
+                      <div className="text-[10px] text-slate-400 truncate flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        Email 5 Stelle
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSyncOmnichannel}
+                    disabled={syncingOmnichannel}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs shadow-md transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {syncingOmnichannel ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Sparkles className="w-4 h-4" />
+                    )}
+                    🚀 Salva e Sincronizza Orari Negozio su Google & Canali
+                  </button>
+                </div>
               </div>
             </div>
           </div>

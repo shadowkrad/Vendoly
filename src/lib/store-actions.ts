@@ -5,6 +5,7 @@ import { MOCK_PRODUCTS, MOCK_ORDERS, MockProduct, MockOrder } from "@/lib/mock-s
 import { revalidatePath } from "next/cache";
 import { sendNotificationMail } from "@/lib/taaaac-mailer";
 import { executeKillSwitch } from "@/lib/kill-switch";
+import { triggerGoogleReviewBooster } from "@/lib/omnichannel-client";
 
 /**
  * Determina se l'ambiente corrente è una DEMO dimostrativa (es. Vercel)
@@ -240,6 +241,14 @@ export async function updateOrderStatus(
         ...(trackingCode !== undefined ? { trackingCode } : {}),
       },
     });
+
+    if (status === "COMPLETATO" && updated.customerEmail) {
+      triggerGoogleReviewBooster({
+        clientEmail: updated.customerEmail,
+        clientName: updated.customerName,
+        serviceName: "Acquisto Vendoly Store",
+      }).catch((e) => console.error("[Vendoly ReviewBooster Trigger Error]:", e));
+    }
 
     revalidatePath("/admin");
     revalidatePath("/dashboard/ordini");
