@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -44,6 +45,7 @@ interface UserSecurityModalProps {
 }
 
 export default function UserSecurityModal({ isOpen, onClose, userEmail }: UserSecurityModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"mfa" | "devices" | "logs">("mfa");
   const [loading, setLoading] = useState(true);
   const [mfaEnabled, setMfaEnabled] = useState(false);
@@ -65,6 +67,10 @@ export default function UserSecurityModal({ isOpen, onClose, userEmail }: UserSe
 
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -228,10 +234,10 @@ export default function UserSecurityModal({ isOpen, onClose, userEmail }: UserSe
     }
   }
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-150 overflow-y-auto">
       <div className="w-full max-w-2xl bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header Modale */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
@@ -680,6 +686,7 @@ export default function UserSecurityModal({ isOpen, onClose, userEmail }: UserSe
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
