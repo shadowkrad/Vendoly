@@ -1,5 +1,27 @@
 # 🚀 Vendoly — Release Notes
 
+
+## Novità della Versione 1.0.6 (Patch di Sicurezza e Hardening Accessi)
+
+### 1. 🛡️ Autenticazione a Due Fattori (2FA / MFA Volontaria con Codici di Emergenza)
+- **Supporto TOTP Universale**: Ogni commerciante o addetto alla cassa può abilitare liberamente l'autenticazione a due fattori scansionando il QR code con qualsiasi app Authenticator standard (Google Authenticator, Microsoft Authenticator, Apple Passwords, 1Password, Bitwarden).
+- **8 Codici di Recupero di Emergenza**: Generazione di codici di backup monouso crittografati nel database, da conservare per accedere qualora lo smartphone non fosse momentaneamente disponibile.
+- **Login Dinamico a 2 Step**: Interfaccia di accesso con verifica delle credenziali e passaggio immediato all'inserimento del codice a 6 cifre o di emergenza.
+
+### 2. 📧 Allerta Immediata per Accesso da Nuovo Dispositivo
+- **Riconoscimento Automatico Dispositivi**: Rilevamento di browser, sistema operativo e indirizzo IP ad ogni login.
+- **Email di Sicurezza Automatica**: Al primo accesso da un nuovo computer, smartphone o POS, il sistema invia un'email di avviso con data, ora, dispositivo e indirizzo IP, per la massima tranquillità.
+
+### 3. 📋 Centro di Controllo Sicurezza, Registro Accessi e Disconnessione Remota
+- **Pannello "Sicurezza & 2FA" in Dashboard**: Accessibile direttamente dalla barra laterale della dashboard per verificare i dispositivi registrati e la cronologia degli accessi con esito dettagliato.
+- **Disconnessione Remota Globale (Kill-Switch)**: Possibilità di revocare all'istante l'accesso da tutti i dispositivi remoti con un singolo clic.
+
+### 4. 🛑 Protezione Anti Brute-Force e Honey-Pot Anti-Bot
+- **Blocco Temporaneo Automatico**: Protezione attiva contro tentativi di indovinare la password; dopo 5 tentativi consecutivi errati dall'IP o sull'account, l'accesso viene sospeso per 15 minuti con timer di sblocco in tempo reale.
+- **Honey-Pot Silenzioso**: Campo esca invisibile nel modulo di login che respinge all'istante bot automatizzati prima dell'elaborazione.
+
+---
+
 ## Novità della Versione 1.0.5 (Hotfix Produzione)
 
 ### 1. 📱 Fix Icone PWA per Smartphone (iOS & Android) & Supporto Favicon Personalizzata
