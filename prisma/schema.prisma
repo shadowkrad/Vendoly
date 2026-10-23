@@ -125,6 +125,12 @@ model TenantLocalCache {
 
   // Showcase & Visual Studio (v1.0.4)
   showcaseConfig          String?  @default("{}")
+  mfaEnabled              Boolean  @default(false)
+  mfaSecret               String?
+  mfaBackupCodes          String?   // JSON array di codici crittografati
+  failedLoginAttempts     Int      @default(0)
+  lockedUntil             DateTime?
+  tokenVersion            Int      @default(1)
 }
 
 // Annunci pubblicati sui marketplace (Issue #6)
@@ -206,4 +212,32 @@ model WebAuthnChallenge {
   createdAt DateTime @default(now())
 
   @@index([expiresAt])
+}
+
+
+model TrustedDevice {
+  id          String    @id @default(cuid())
+  deviceHash  String    @unique
+  deviceName  String
+  deviceType  String    @default("desktop")
+  browser     String?
+  os          String?
+  ipAddress   String?
+  firstSeenAt DateTime  @default(now())
+  lastSeenAt  DateTime  @default(now())
+}
+
+model AccessLog {
+  id          String    @id @default(cuid())
+  esito       String
+  ipAddress   String
+  userAgent   String?
+  deviceType  String    @default("desktop")
+  browser     String?
+  os          String?
+  mfaUsed     Boolean   @default(false)
+  dettaglio   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
 }
