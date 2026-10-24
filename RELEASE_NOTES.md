@@ -4,6 +4,7 @@
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
 - **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (`FloatingWhatsAppWidget`), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
+- **Perfezionamento Grafico Bollino WhatsApp Ufficiale**: integrato il tracciato vettoriale ufficiale Meta WhatsApp (fumetto solido bianco puro `#FFFFFF` ad alta definizione con cornetta verde `#25D366` in risalto), eliminando il vecchio bordo vuoto wireframe e garantendo la massima nitidezza visiva su tutti i dispositivi.
 - **Pulsante Notifiche Spedizione & Ordini 1-Click**: Nella gestione ordini della dashboard, l'esercente può inviare con 1-click la notifica di merce pronta per il ritiro in sede o il messaggio di tracking con link universale ParcelsApp / 17Track.
 - **Client Standardizzato (`@/lib/whatsapp-client` & `@/lib/whatsapp-server`)**: Connessione diretta e leggera al micro-servizio centralizzato di Taaaac Core per le notifiche cloud.
 
