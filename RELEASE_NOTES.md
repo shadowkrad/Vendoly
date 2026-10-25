@@ -40,6 +40,11 @@
 - **Blocco Temporaneo Automatico**: Protezione attiva contro tentativi di indovinare la password; dopo 5 tentativi consecutivi errati dall'IP o sull'account, l'accesso viene sospeso per 15 minuti con timer di sblocco in tempo reale.
 - **Honey-Pot Silenzioso**: Campo esca invisibile nel modulo di login che respinge all'istante bot automatizzati prima dell'elaborazione.
 
+### 5. 🎄 Calendario Festività Nazionali, Aperture Straordinarie Shopping & Preavviso a 7 Giorni
+- **Motore Festività Nazionali Italiane con Calcolo Pasqua**: Riconoscimento automatico delle 12 festività ufficiali italiane (Natale, Capodanno, Epifania, Pasqua, Lunedì dell'Angelo, 25 Aprile, 1 Maggio, 2 Giugno, Ferragosto, Tutti i Santi, Immacolata, Santo Stefano) tramite algoritmo astronomico di Meeus/Jones/Butcher.
+- **Nuovo Pannello "Orari & Festività" in Dashboard**: Gestione unificata degli orari del negozio fisico (feriali, sabato, domenica) e delle date speciali (chiusure per ferie, orari continuati o aperture straordinarie per lo shopping domenicale e saldi).
+- **Banner Intelligente di Preavviso (7 Giorni di Anticipo)**: Banner interattivo in cima alla panoramica della dashboard che avvisa l'esercente con 7 giorni di anticipo sull'avvicinarsi di ogni festività, indicando se il negozio risulterà aperto o chiuso e fornendo una scorciatoia rapida 1-click per programmare aperture straordinarie.
+
 ---
 
 ## Novità della Versione 1.0.5 (Hotfix Produzione)
