@@ -18,6 +18,7 @@ import {
   Store,
   Users,
   Settings,
+  Clock,
   Shield,
   Gift,
   Award,
@@ -211,6 +212,18 @@ export default function DashboardSidebar() {
               Configurazione
             </p>
                         <Link
+              href="/dashboard/orari"
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                isActive("/dashboard/orari")
+                  ? "bg-emerald-600 text-white font-bold"
+                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+              }`}
+            >
+              <Clock className="w-4 h-4 shrink-0" />
+              <span>Orari & Festività</span>
+            </Link>
+            <Link
               href="/dashboard/impostazioni"
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
