@@ -1,26 +1,35 @@
-# 🚀 Vendoly — Release Notes
+﻿# 🚀 Vendoly — Release Notes
 
 ## Novità della Versione 1.1.0 (In Sviluppo)
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
-- **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (`FloatingWhatsAppWidget`), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
-- **Perfezionamento Grafico Bollino WhatsApp Ufficiale**: integrato il tracciato vettoriale ufficiale Meta WhatsApp (fumetto solido bianco puro `#FFFFFF` ad alta definizione con cornetta verde `#25D366` in risalto), eliminando il vecchio bordo vuoto wireframe e garantendo la massima nitidezza visiva su tutti i dispositivi.
+- **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (FloatingWhatsAppWidget), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
+- **Perfezionamento Grafico Bollino WhatsApp Ufficiale**: integrato il tracciato vettoriale ufficiale Meta WhatsApp (fumetto solido bianco puro #FFFFFF ad alta definizione con cornetta verde #25D366 in risalto), eliminando il vecchio bordo vuoto wireframe e garantendo la massima nitidezza visiva su tutti i dispositivi.
 - **Pulsante Notifiche Spedizione & Ordini 1-Click**: Nella gestione ordini della dashboard, l'esercente può inviare con 1-click la notifica di merce pronta per il ritiro in sede o il messaggio di tracking con link universale ParcelsApp / 17Track.
-- **Client Standardizzato (`@/lib/whatsapp-client` & `@/lib/whatsapp-server`)**: Connessione diretta e leggera al micro-servizio centralizzato di Taaaac Core per le notifiche cloud.
+- **Client Standardizzato (@/lib/whatsapp-client & @/lib/whatsapp-server)**: Connessione diretta e leggera al micro-servizio centralizzato di Taaaac Core per le notifiche cloud.
 
 ### 2. 🌐 Hub Sincronizzazione Omnicanale (Google Maps, Meta Facebook & IG, WhatsApp Business)
-- **Aggiornamento Orari Negozio All'Unisono con 1 Click**: Dalla scheda *Dashboard > Impostazioni > Negozio & Vetrina*, il pulsante `🚀 Salva e Sincronizza Orari Negozio su Google & Canali` aggiorna simultaneamente gli orari di apertura ordinari sulla scheda Google Business Profile (Maps & Ricerca), sulle Pagine Meta (Facebook & Instagram) e sul profilo WhatsApp Business del negozio.
+- **Aggiornamento Orari Negozio All'Unisono con 1 Click**: Dalla scheda *Dashboard > Impostazioni > Negozio & Vetrina*, il pulsante 🚀 Salva e Sincronizza Orari Negozio su Google & Canali aggiorna simultaneamente gli orari di apertura ordinari sulla scheda Google Business Profile (Maps & Ricerca), sulle Pagine Meta (Facebook & Instagram) e sul profilo WhatsApp Business del negozio.
 - **Badge di Stato Canali in Tempo Reale**: Nuova scheda visiva nella gestione negozio con indicatori live dello stato di connessione e sincronizzazione per Google Maps, Meta, WhatsApp Business e Google Review Booster.
 - **Architettura Centralizzata Taaaac Core**: Gestione centralizzata e sicura di tutti i token di accesso e delle API dei canali esterni tramite Taaaac Core.
 
 ### 3. ⭐ Google Review Booster Automatico via Email (5 Stelle Intelligenti)
-- **Email Post-Acquisto Automatica a Costo Zero**: Quando un ordine viene contrassegnato come `COMPLETATO`, il sistema invia in automatico un'email con 5 stelle interattive da `noreply@taaaac.eu` senza consumare la quota messaggi WhatsApp.
+- **Email Post-Acquisto Automatica a Costo Zero**: Quando un ordine viene contrassegnato come COMPLETATO, il sistema invia in automatico un'email con 5 stelle interattive da 
+oreply@taaaac.eu senza consumare la quota messaggi WhatsApp.
 - **Routing Intelligente Reputazione**:
   - **4 e 5 Stelle (Acquisto Soddisfatto)**: Reindirizzano il cliente direttamente alla scheda Google Maps per pubblicare la recensione a 5 stelle verificata.
-  - **1, 2 e 3 Stelle (Customer Care)**: Reindirizzano al modulo di feedback privato interno (`/feedback`) permettendo al merchant di risolvere privatamente qualsiasi dubbio o richiesta di assistenza.
+  - **1, 2 e 3 Stelle (Customer Care)**: Reindirizzano al modulo di feedback privato interno (/feedback) permettendo al merchant di risolvere privatamente qualsiasi dubbio o richiesta di assistenza.
 
 ---
 
+## Novità della Versione 1.0.7 (Hotfix / Patch)
+
+### 1. 🔐 Autenticazione Distinta: Email + Password Titolare & PIN Staff Cassa
+- **Accesso Titolare Diretto con Email e Password**: Il titolare del punto vendita accede inserendo l'indirizzo email e la password ricevuti al momento della registrazione o aggiornati nel proprio account Taaaac, eliminando la richiesta confusa del solo PIN/Password generica.
+- **PIN Tastierino Touch Dedicato ai Collaboratori**: Il tastierino numerico PIN rapido è ora dedicato esclusivamente agli operatori di cassa e collaboratori del negozio per sbloccare rapidamente i tablet e le postazioni POS.
+- **Centralizzazione Sicurezza e MFA su Taaaac Core**: Le impostazioni avanzate di sicurezza (2FA TOTP, codici di recupero, cambio password) sono centralizzate al 100% nella dashboard utente di Taaaac (taaaac.eu/portal), semplificando l'esperienza all'interno del modulo satellite.
+
+---
 ## Novità della Versione 1.0.6 (Patch di Sicurezza e Hardening Accessi)
 
 ### 1. 🛡️ Autenticazione a Due Fattori (2FA / MFA Volontaria con Codici di Emergenza)
