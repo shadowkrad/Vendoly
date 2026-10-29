@@ -1,26 +1,55 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from "next";
+import { prisma, ensureDatabase } from "@/lib/db";
 
-export default function manifest(): MetadataRoute.Manifest {
+export const dynamic = "force-dynamic";
+
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  let brandName = "Vendoly";
+  let themeColor = "#059669";
+
+  try {
+    await ensureDatabase();
+    const cache = await prisma.tenantLocalCache.findUnique({
+      where: { id: "singleton" },
+    });
+    if (cache?.brandName) {
+      brandName = cache.brandName;
+    }
+    if (cache?.accentColor) {
+      themeColor = cache.accentColor;
+    }
+  } catch (err) {
+    console.error("[PWA Manifest Vendoly] Fallback su default:", err);
+  }
+
   return {
-    name: "Vendoly — Cassa & Store",
-    short_name: "Vendoly",
-    description: "Gestionale Cassa POS e Vendite Multicanale",
+    name: `${brandName} — Cassa POS & Store`,
+    short_name: brandName,
+    description: `Modulo cassa POS, catalogo e vendite per ${brandName}, parte dell'ecosistema Taaaac.`,
     start_url: "/",
+    scope: "/",
     display: "standalone",
+    orientation: "portrait",
     background_color: "#0f172a",
-    theme_color: "#059669",
+    theme_color: themeColor,
     icons: [
       {
-        src: "/icon.png",
+        src: "/api/pwa-icon?size=192",
         sizes: "192x192",
         type: "image/png",
-        purpose: "maskable",
+        purpose: "any",
       },
       {
-        src: "/icon.png",
+        src: "/api/pwa-icon?size=512",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
+      },
+      {
+        src: "/api/pwa-icon?size=512",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };
