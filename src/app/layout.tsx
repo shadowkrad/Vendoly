@@ -21,10 +21,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: `Catalogo prodotti e cassa punto vendita per ${brand}`,
     icons: {
-      icon: favicon,
-      apple: tenant.theme.faviconUrl || "/apple-touch-icon.png",
+      icon: [
+        { url: "/api/pwa-icon?size=192", sizes: "192x192", type: "image/png" },
+        { url: "/favicon.ico", sizes: "any" },
+      ],
+      apple: [{ url: "/api/pwa-icon?size=180", sizes: "180x180", type: "image/png" }],
     },
-    manifest: "/manifest.json",
+    manifest: '/manifest.webmanifest',
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
@@ -59,9 +62,9 @@ export default async function RootLayout({
   return (
     <html lang="it" className={inter.variable}>
       <head>
-        <link rel="icon" href={favicon} sizes="any" />
-        <link rel="apple-touch-icon" sizes="180x180" href={appleIcon} />
-        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/api/pwa-icon?size=192" sizes="any" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/api/pwa-icon?size=180" />
+        <link rel="manifest" href="/manifest.webmanifest" />
         <style dangerouslySetInnerHTML={{ __html: dynamicCss }} />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
