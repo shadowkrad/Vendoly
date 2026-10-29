@@ -1,5 +1,13 @@
-# 🚀 Vendoly — Release Notes
+﻿# 🚀 Vendoly — Release Notes
 
+## Novità della Versione 1.0.7 (Hotfix / Patch)
+
+### 1. 🔐 Autenticazione Distinta: Email + Password Titolare & PIN Staff Cassa
+- **Accesso Titolare Diretto con Email e Password**: Il titolare del punto vendita accede inserendo l'indirizzo email e la password ricevuti al momento della registrazione o aggiornati nel proprio account Taaaac, eliminando la richiesta confusa del solo PIN/Password generica.
+- **PIN Tastierino Touch Dedicato ai Collaboratori**: Il tastierino numerico PIN rapido è ora dedicato esclusivamente agli operatori di cassa e collaboratori del negozio per sbloccare rapidamente i tablet e le postazioni POS.
+- **Centralizzazione Sicurezza e MFA su Taaaac Core**: Le impostazioni avanzate di sicurezza (2FA TOTP, codici di recupero, cambio password) sono centralizzate al 100% nella dashboard utente di Taaaac (taaaac.eu/portal), semplificando l'esperienza all'interno del modulo satellite.
+
+---
 
 ## Novità della Versione 1.0.6 (Patch di Sicurezza e Hardening Accessi)
 
