@@ -1,3 +1,4 @@
+import FloatingWhatsAppWidget from "@/components/public/FloatingWhatsAppWidget";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -66,6 +67,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
         {children}
+      <FloatingWhatsAppWidget />
       </body>
     </html>
   );
