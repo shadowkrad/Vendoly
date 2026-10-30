@@ -16,6 +16,9 @@ import {
   Sparkles,
   ArrowRight,
   Share2,
+  Ticket,
+  MinusCircle,
+  Calendar,
 } from "lucide-react";
 import { FidelityRewardItem } from "./FidelitySettingsPanel";
 
@@ -26,12 +29,21 @@ interface Props {
   rewards: FidelityRewardItem[];
 }
 
+interface SimulatedVoucher {
+  id: string;
+  code: string;
+  title: string;
+  balance: number;
+  initialValue: number;
+}
+
 interface SimulatedCustomer {
   phone: string;
   name: string;
   points: number;
   visits: number;
   cardToken: string;
+  vouchers: SimulatedVoucher[];
 }
 
 export default function FidelityCashierScanner({
@@ -44,8 +56,15 @@ export default function FidelityCashierScanner({
   const [customer, setCustomer] = useState<SimulatedCustomer | null>(null);
   const [spentAmount, setSpentAmount] = useState("");
   const [manualPoints, setManualPoints] = useState("");
+  const [voucherAmountToDeduct, setVoucherAmountToDeduct] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  // Form emissione nuovo voucher
+  const [showIssueVoucher, setShowIssueVoucher] = useState(false);
+  const [newVoucherAmount, setNewVoucherAmount] = useState("50");
+  const [newVoucherRecipient, setNewVoucherRecipient] = useState("");
+  const [newVoucherGreeting, setNewVoucherGreeting] = useState("");
 
   const cleanPhoneInput = (val: string) => val.replace(/[^0-9+]/g, "");
 
@@ -54,29 +73,41 @@ export default function FidelityCashierScanner({
     setIsSearching(true);
     setFeedback(null);
 
-    // Se l'input è un URL o token (es. tc_xxx o https://.../tc_xxx)
-    let token = searchQuery.trim();
-    if (token.includes("/fidelity/card/")) {
-      token = token.split("/fidelity/card/")[1].split("?")[0];
+    let query = searchQuery.trim();
+    if (query.includes("/fidelity/card/")) {
+      query = query.split("/fidelity/card/")[1].split("?")[0];
+    } else if (query.includes("/voucher/")) {
+      query = query.split("/voucher/")[1].split("?")[0];
     }
 
     setTimeout(() => {
-      // In modalità demo locale o cassa:
-      const cleanPhone = cleanPhoneInput(searchQuery);
-      const isToken = token.startsWith("tc_");
+      const cleanPhone = cleanPhoneInput(query);
+      const isToken = query.startsWith("tc_");
+      const isVoucherCode = query.startsWith("VCH-");
 
       setCustomer({
-        phone: isToken ? "+39 340 1234567" : cleanPhone || "+39 340 1234567",
-        name: isToken ? "Mario Rossi (Cliente VIP)" : "Cliente Fedeltà",
+        phone: isToken || isVoucherCode ? "+39 340 1234567" : cleanPhone || "+39 340 1234567",
+        name: isToken || isVoucherCode ? "Mario Rossi (VIP)" : "Cliente Fedeltà",
         points: isToken ? 120 : (welcomeBonusPoints || 10),
         visits: isToken ? 5 : 1,
-        cardToken: isToken ? token : `tc_${Math.random().toString(16).substring(2, 10)}`,
+        cardToken: isToken ? query : `tc_${Math.random().toString(16).substring(2, 10)}`,
+        vouchers: [
+          {
+            id: "vch_1",
+            code: isVoucherCode ? query : "VCH-7829-K4B2",
+            title: "Buono Regalo Anniversario",
+            balance: 50.0,
+            initialValue: 50.0,
+          },
+        ],
       });
 
       setIsSearching(false);
       setFeedback({
         type: "success",
-        text: "Tessera cliente identificata con successo!",
+        text: isVoucherCode
+          ? `Voucher ${query} identificato con successo!`
+          : "Tessera cliente identificata con successo!",
       });
     }, 300);
   };
@@ -96,7 +127,7 @@ export default function FidelityCashierScanner({
     }
 
     if (pointsToAdd <= 0) {
-      pointsToAdd = 1; // 1 punto visita di cortesia
+      pointsToAdd = 1;
     }
 
     const newPoints = customer.points + pointsToAdd;
@@ -136,6 +167,71 @@ export default function FidelityCashierScanner({
     });
   };
 
+  const handleDeductVoucher = (voucher: SimulatedVoucher) => {
+    const amount = parseFloat(voucherAmountToDeduct);
+    if (isNaN(amount) || amount <= 0) {
+      setFeedback({ type: "error", text: "Inserisci un importo valido da scalare dal buono" });
+      return;
+    }
+    if (amount > voucher.balance) {
+      setFeedback({
+        type: "error",
+        text: `Importo superiore al saldo residuo (${voucher.balance.toFixed(2)} € disponibili)`,
+      });
+      return;
+    }
+
+    const newBalance = Math.max(0, voucher.balance - amount);
+    const updatedVouchers = customer?.vouchers.map((v) =>
+      v.id === voucher.id ? { ...v, balance: newBalance } : v
+    );
+
+    if (customer) {
+      setCustomer({ ...customer, vouchers: updatedVouchers || [] });
+    }
+
+    setVoucherAmountToDeduct("");
+    setFeedback({
+      type: "success",
+      text: `Scalati ${amount.toFixed(2)} € dal Buono Regalo [${voucher.code}]! Nuovo saldo residuo del voucher: ${newBalance.toFixed(2)} €.`,
+    });
+  };
+
+  const handleIssueVoucher = () => {
+    const val = parseFloat(newVoucherAmount);
+    if (isNaN(val) || val <= 0) return;
+
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "VCH-";
+    for (let i = 0; i < 8; i++) {
+      if (i === 4) code += "-";
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    const newV: SimulatedVoucher = {
+      id: "vch_" + Date.now(),
+      code,
+      title: newVoucherRecipient ? `Buono Regalo per ${newVoucherRecipient}` : `Buono Regalo ${val} €`,
+      balance: val,
+      initialValue: val,
+    };
+
+    if (customer) {
+      setCustomer({
+        ...customer,
+        vouchers: [newV, ...customer.vouchers],
+      });
+    }
+
+    setShowIssueVoucher(false);
+    setNewVoucherRecipient("");
+    setNewVoucherGreeting("");
+    setFeedback({
+      type: "success",
+      text: `Nuovo Buono Regalo da ${val.toFixed(2)} € emesso con codice [${code}]! Disponibile e inviabile al cliente.`,
+    });
+  };
+
   const cardWebUrl = customer ? `https://admin.taaaac.eu/fidelity/card/${customer.cardToken}` : "#";
 
   return (
@@ -144,17 +240,21 @@ export default function FidelityCashierScanner({
         <div>
           <h3 className="text-base font-semibold text-neutral-900 dark:text-white flex items-center gap-2">
             <QrCode className="w-5 h-5 text-amber-500" />
-            Scanner & Cassa Fidelity Card
+            Scanner &amp; Cassa Fidelity Card &amp; Buoni Regalo
           </h3>
           <p className="text-xs text-neutral-500 mt-0.5">
-            Inquadra il QR Code dello smartphone del cliente o inserisci il suo numero di telefono per accreditare punti o riscattare premi.
+            Inquadra il QR Code o digita il cellulare o codice voucher per accreditare punti, riscattare premi o scalare buoni regalo.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
             <Smartphone className="w-3.5 h-3.5" />
-            Apple & Google Wallet Ready
+            Apple &amp; Google Wallet Ready
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+            <Ticket className="w-3.5 h-3.5" />
+            Voucher &amp; Gift Cards
           </span>
         </div>
       </div>
@@ -164,7 +264,7 @@ export default function FidelityCashierScanner({
         <div className="relative flex-1">
           <input
             type="text"
-            placeholder="Scansiona QR Code o digita numero di cellulare (es. 3401234567)..."
+            placeholder="Scansiona QR Code, cellulare (es. 3401234567) o codice voucher (VCH-XXXX)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLookup()}
@@ -223,10 +323,10 @@ export default function FidelityCashierScanner({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div className="text-right">
                 <span className="block text-[10px] uppercase font-semibold text-neutral-400 tracking-wider">
-                  Saldo Attuale
+                  Punti Saldo
                 </span>
                 <span className="text-2xl font-black text-amber-600 dark:text-amber-400">
                   {customer.points} <span className="text-xs font-bold">PT</span>
@@ -245,8 +345,8 @@ export default function FidelityCashierScanner({
             </div>
           </div>
 
-          {/* Griglia Azioni Cassa: Accredito & Riscatti */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          {/* Griglia 3 Azioni Cassa: Punti, Premi & Buoni Regalo */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Box 1: Accredito Punti */}
             <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
               <div className="flex items-center justify-between">
@@ -255,13 +355,13 @@ export default function FidelityCashierScanner({
                   Accredita Punti Spesa
                 </h5>
                 <span className="text-[10px] text-neutral-400">
-                  Tasso: {pointsPerEuro || 1} pt/€
+                  {pointsPerEuro || 1} pt/€
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[10px] text-neutral-500 mb-1">Importo Conto (€)</label>
+                  <label className="block text-[10px] text-neutral-500 mb-1">Conto (€)</label>
                   <input
                     type="number"
                     min="0"
@@ -273,7 +373,7 @@ export default function FidelityCashierScanner({
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-neutral-500 mb-1">Punti Extra (Opz.)</label>
+                  <label className="block text-[10px] text-neutral-500 mb-1">Extra pt</label>
                   <input
                     type="number"
                     min="0"
@@ -291,7 +391,7 @@ export default function FidelityCashierScanner({
                 className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
-                Conferma Accredito Punti
+                Conferma Accredito
               </button>
             </div>
 
@@ -299,30 +399,30 @@ export default function FidelityCashierScanner({
             <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
               <h5 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
                 <Gift className="w-4 h-4 text-amber-500" />
-                Riscatto Premi Disponibili
+                Riscatto Premi
               </h5>
 
               {rewards.length === 0 ? (
                 <p className="text-xs text-neutral-400 py-3 text-center">Nessun premio configurato.</p>
               ) : (
-                <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                   {rewards.map((rew) => {
                     const canRedeem = customer.points >= rew.pointsRequired;
                     return (
                       <div
                         key={rew.id}
-                        className={`p-2.5 rounded-lg border text-xs flex items-center justify-between gap-2 ${
+                        className={`p-2 rounded-lg border text-xs flex items-center justify-between gap-2 ${
                           canRedeem
                             ? "bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/80"
                             : "bg-neutral-50 dark:bg-neutral-800/40 border-neutral-200 dark:border-neutral-800 opacity-60"
                         }`}
                       >
                         <div className="truncate">
-                          <span className="font-semibold text-neutral-900 dark:text-white block truncate">
+                          <span className="font-semibold text-neutral-900 dark:text-white block truncate text-[11px]">
                             {rew.name}
                           </span>
                           <span className="text-[10px] text-neutral-500">
-                            Costo: {rew.pointsRequired} pt
+                            {rew.pointsRequired} pt
                           </span>
                         </div>
 
@@ -330,7 +430,7 @@ export default function FidelityCashierScanner({
                           type="button"
                           disabled={!canRedeem}
                           onClick={() => handleRedeem(rew)}
-                          className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all shrink-0 ${
+                          className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all shrink-0 ${
                             canRedeem
                               ? "bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
                               : "bg-neutral-200 dark:bg-neutral-700 text-neutral-400 cursor-not-allowed"
@@ -344,13 +444,104 @@ export default function FidelityCashierScanner({
                 </div>
               )}
             </div>
+
+            {/* Box 3: Buoni Regalo & Voucher Digitali */}
+            <div className="p-4 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <h5 className="text-xs font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                  <Ticket className="w-4 h-4 text-indigo-500" />
+                  Buoni Regalo &amp; Voucher
+                </h5>
+                <button
+                  type="button"
+                  onClick={() => setShowIssueVoucher(!showIssueVoucher)}
+                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  {showIssueVoucher ? "Chiudi" : "+ Nuovo Buono"}
+                </button>
+              </div>
+
+              {/* Form emissione rapida */}
+              {showIssueVoucher ? (
+                <div className="p-2.5 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 space-y-2">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <div>
+                      <label className="block text-[9px] text-neutral-500 mb-0.5">Valore (€)</label>
+                      <input
+                        type="number"
+                        min="5"
+                        step="5"
+                        value={newVoucherAmount}
+                        onChange={(e) => setNewVoucherAmount(e.target.value)}
+                        className="w-full px-2 py-1 bg-white dark:bg-neutral-800 border rounded text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] text-neutral-500 mb-0.5">Destinatario</label>
+                      <input
+                        type="text"
+                        placeholder="Nome"
+                        value={newVoucherRecipient}
+                        onChange={(e) => setNewVoucherRecipient(e.target.value)}
+                        className="w-full px-2 py-1 bg-white dark:bg-neutral-800 border rounded text-xs"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleIssueVoucher}
+                    className="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-bold"
+                  >
+                    Emetti &amp; Genera Codice
+                  </button>
+                </div>
+              ) : customer.vouchers.length === 0 ? (
+                <p className="text-xs text-neutral-400 py-3 text-center">Nessun buono regalo attivo.</p>
+              ) : (
+                <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                  {customer.vouchers.map((vch) => (
+                    <div
+                      key={vch.id}
+                      className="p-2.5 rounded-lg bg-indigo-50/30 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800/80 space-y-1.5"
+                    >
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono font-bold text-neutral-900 dark:text-white">
+                          {vch.code}
+                        </span>
+                        <span className="font-black text-indigo-600 dark:text-indigo-400">
+                          {vch.balance.toFixed(2)} €
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 pt-1">
+                        <input
+                          type="number"
+                          placeholder="€ da scalare"
+                          value={voucherAmountToDeduct}
+                          onChange={(e) => setVoucherAmountToDeduct(e.target.value)}
+                          className="w-24 px-2 py-1 bg-white dark:bg-neutral-800 border rounded text-[11px]"
+                        />
+                        <button
+                          type="button"
+                          disabled={vch.balance <= 0}
+                          onClick={() => handleDeductVoucher(vch)}
+                          className="flex-1 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-[11px] disabled:opacity-50"
+                        >
+                          Scala dal Buono
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Barra Portafoglio & Link Tessera */}
           <div className="pt-3 border-t border-neutral-200 dark:border-neutral-700 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <span className="text-neutral-500 text-[11px] flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              La card del cliente si aggiorna in tempo reale sul suo Apple / Google Wallet.
+              Punti Fedeltà e Buoni Regalo sincronizzati in tempo reale sul Wallet smartphone del cliente.
             </span>
 
             <a
@@ -359,7 +550,7 @@ export default function FidelityCashierScanner({
               rel="noreferrer"
               className="text-amber-600 dark:text-amber-400 font-semibold hover:underline flex items-center gap-1 shrink-0"
             >
-              Visualizza Tessera Smartphone
+              Visualizza Tessera &amp; Voucher Smartphone
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
