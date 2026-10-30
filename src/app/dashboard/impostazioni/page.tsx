@@ -26,9 +26,12 @@ import {
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
 import RegisteredDevicesCard from "@/components/dashboard/RegisteredDevicesCard";
+import TelegramSettingsPanel, { TelegramSettingsData } from "@/components/dashboard/TelegramSettingsPanel";
+import FidelitySettingsPanel, { FidelitySettingsData } from "@/components/dashboard/FidelitySettingsPanel";
+import { Send, Award } from "lucide-react";
 import ShowcaseVisualStudio from "@/components/dashboard/showcase/ShowcaseVisualStudio";
 
-type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "dispositivi" | "aspetto";
+type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "telegram" | "fidelity" | "dispositivi" | "aspetto";
 
 interface TabItem {
   id: SettingsTab;
@@ -73,6 +76,22 @@ const TABS: TabItem[] = [
     description: "Canale email Taaaac Mail Engine e notifiche di conferma ordine al cliente",
   },
   {
+    id: "telegram",
+    label: "Telegram Hub & Negozio",
+    shortLabel: "Telegram",
+    iconComponent: Send,
+    shortDescription: "Bot ed avvisi ordini",
+    description: "Notifiche ordini e scontrini sul gruppo Telegram del personale di cassa e One-Tap Connect",
+  },
+  {
+    id: "fidelity",
+    label: "Fidelity & Punti",
+    shortLabel: "Fidelity",
+    iconComponent: Award,
+    shortDescription: "Raccolta punti e sconti",
+    description: "Fidelizzazione clienti cassa con numero di telefono, catalogo premi e buoni sconto",
+  },
+  {
     id: "dispositivi",
     label: "Dispositivi PWA",
     shortLabel: "Dispositivi",
@@ -95,6 +114,21 @@ export default function VendolyImpostazioniPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("negozio");
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  // Telegram & Fidelity State
+  const [telegramSettings, setTelegramSettings] = useState<TelegramSettingsData>({
+    enabled: false,
+    botToken: "",
+    botUsername: "",
+    staffChatId: "",
+  });
+
+  const [fidelitySettings, setFidelitySettings] = useState<FidelitySettingsData>({
+    enabled: false,
+    pointsPerEuro: 1,
+    welcomeBonusPoints: 10,
+    minPointsToRedeem: 50,
+    rewards: [],
+  });
 
   // Form State
   const [form, setForm] = useState({
@@ -308,6 +342,8 @@ export default function VendolyImpostazioniPage() {
           ritiroInSede: form.ritiroInSede,
           politicaReso: form.politicaReso,
           messaggioScontrino: form.messaggioScontrino,
+          telegramSettings,
+          fidelitySettings,
         }),
       });
 

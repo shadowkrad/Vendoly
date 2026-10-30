@@ -7,6 +7,15 @@ export async function GET() {
       where: { id: "singleton" },
     });
 
+    let fidelityRules = null;
+    try {
+      if (config?.fidelityRules) {
+        fidelityRules = JSON.parse(config.fidelityRules);
+      }
+    } catch {
+      fidelityRules = null;
+    }
+
     if (config) {
       return NextResponse.json({
         brandName: config.brandName,
@@ -28,6 +37,23 @@ export async function GET() {
         ritiroInSede: config.ritiroInSede ?? true,
         politicaReso: config.politicaReso || "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
         messaggioScontrino: config.messaggioScontrino || "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
+        telegramSettings: {
+          enabled: Boolean(config.telegramEnabled),
+          botToken: config.telegramBotToken || "",
+          botUsername: config.telegramBotUsername || "",
+          staffChatId: config.telegramStaffChatId || "",
+        },
+        fidelitySettings: {
+          enabled: Boolean(config.fidelityEnabled),
+          pointsPerEuro: fidelityRules?.pointsPerEuro || 1,
+          welcomeBonusPoints: fidelityRules?.welcomeBonusPoints || 10,
+          minPointsToRedeem: fidelityRules?.minPointsToRedeem || 50,
+          rewards: fidelityRules?.rewards || [
+            { id: "rew_v1", name: "Buono Sconto 5€ sul Prossimo Acquisto", pointsRequired: 50, rewardType: "DISCOUNT", discountAmount: 5 },
+            { id: "rew_v2", name: "Buono Sconto 15€ alla Cassa", pointsRequired: 100, rewardType: "DISCOUNT", discountAmount: 15 },
+            { id: "rew_v3", name: "Gift Card Negozio 30€ o Capo Omaggio", pointsRequired: 200, rewardType: "FREE_ITEM", freeItemName: "Gift Card da 30€ spendibile in store o capo della selezione" },
+          ],
+        },
       });
     }
 
@@ -51,6 +77,19 @@ export async function GET() {
       ritiroInSede: true,
       politicaReso: "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
       messaggioScontrino: "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
+      telegramSettings: {
+        enabled: false,
+        botToken: "",
+        botUsername: "",
+        staffChatId: "",
+      },
+      fidelitySettings: {
+        enabled: false,
+        pointsPerEuro: 1,
+        welcomeBonusPoints: 10,
+        minPointsToRedeem: 50,
+        rewards: [],
+      },
     });
   } catch (error) {
     console.error("Errore recupero impostazioni:", error);
@@ -81,6 +120,8 @@ export async function PUT(req: NextRequest) {
       ritiroInSede,
       politicaReso,
       messaggioScontrino,
+      telegramSettings,
+      fidelitySettings,
     } = body;
 
     const updated = await prisma.tenantLocalCache.upsert({
@@ -109,6 +150,12 @@ export async function PUT(req: NextRequest) {
         ...(ritiroInSede !== undefined && { ritiroInSede: Boolean(ritiroInSede) }),
         ...(politicaReso !== undefined && { politicaReso }),
         ...(messaggioScontrino !== undefined && { messaggioScontrino }),
+        ...(telegramSettings?.enabled !== undefined && { telegramEnabled: Boolean(telegramSettings.enabled) }),
+        ...(telegramSettings?.botToken !== undefined && { telegramBotToken: telegramSettings.botToken }),
+        ...(telegramSettings?.botUsername !== undefined && { telegramBotUsername: telegramSettings.botUsername }),
+        ...(telegramSettings?.staffChatId !== undefined && { telegramStaffChatId: telegramSettings.staffChatId }),
+        ...(fidelitySettings?.enabled !== undefined && { fidelityEnabled: Boolean(fidelitySettings.enabled) }),
+        ...(fidelitySettings !== undefined && { fidelityRules: JSON.stringify(fidelitySettings) }),
         lastSyncedAt: new Date(),
       },
       create: {
@@ -137,6 +184,12 @@ export async function PUT(req: NextRequest) {
           politicaReso ||
           "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
         messaggioScontrino: messaggioScontrino || "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
+        telegramEnabled: Boolean(telegramSettings?.enabled),
+        telegramBotToken: telegramSettings?.botToken || null,
+        telegramBotUsername: telegramSettings?.botUsername || null,
+        telegramStaffChatId: telegramSettings?.staffChatId || null,
+        fidelityEnabled: Boolean(fidelitySettings?.enabled),
+        fidelityRules: fidelitySettings ? JSON.stringify(fidelitySettings) : "{}",
         lastSyncedAt: new Date(),
       },
     });
