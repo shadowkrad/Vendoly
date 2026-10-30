@@ -99,10 +99,19 @@ export function resolveTenantDomain(hostHeader?: string | null): string {
 
 export async function fetchTenantConfig(domain?: string): Promise<TenantConfig> {
   const targetDomain = domain || resolveTenantDomain();
-  const isLocalDev =
+  const isDemoOrDev =
     process.env.NODE_ENV === "development" ||
     targetDomain.includes("localhost") ||
-    targetDomain.includes("127.0.0.1");
+    targetDomain.includes("127.0.0.1") ||
+    targetDomain.includes("vercel.app") ||
+    targetDomain.includes("cliente-demo") ||
+    targetDomain.includes("demo") ||
+    targetDomain.includes("staging");
+
+  // In tutti gli ambienti DEMO, Vercel e DEV: tutti gli add-on sono attivi di default a 360 gradi
+  if (isDemoOrDev) {
+    return DEFAULT_DEV_CONFIG;
+  }
 
   const coreApiUrl =
     process.env.TAAAAC_CORE_API_URL?.trim() ||
@@ -131,7 +140,7 @@ export async function fetchTenantConfig(domain?: string): Promise<TenantConfig> 
     console.warn(`[TaaaacClient] Vendoly fallback per (${coreApiUrl}):`, err?.message || err);
   }
 
-  if (isLocalDev) {
+  if (isDemoOrDev) {
     return DEFAULT_DEV_CONFIG;
   }
 
