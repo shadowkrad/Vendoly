@@ -248,7 +248,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
                 Showroom
               </a>
             )}
-            {showcase.sections?.showAbout && showcase.about?.enabled && (
+            {showcase.sections?.showAbout && (
               <a href="#chisiamo" className="hover:text-emerald-600 transition-colors">
                 Chi Siamo
               </a>
@@ -850,7 +850,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
       )}
 
       {/* 6. Chi Siamo & Filosofia Boutique */}
-      {showcase.sections?.showAbout && showcase.about?.enabled && (
+      {showcase.sections?.showAbout && (
         <section id="chisiamo" className="py-16 px-4 sm:px-6 lg:px-8 bg-white border-t border-slate-200/80">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-7 space-y-5">
@@ -1199,7 +1199,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
                 {showcase.sections?.showGallery && showcase.gallery?.enabled && (
                   <li><a href="#galleria" className="hover:text-emerald-400 transition-colors">Showroom &amp; Corner</a></li>
                 )}
-                {showcase.sections?.showAbout && showcase.about?.enabled && (
+                {showcase.sections?.showAbout && (
                   <li><a href="#chisiamo" className="hover:text-emerald-400 transition-colors">La Nostra Filosofia</a></li>
                 )}
                 <li><a href="#info" className="hover:text-emerald-400 transition-colors">Orari &amp; Dove Siamo</a></li>
