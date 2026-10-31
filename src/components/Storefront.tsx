@@ -130,7 +130,7 @@ export default function Storefront({
 
   // Generatore link per WhatsApp (Blocco / Informazioni rapido)
   const getWhatsAppInquiryUrl = (product: MockProduct) => {
-    const rawPhone = tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678";
+    const rawPhone = (showcase.contactInfo?.whatsapp || showcase.contactInfo?.phone || tenantConfig.contact?.phone || "").replace(/\D/g, "") || "390289015678";
     const condition = getConditionText(product.condition);
     const message = `👋 Ciao ${tenantConfig.theme.brandName}!
 Ho visto sul vostro catalogo online l'articolo:
@@ -175,7 +175,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
     }
   }
 
-  const rawPhone = tenantConfig.contact?.phone?.replace(/\D/g, "") || "390289015678";
+  const rawPhone = (showcase.contactInfo?.whatsapp || showcase.contactInfo?.phone || tenantConfig.contact?.phone || "").replace(/\D/g, "") || "390289015678";
 
   const renderBadgeIcon = (iconName: string, isWhite = false) => {
     const colorCls = isWhite ? "text-emerald-400" : "text-emerald-600";
@@ -889,34 +889,34 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
                 <Store className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Punto Vendita Fisico</span>
+                <span>{showcase.contactInfo?.storeBadge || "Punto Vendita Fisico"}</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 {showcase.customLabels?.hoursTitle || "Vieni a trovarci in Negozio"}
               </h2>
               <p className="text-sm text-slate-600 leading-relaxed">
-                Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco senza costi di spedizione. Puoi anche riservare un capo online e ritirarlo entro 24 ore.
+                {showcase.contactInfo?.storeDescription || "Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco senza costi di spedizione. Puoi anche riservare un capo online e ritirarlo entro 24 ore."}
               </p>
 
               <div className="space-y-3 pt-2 text-xs sm:text-sm text-slate-700">
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>
-                    {tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
+                    {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
                   <a
-                    href={`tel:${tenantConfig.contact?.phone || "+390289015678"}`}
+                    href={`tel:${(showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+390289015678").replace(/\s+/g, '')}`}
                     className="hover:text-emerald-700 font-semibold"
                   >
-                    {tenantConfig.contact?.phone || "+39 02 8901 5678"}
+                    {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}
                   </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>WhatsApp attivo per info e disponibilità immediata</span>
+                  <span>{showcase.contactInfo?.notes || "WhatsApp attivo per info e disponibilità immediata"}</span>
                 </div>
               </div>
             </div>
@@ -929,17 +929,17 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               <div className="space-y-2.5 text-xs text-slate-600">
                 <div className="flex justify-between py-1.5 border-b border-slate-200">
                   <span className="font-semibold text-slate-800">Lunedì – Venerdì</span>
-                  <span>{tenantConfig.contact?.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30"}</span>
+                  <span>{showcase.contactInfo?.hoursWeekday || tenantConfig.contact?.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30"}</span>
                 </div>
                 <div className="flex justify-between py-1.5 border-b border-slate-200">
                   <span className="font-semibold text-slate-800">Sabato</span>
                   <span className="font-semibold text-emerald-700">
-                    {tenantConfig.contact?.orariSabato || "09:30 – 19:30 (Continuato)"}
+                    {showcase.contactInfo?.hoursSaturday || tenantConfig.contact?.orariSabato || "09:30 – 19:30 (Continuato)"}
                   </span>
                 </div>
                 <div className="flex justify-between py-1.5 text-slate-400">
                   <span>Domenica / Festivi</span>
-                  <span>{tenantConfig.contact?.orariDomenica || "Chiuso"}</span>
+                  <span>{showcase.contactInfo?.hoursSunday || tenantConfig.contact?.orariDomenica || "Chiuso"}</span>
                 </div>
               </div>
             </div>
@@ -1210,9 +1210,9 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
             <div className="space-y-2">
               <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Contatti Rapidi</h5>
               <p className="text-xs text-slate-400">
-                Telefono: {tenantConfig.contact?.phone || "+39 02 8901 5678"}<br />
-                WhatsApp: Attivo per info e foto dal vivo<br />
-                {tenantConfig.contact?.indirizzo ? `Indirizzo: ${tenantConfig.contact.indirizzo}` : "Assistenza Clienti Online & Negozio Fisico"}
+                Telefono: {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}<br />
+                WhatsApp: {showcase.contactInfo?.whatsapp || "Attivo per info e foto dal vivo"}<br />
+                Indirizzo: {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Assistenza Clienti Online & Negozio Fisico"}
               </p>
             </div>
           </div>
