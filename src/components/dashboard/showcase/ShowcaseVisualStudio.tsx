@@ -942,30 +942,14 @@ export default function ShowcaseVisualStudio() {
             {/* TAB 4: CHI SIAMO & FILOSOFIA */}
             {activeControlTab === "chisiamo" && (
               <div className="space-y-4">
-                <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                      <Store className="w-4 h-4 text-emerald-600" />
-                      <span>Chi Siamo &amp; Ricerca Stile</span>
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Condividi con i clienti la passione per la selezione capi e la filosofia del negozio.
-                    </p>
-                  </div>
-                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
-                    <span>Attiva Sezione</span>
-                    <input
-                      type="checkbox"
-                      checked={config.about.enabled}
-                      onChange={(e) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          about: { ...prev.about, enabled: e.target.checked },
-                        }))
-                      }
-                      className="accent-emerald-600 w-4 h-4 rounded cursor-pointer"
-                    />
-                  </label>
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <Store className="w-4 h-4 text-emerald-600" />
+                    <span>Chi Siamo &amp; Ricerca Stile</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Condividi con i clienti la passione per la selezione capi e la filosofia del negozio.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1822,7 +1806,7 @@ export default function ShowcaseVisualStudio() {
               )}
 
               {/* Chi Siamo */}
-              {config.sections?.showAbout && config.about.enabled && (
+              {config.sections?.showAbout && (
                 <div className="p-4 bg-white border-t border-slate-100 space-y-2.5">
                   <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold">
                     <Store className="w-3 h-3 text-emerald-600" />
