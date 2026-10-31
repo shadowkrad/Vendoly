@@ -22,6 +22,20 @@ oreply@taaaac.eu senza consumare la quota messaggi WhatsApp.
 
 ---
 
+
+## Novità della Versione 1.0.8 (Hotfix / Patch)
+
+### 1. 🏪 Vetrina Pubblica 100% Editabile & Zero Testi Hardcoded
+- **Personalizzazione Totale del Punto Vendita**: Eliminato qualsiasi recapito o indirizzo di fallback cablato nel codice sorgente. L'esercente può ora modificare liberamente dalla dashboard ogni singolo elemento della propria vetrina:
+  - Indirizzo esatto del negozio / punto vendita fisico.
+  - Recapito telefonico di cassa e contatto WhatsApp per richieste e foto dal vivo.
+  - Orari di apertura completi: dal lunedì al venerdì, sabato (anche con orario continuato) e festivi.
+  - Badge della sede (es. "Punto Vendita Fisico") e descrizione delle modalità di ritiro al banco e prova capi.
+- **Nuovo Tab "Orari & Negozio" nel Live Showcase Studio**: Aggiunta una scheda dedicata nell'editor visivo della vetrina con controlli in tempo reale e simulatore responsive istantaneo sia per smartphone che per desktop.
+- **Contatti Dinamici nel Footer**: Il piè di pagina della vetrina pubblica si aggiorna automaticamente riflettendo i recapiti e l'indirizzo configurati, garantendo un'esperienza di acquisto trasparente e professionale per i clienti finali.
+
+---
+
 ## Novità della Versione 1.0.7 (Hotfix / Patch)
 
 ### 1. 🔐 Autenticazione Distinta: Email + Password Titolare & PIN Staff Cassa

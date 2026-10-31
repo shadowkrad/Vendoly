@@ -10,6 +10,19 @@ export interface GalleryPhotoItem {
   caption?: string;
 }
 
+export interface ShowcaseContactInfo {
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  address?: string;
+  hoursWeekday?: string;
+  hoursSaturday?: string;
+  hoursSunday?: string;
+  storeBadge?: string;
+  storeDescription?: string;
+  notes?: string;
+}
+
 export interface ShowcaseConfig {
   brandName: string;
   primaryColor: string;
@@ -62,7 +75,11 @@ export interface ShowcaseConfig {
     showContact: boolean;
   };
 
+  contactInfo?: ShowcaseContactInfo;
+
   // Etichette Personalizzate
+
+
   customLabels: {
     catalogTitle: string;
     catalogSubtitle: string;
@@ -70,6 +87,19 @@ export interface ShowcaseConfig {
     contactTitle: string;
   };
 }
+
+export const DEFAULT_VENDOLY_CONTACT_INFO: ShowcaseContactInfo = {
+  phone: "+39 02 8901 5678",
+  whatsapp: "+39 02 8901 5678",
+  email: "ordini@vendoly.it",
+  address: "Sede operativa del negozio (contattaci per dettagli)",
+  hoursWeekday: "09:30 – 13:00 / 15:30 – 19:30",
+  hoursSaturday: "09:30 – 19:30 (Continuato)",
+  hoursSunday: "Chiuso",
+  storeBadge: "Punto Vendita Fisico",
+  storeDescription: "Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco senza costi di spedizione. Puoi anche riservare un capo online e ritirarlo entro 24 ore.",
+  notes: "WhatsApp attivo per info e disponibilità immediata",
+};
 
 export const DEFAULT_VENDOLY_SHOWCASE_CONFIG: ShowcaseConfig = {
   brandName: "Vendoly Boutique & Store",
@@ -148,6 +178,9 @@ export const DEFAULT_VENDOLY_SHOWCASE_CONFIG: ShowcaseConfig = {
     showContact: true,
   },
 
+
+  contactInfo: DEFAULT_VENDOLY_CONTACT_INFO,
+
   customLabels: {
     catalogTitle: "Catalogo Capi & Articoli",
     catalogSubtitle: "Filtra per canale marketplace, brand o cerca il capo perfetto per il tuo stile.",
@@ -191,7 +224,8 @@ export function parseShowcaseConfig(raw: string | null | undefined): ShowcaseCon
         ...DEFAULT_VENDOLY_SHOWCASE_CONFIG.sections,
         ...(parsed.sections || {}),
       },
-      customLabels: {
+    
+  customLabels: {
         ...DEFAULT_VENDOLY_SHOWCASE_CONFIG.customLabels,
         ...(parsed.customLabels || {}),
       },

@@ -38,7 +38,7 @@ import {
   Globe,
 } from "lucide-react";
 
-type ControlTab = "hero" | "media" | "colori" | "chisiamo" | "badges" | "sezioni";
+type ControlTab = "hero" | "media" | "colori" | "chisiamo" | "badges" | "contatti" | "sezioni";
 
 export default function ShowcaseVisualStudio() {
   const [config, setConfig] = useState<ShowcaseConfig>(DEFAULT_VENDOLY_SHOWCASE_CONFIG);
@@ -1187,6 +1187,243 @@ export default function ShowcaseVisualStudio() {
             )}
 
             {/* TAB 6: SEZIONI & TITOLI */}
+                        {/* TAB CONTATTI, ORARI & NEGOZIO */}
+            {activeControlTab === "contatti" && (
+              <div className="space-y-4">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-emerald-600" />
+                    Sede Negozio, Recapiti & Orari di Apertura
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Personalizza l'indirizzo della boutique, i numeri di assistenza, WhatsApp e gli orari feriali e festivi visibili al pubblico.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Telefono Negozio / Cassa
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      placeholder="+39 02 8901 5678"
+                      value={config.contactInfo?.phone || ""}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          contactInfo: {
+                            ...(prev.contactInfo || {}),
+                            phone: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      WhatsApp Ordini & Foto dal Vivo
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      placeholder="+39 340 1234567"
+                      value={config.contactInfo?.whatsapp || ""}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          contactInfo: {
+                            ...(prev.contactInfo || {}),
+                            whatsapp: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Indirizzo Sede Negozio / Punto Vendita
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                    placeholder="Via della Moda 12, Milano"
+                    value={config.contactInfo?.address || ""}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        contactInfo: {
+                          ...(prev.contactInfo || {}),
+                          address: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Badge Punto Vendita
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      placeholder="Punto Vendita Fisico"
+                      value={config.contactInfo?.storeBadge || ""}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          contactInfo: {
+                            ...(prev.contactInfo || {}),
+                            storeBadge: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                      Email Ordini & Assistenza
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      placeholder="ordini@vendoly.it"
+                      value={config.contactInfo?.email || ""}
+                      onChange={(e) =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          contactInfo: {
+                            ...(prev.contactInfo || {}),
+                            email: e.target.value,
+                          },
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Descrizione Ritiro al Banco & Prova Capi
+                  </label>
+                  <textarea
+                    rows={2}
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                    placeholder="Tutti i capi del catalogo possono essere provati e ritirati direttamente al banco..."
+                    value={config.contactInfo?.storeDescription || ""}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        contactInfo: {
+                          ...(prev.contactInfo || {}),
+                          storeDescription: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 space-y-3">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Orari Settimanali di Apertura
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Lunedì – Venerdì
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        placeholder="09:30 – 13:00 / 15:30 – 19:30"
+                        value={config.contactInfo?.hoursWeekday || ""}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            contactInfo: {
+                              ...(prev.contactInfo || {}),
+                              hoursWeekday: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Sabato
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        placeholder="09:30 – 19:30 (Continuato)"
+                        value={config.contactInfo?.hoursSaturday || ""}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            contactInfo: {
+                              ...(prev.contactInfo || {}),
+                              hoursSaturday: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                        Domenica & Festivi
+                      </label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        placeholder="Chiuso"
+                        value={config.contactInfo?.hoursSunday || ""}
+                        onChange={(e) =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            contactInfo: {
+                              ...(prev.contactInfo || {}),
+                              hoursSunday: e.target.value,
+                            },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-600 mb-1">
+                    Nota di Servizio / Info Rapida
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                    placeholder="WhatsApp attivo per info e disponibilità immediata"
+                    value={config.contactInfo?.notes || ""}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        contactInfo: {
+                          ...(prev.contactInfo || {}),
+                          notes: e.target.value,
+                        },
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
             {activeControlTab === "sezioni" && (
               <div className="space-y-4">
                 <div className="border-b border-slate-100 pb-3">
@@ -1619,12 +1856,22 @@ export default function ShowcaseVisualStudio() {
                   <div className="space-y-1 text-slate-600">
                     <div className="flex justify-between py-0.5 border-b border-slate-200">
                       <span>Lunedì – Venerdì</span>
-                      <span className="font-semibold text-slate-800">09:30 – 19:30</span>
+                      <span className="font-semibold text-slate-800">{config.contactInfo?.hoursWeekday || "09:30 – 13:00 / 15:30 – 19:30"}</span>
                     </div>
-                    <div className="flex justify-between py-0.5">
+                    <div className="flex justify-between py-0.5 border-b border-slate-200">
                       <span>Sabato</span>
-                      <span className="font-bold text-emerald-700">09:30 – 19:30 (Continuato)</span>
+                      <span className="font-bold text-emerald-700">{config.contactInfo?.hoursSaturday || "09:30 – 19:30 (Continuato)"}</span>
                     </div>
+                    <div className="flex justify-between py-0.5 text-slate-400">
+                      <span>Domenica</span>
+                      <span>{config.contactInfo?.hoursSunday || "Chiuso"}</span>
+                    </div>
+                    {config.contactInfo?.address && (
+                      <div className="pt-1 text-[9px] text-slate-500 flex items-center gap-1">
+                        <MapPin className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                        <span className="truncate">{config.contactInfo.address}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -1636,7 +1883,7 @@ export default function ShowcaseVisualStudio() {
               >
                 <p className="font-bold">{config.brandName}</p>
                 <p className="text-slate-300 text-[9px]">
-                  © {new Date().getFullYear()} • Powered by Taaaac Suite v1.0.4
+                  © {new Date().getFullYear()} • Powered by Taaaac Suite
                 </p>
               </div>
             </div>
