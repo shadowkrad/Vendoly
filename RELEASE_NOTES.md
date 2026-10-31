@@ -34,6 +34,9 @@ oreply@taaaac.eu senza consumare la quota messaggi WhatsApp.
 - **Nuovo Tab "Orari & Negozio" nel Live Showcase Studio**: Aggiunta una scheda dedicata nell'editor visivo della vetrina con controlli in tempo reale e simulatore responsive istantaneo sia per smartphone che per desktop.
 - **Contatti Dinamici nel Footer**: Il piè di pagina della vetrina pubblica si aggiorna automaticamente riflettendo i recapiti e l'indirizzo configurati, garantendo un'esperienza di acquisto trasparente e professionale per i clienti finali.
 
+### 2. 🎨 Pulizia Estetica Navbar: Rimozione Badge Invasivi
+- **Intestazione Minimale & Logo Protagonista**: Rimosso il micro-badge fisso "Hub Multi-Marketplace" accanto al nome del negozio nella barra di navigazione pubblica, rendendo la testata elegante e senza scritte ridondanti.
+
 ---
 
 ## Novità della Versione 1.0.7 (Hotfix / Patch)
