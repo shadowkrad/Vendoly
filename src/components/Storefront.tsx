@@ -220,10 +220,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
                 <span className="text-base sm:text-xl font-bold tracking-tight text-slate-900 block leading-tight truncate">
                   {brandName}
                 </span>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2 py-0.5 rounded-full shrink-0">
-                  <Globe className="w-3 h-3" />
-                  Hub Multi-Marketplace
-                </span>
+
               </div>
               <span className="text-[11px] sm:text-xs text-slate-500 truncate block font-medium">
                 Vetrina Ufficiale &amp; Catalogo Disponibilità Live
