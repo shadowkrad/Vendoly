@@ -1,6 +1,6 @@
 ﻿# 🚀 Vendoly — Release Notes
 
-## Novità della Versione 1.1.0 (In Sviluppo)
+## Novità della Versione 1.1.0
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
 - **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (FloatingWhatsAppWidget), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
