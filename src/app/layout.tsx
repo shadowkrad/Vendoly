@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { getTenantConfig } from "@/lib/taaaac-core";
+import FloatingWhatsAppWidget from "@/components/public/FloatingWhatsAppWidget";
+
+export const dynamic = "force-dynamic";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,7 +15,6 @@ const inter = Inter({
 export async function generateMetadata(): Promise<Metadata> {
   const tenant = await getTenantConfig();
   const brand = tenant.theme.brandName || "Punto Vendita";
-  const favicon = tenant.theme.faviconUrl || "/favicon.ico";
 
   return {
     title: {
@@ -27,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
       apple: [{ url: "/api/pwa-icon?size=180", sizes: "180x180", type: "image/png" }],
     },
-    manifest: '/manifest.webmanifest',
+    manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
       statusBarStyle: "black-translucent",
@@ -48,8 +50,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const tenant = await getTenantConfig();
-  const favicon = tenant.theme.faviconUrl || "/favicon.ico";
-  const appleIcon = tenant.theme.faviconUrl || "/apple-touch-icon.png";
+
+  const hasWhatsAppModule =
+    Array.isArray(tenant.enabledModules) &&
+    tenant.enabledModules.some((m) => String(m).toUpperCase().includes("WHATSAPP"));
+
+  const waPhone = tenant.contact?.phone || "+39 02 8901 5678";
 
   // Iniezione dinamica dei colori del brand ricevuti da Taaaac Core
   const dynamicCss = `
@@ -69,6 +75,12 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">
         {children}
+        {hasWhatsAppModule && (
+          <FloatingWhatsAppWidget
+            phone={waPhone}
+            brandName={tenant.theme.brandName || "Vendoly Store"}
+          />
+        )}
       </body>
     </html>
   );
