@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { formattaNumeroWhatsApp, generaLinkWhatsApp } from "@/lib/whatsapp-client";
+import { usePathname } from "next/navigation";
+import { formattaNumeroWhatsApp, generaLinkWhatsApp } from "@/lib/whatsapp";
 
 interface FloatingWhatsAppWidgetProps {
   phone?: string | null;
@@ -17,6 +18,16 @@ export default function FloatingWhatsAppWidget({
   className = "",
 }: FloatingWhatsAppWidgetProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const pathname = usePathname();
+
+  if (
+    pathname?.startsWith("/dashboard") ||
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/login") ||
+    pathname?.startsWith("/maintenance-login")
+  ) {
+    return null;
+  }
 
   if (!phone || phone.trim() === "") {
     return null;
@@ -29,14 +40,14 @@ export default function FloatingWhatsAppWidget({
 
   const message =
     defaultMessage ||
-    `Ciao! Vorrei maggiori informazioni sui prodotti e sulle spedizioni di ${brandName}. 🛍️📦`;
+    `Ciao! Vorrei informazioni sui prodotti disponibili presso ${brandName}. 🛍️`;
 
   const waUrl = generaLinkWhatsApp(cleanPhone, message);
 
   return (
     <aside
       aria-label="Contatto rapido WhatsApp"
-      className={`fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-3 pointer-events-auto ${className}`}
+      className={`fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center gap-2 sm:gap-3 pointer-events-auto ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
