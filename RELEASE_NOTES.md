@@ -1,5 +1,14 @@
 ﻿# 🚀 Vendoly — Release Notes
 
+## Novità della Versione 1.1.1 (Patch)
+
+### 1. ✈️ Telegram Gestito da Taaaac Core (Hub Centralizzato)
+- **Un solo posto per configurare Telegram**: il pannello Telegram locale è sostituito da una scheda di sola lettura (stato, bot, avvisi attivi) con il link al portale Taaaac, da cui si attiva o disattiva il canale.
+- **Nessun token nel modulo**: token del bot e chat ID non vengono più inseriti né salvati nelle impostazioni del modulo, e il test non passa più dal browser.
+- **Stato letto dal Core**: la scheda legge `telegram*` da `/api/public/tenant-config` (mai token né chat ID).
+
+---
+
 ## Novità della Versione 1.1.0
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)

@@ -1,5 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { fetchTenantConfig } from "@/lib/taaaac-client";
+
+/**
+ * Telegram è gestito da Taaaac Core: qui si legge solo lo stato (mai token né chat ID).
+ */
+async function getTelegramHub() {
+  try {
+    const cfg = await fetchTenantConfig();
+    return {
+      managedByCore: true,
+      enabled: Boolean(cfg.telegramEnabled),
+      botUsername: cfg.telegramBotUsername || "",
+      staffAlerts: cfg.telegramAutoConfirm !== false,
+      reminder24h: cfg.telegramAutoReminder24h !== false,
+    };
+  } catch {
+    return { managedByCore: true, enabled: false, botUsername: "", staffAlerts: true, reminder24h: true };
+  }
+}
 
 export async function GET() {
   try {
@@ -37,12 +56,7 @@ export async function GET() {
         ritiroInSede: config.ritiroInSede ?? true,
         politicaReso: config.politicaReso || "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
         messaggioScontrino: config.messaggioScontrino || "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
-        telegramSettings: {
-          enabled: Boolean(config.telegramEnabled),
-          botToken: config.telegramBotToken || "",
-          botUsername: config.telegramBotUsername || "",
-          staffChatId: config.telegramStaffChatId || "",
-        },
+        telegramHub: await getTelegramHub(),
         fidelitySettings: {
           enabled: Boolean(config.fidelityEnabled),
           pointsPerEuro: fidelityRules?.pointsPerEuro || 1,
@@ -77,12 +91,7 @@ export async function GET() {
       ritiroInSede: true,
       politicaReso: "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
       messaggioScontrino: "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
-      telegramSettings: {
-        enabled: false,
-        botToken: "",
-        botUsername: "",
-        staffChatId: "",
-      },
+      telegramHub: await getTelegramHub(),
       fidelitySettings: {
         enabled: false,
         pointsPerEuro: 1,
@@ -120,7 +129,6 @@ export async function PUT(req: NextRequest) {
       ritiroInSede,
       politicaReso,
       messaggioScontrino,
-      telegramSettings,
       fidelitySettings,
     } = body;
 
@@ -150,10 +158,6 @@ export async function PUT(req: NextRequest) {
         ...(ritiroInSede !== undefined && { ritiroInSede: Boolean(ritiroInSede) }),
         ...(politicaReso !== undefined && { politicaReso }),
         ...(messaggioScontrino !== undefined && { messaggioScontrino }),
-        ...(telegramSettings?.enabled !== undefined && { telegramEnabled: Boolean(telegramSettings.enabled) }),
-        ...(telegramSettings?.botToken !== undefined && { telegramBotToken: telegramSettings.botToken }),
-        ...(telegramSettings?.botUsername !== undefined && { telegramBotUsername: telegramSettings.botUsername }),
-        ...(telegramSettings?.staffChatId !== undefined && { telegramStaffChatId: telegramSettings.staffChatId }),
         ...(fidelitySettings?.enabled !== undefined && { fidelityEnabled: Boolean(fidelitySettings.enabled) }),
         ...(fidelitySettings !== undefined && { fidelityRules: JSON.stringify(fidelitySettings) }),
         lastSyncedAt: new Date(),
@@ -184,10 +188,6 @@ export async function PUT(req: NextRequest) {
           politicaReso ||
           "Reso garantito entro 14 giorni lavorativi dalla data di ricezione dell'ordine per capi integri e con cartellino.",
         messaggioScontrino: messaggioScontrino || "Grazie per il tuo acquisto su Vendoly! Torna a trovarci.",
-        telegramEnabled: Boolean(telegramSettings?.enabled),
-        telegramBotToken: telegramSettings?.botToken || null,
-        telegramBotUsername: telegramSettings?.botUsername || null,
-        telegramStaffChatId: telegramSettings?.staffChatId || null,
         fidelityEnabled: Boolean(fidelitySettings?.enabled),
         fidelityRules: fidelitySettings ? JSON.stringify(fidelitySettings) : "{}",
         lastSyncedAt: new Date(),
