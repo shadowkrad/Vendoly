@@ -777,6 +777,48 @@ export default function VendolyImpostazioniPage() {
         </div>
       )}
 
+      {/* TAB: TELEGRAM HUB & STAFF */}
+      {activeTab === "telegram" && (
+        <div className="space-y-4">
+          <TelegramSettingsPanel
+            data={telegramSettings}
+            onChange={(updated) => {
+              const toggled = updated.enabled !== telegramSettings.enabled;
+              setTelegramSettings(updated);
+              if (toggled) {
+                fetch("/api/impostazioni", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ telegramSettings: updated }),
+                }).catch(() => {});
+              }
+            }}
+          />
+        </div>
+      )}
+
+      {/* TAB: FIDELITY & PUNTI */}
+      {activeTab === "fidelity" && (
+        <div className="space-y-4">
+          <FidelitySettingsPanel
+            data={fidelitySettings}
+            onChange={(updated) => {
+              const toggled =
+                updated.enabled !== fidelitySettings.enabled ||
+                (updated.rewards?.length || 0) !== (fidelitySettings.rewards?.length || 0);
+              setFidelitySettings(updated);
+              if (toggled) {
+                fetch("/api/impostazioni", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ fidelitySettings: updated }),
+                }).catch(() => {});
+              }
+            }}
+          />
+        </div>
+      )}
+
       {/* TAB: DISPOSITIVI PWA & BIOMETRIA */}
       {activeTab === "dispositivi" && (
         <div className="space-y-4">
