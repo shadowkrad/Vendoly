@@ -25,9 +25,9 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-    if (!body.firstName || !body.phone) {
+    if (!body.firstName) {
       return NextResponse.json(
-        { success: false, error: "Nome e Numero di telefono (WhatsApp) sono obbligatori." },
+        { success: false, error: "Il nome è obbligatorio." },
         { status: 400 }
       );
     }

@@ -10,6 +10,7 @@
 - **Cellulare o fisso**: i numeri fissi restano ammessi ma non ricevono WhatsApp né messaggi automatici.
 - **Data di nascita** facoltativa e **consenso promozionale**, base per il buono compleanno.
 - **Punti non più a mano**: la rettifica libera del saldo è stata tolta; ogni variazione resta registrata.
+- **Telefono ed email facoltativi**: per ora per registrare un cliente basta il nome (in attesa di decidere come comunicare con gli altri sistemi). La finestra della scheda ora sta sempre nello schermo, scorre al suo interno e tiene titolo e pulsanti sempre visibili.
 
 ### 3. 🎟️ Fedeltà a Punti Vera
 - **Punti sulla spesa**: quando un ordine risulta pagato (pagato, pronto al ritiro, spedito, consegnato o completato) il cliente con la scheda guadagna i punti secondo la regola del titolare, una sola volta per ordine e con storno se l'ordine viene annullato.
