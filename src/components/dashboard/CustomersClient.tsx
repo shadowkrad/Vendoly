@@ -111,6 +111,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
       preferredBrands: "",
       notes: "",
       loyaltyPoints: 0,
+      birthDate: "",
+      marketingConsent: false,
     });
     setIsModalOpen(true);
   };
@@ -129,6 +131,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
       preferredBrands: customer.preferredBrands || "",
       notes: customer.notes || "",
       loyaltyPoints: customer.loyaltyPoints,
+      birthDate: customer.birthDate || "",
+      marketingConsent: Boolean(customer.marketingConsent),
     });
     setIsModalOpen(true);
   };
@@ -647,16 +651,36 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Punti Fedeltà
                     </label>
+                    <div className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 flex items-center justify-between">
+                      <span>{formState.loyaltyPoints ?? 0}</span>
+                      <a href="/dashboard/fedelta" className="text-[10px] font-semibold text-emerald-700 underline">
+                        Gestisci dalla cassa fedeltà
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                      Data di nascita (facoltativa, per il buono compleanno)
+                    </label>
                     <input
-                      type="number"
-                      min={0}
-                      value={formState.loyaltyPoints ?? 0}
-                      onChange={(e) =>
-                        setFormState({ ...formState, loyaltyPoints: parseInt(e.target.value) || 0 })
-                      }
+                      type="date"
+                      max={new Date().toISOString().slice(0, 10)}
+                      value={formState.birthDate || ""}
+                      onChange={(e) => setFormState({ ...formState, birthDate: e.target.value })}
                       className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-white"
                     />
                   </div>
+                  <label className="flex items-center gap-2 text-[11px] text-slate-700 sm:mt-5">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(formState.marketingConsent)}
+                      onChange={(e) => setFormState({ ...formState, marketingConsent: e.target.checked })}
+                    />
+                    Consenso a comunicazioni promozionali (es. buono compleanno per email)
+                  </label>
                 </div>
 
                 <div>

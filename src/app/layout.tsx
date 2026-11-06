@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { getTenantConfig } from "@/lib/taaaac-core";
+import { headers } from "next/headers";
 import FloatingWhatsAppWidget from "@/components/public/FloatingWhatsAppWidget";
 
 export const dynamic = "force-dynamic";
@@ -65,12 +66,19 @@ export default async function RootLayout({
     }
   `;
 
+  // La tessera del cliente ha icona (logo) e manifest propri, impostati dalla sua pagina
+  const eTessera = ((await headers()).get("x-pathname") || "").startsWith("/tessera/");
+
   return (
     <html lang="it" className={inter.variable}>
       <head>
-        <link rel="icon" href="/api/pwa-icon?size=192" sizes="any" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/api/pwa-icon?size=180" />
-        <link rel="manifest" href="/manifest.webmanifest" />
+        {!eTessera && (
+          <>
+            <link rel="icon" href="/api/pwa-icon?size=192" sizes="any" />
+            <link rel="apple-touch-icon" sizes="180x180" href="/api/pwa-icon?size=180" />
+            <link rel="manifest" href="/manifest.webmanifest" />
+          </>
+        )}
         <style dangerouslySetInnerHTML={{ __html: dynamicCss }} />
       </head>
       <body className="min-h-screen bg-slate-50 text-slate-800 antialiased">

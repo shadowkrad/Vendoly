@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { updateCustomer, deleteCustomer } from "@/lib/customer-actions";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const body = await req.json();
@@ -25,6 +29,9 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { id } = await params;
     const result = await deleteCustomer(id);

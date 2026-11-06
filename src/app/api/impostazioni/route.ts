@@ -62,6 +62,8 @@ export async function GET() {
           pointsPerEuro: fidelityRules?.pointsPerEuro || 1,
           welcomeBonusPoints: fidelityRules?.welcomeBonusPoints || 10,
           minPointsToRedeem: fidelityRules?.minPointsToRedeem || 50,
+          rewardVoucherMonths: fidelityRules?.rewardVoucherMonths ?? 6,
+          compleanno: fidelityRules?.compleanno,
           rewards: fidelityRules?.rewards || [
             { id: "rew_v1", name: "Buono Sconto 5€ sul Prossimo Acquisto", pointsRequired: 50, rewardType: "DISCOUNT", discountAmount: 5 },
             { id: "rew_v2", name: "Buono Sconto 15€ alla Cassa", pointsRequired: 100, rewardType: "DISCOUNT", discountAmount: 15 },

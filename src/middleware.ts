@@ -17,7 +17,10 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  const response = NextResponse.next();
+  // Il layout generale deve sapere se e' la tessera del cliente (ha icona e manifest propri)
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-pathname', pathname);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   // Security Headers (X-Frame-Options solo su dashboard per consentire showcase iframe su taaaac.eu)
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {

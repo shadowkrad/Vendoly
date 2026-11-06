@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Award, Gift, Plus, Trash2, Sparkles, Percent, ShoppingBag, Sparkle, Tag, Smartphone } from "lucide-react";
-import FidelityCashierScanner from "./FidelityCashierScanner";
+import BuonoCompleannoSettings, { CompleannoSettings } from "./BuonoCompleannoSettings";
 
 export interface FidelityRewardItem {
   id: string;
@@ -19,6 +19,9 @@ export interface FidelitySettingsData {
   welcomeBonusPoints: number;
   minPointsToRedeem: number;
   rewards: FidelityRewardItem[];
+  /** Validita' in mesi del buono creato da un premio (0 = senza scadenza). */
+  rewardVoucherMonths?: number;
+  compleanno?: Partial<CompleannoSettings>;
 }
 
 const PRESET_RETAIL: FidelitySettingsData = {
@@ -86,6 +89,8 @@ export default function FidelitySettingsPanel({ data, onChange }: { data: Fideli
     onChange({
       ...preset,
       enabled: data.enabled !== undefined ? data.enabled : true,
+      rewardVoucherMonths: data.rewardVoucherMonths,
+      compleanno: data.compleanno,
     });
   };
 
@@ -131,6 +136,13 @@ export default function FidelitySettingsPanel({ data, onChange }: { data: Fideli
           </div>
         )}
       </div>
+
+      <BuonoCompleannoSettings
+        value={data.compleanno}
+        onChange={(c) => onChange({ ...data, compleanno: c })}
+        rewardVoucherMonths={data.rewardVoucherMonths ?? 6}
+        onChangeRewardMonths={(m) => onChange({ ...data, rewardVoucherMonths: m })}
+      />
 
       {data.enabled && (
         <>
@@ -370,13 +382,6 @@ export default function FidelitySettingsPanel({ data, onChange }: { data: Fideli
             )}
           </div>
 
-          {/* Scanner & Cassa Fidelity Rapido */}
-          <FidelityCashierScanner
-            tenantName="Boutique & Retail"
-            pointsPerEuro={data.pointsPerEuro || 1}
-            welcomeBonusPoints={data.welcomeBonusPoints || 10}
-            rewards={data.rewards || []}
-          />
         </>
       )}
     </div>
