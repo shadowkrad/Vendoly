@@ -1,6 +1,40 @@
 ﻿# 🚀 Vendoly — Release Notes
 
-## Novità della Versione 1.1.0 (In Sviluppo)
+## Novità della Versione 1.1.2 (Patch)
+
+### 1. 🔒 Anagrafica Clienti Protetta
+- **Accesso riservato**: l'elenco, la creazione, la modifica e la cancellazione dei clienti tramite indirizzo `/api/clienti` ora richiedono l'accesso del titolare (prima rispondevano a chiunque conoscesse l'indirizzo).
+
+### 2. 👤 Scheda Cliente Rinnovata
+- **Un numero, un cliente**: lo stesso telefono (anche scritto con spazi, trattini o +39) è sempre la stessa scheda: se esiste già il gestionale lo segnala.
+- **Cellulare o fisso**: i numeri fissi restano ammessi ma non ricevono WhatsApp né messaggi automatici.
+- **Data di nascita** facoltativa e **consenso promozionale**, base per il buono compleanno.
+- **Punti non più a mano**: la rettifica libera del saldo è stata tolta; ogni variazione resta registrata.
+
+### 3. 🎟️ Fedeltà a Punti Vera
+- **Punti sulla spesa**: quando un ordine risulta pagato (pagato, pronto al ritiro, spedito, consegnato o completato) il cliente con la scheda guadagna i punti secondo la regola del titolare, una sola volta per ordine e con storno se l'ordine viene annullato.
+- **Cassa fedeltà**, premi scelti dal titolare e **tessera digitale** con logo e colori del negozio (link privato con QR), aggiungibile alla schermata Home del telefono con il logo come icona. Le pagine Fedeltà e Buoni non sono più schermate di esempio: lavorano sui dati veri del negozio.
+
+### 4. 🎁 Buoni Completi, Invio e Stampa
+- **Un buono per ogni motivo**: regalo, sconto, compensazione, gesto commerciale, premio punti, compleanno, promozione; valore in euro, percentuale o articolo in omaggio; scadenza facoltativa, spesa minima, uso in più volte o unico.
+- **Cassa con anteprima**, annullo con motivo e movimenti registrati. **Email** (di default, dal servizio Taaaac), **WhatsApp a scelta dell'esercente** (mai in automatico, mai verso i fissi), pagina del buono con QR, **stampa A4 o ricevuta da 80 mm** e ristampa con lo stesso codice.
+
+### 5. 🎂 Compleanno e Premi che Diventano Buoni
+- **Buono compleanno automatico**, una volta per cliente e per anno, con email solo a chi ha dato il consenso. Parte quando si apre la pagina Buoni o da `/api/cron/compleanni`.
+- **Premio punti → buono**: riscattando un premio si scalano i punti e nasce un buono intestato al cliente, nella stessa operazione.
+
+---
+
+## Novità della Versione 1.1.1 (Patch)
+
+### 1. ✈️ Telegram Gestito da Taaaac Core (Hub Centralizzato)
+- **Un solo posto per configurare Telegram**: il pannello Telegram locale è sostituito da una scheda di sola lettura (stato, bot, avvisi attivi) con il link al portale Taaaac, da cui si attiva o disattiva il canale.
+- **Nessun token nel modulo**: token del bot e chat ID non vengono più inseriti né salvati nelle impostazioni del modulo, e il test non passa più dal browser.
+- **Stato letto dal Core**: la scheda legge `telegram*` da `/api/public/tenant-config` (mai token né chat ID).
+
+---
+
+## Novità della Versione 1.1.0
 
 ### 1. 💬 Integrazione WhatsApp a 360° (Smart Link Gratuito & Connessione Taaaac Hub)
 - **Floating WhatsApp Widget sulla Vetrina Store**: Aggiunto il pulsante galleggiante WhatsApp ufficiale in basso a destra su tutte le pagine dello storefront pubblico (FloatingWhatsAppWidget), consentendo ai visitatori di chattare con il negozio per info su disponibilità, foto dal vivo o spedizioni.
@@ -22,6 +56,19 @@ oreply@taaaac.eu senza consumare la quota messaggi WhatsApp.
 
 ---
 
+
+## Novità della Versione 1.0.10 (Hotfix / Patch)
+
+### 1. 💬 Pallino WhatsApp Unificato (Attivazione da Taaaac Core)
+- **`FloatingWhatsAppWidget` allineato su tutta la flotta**: il pulsante galleggiante compare sulle pagine pubbliche solo se il modulo WhatsApp è attivo nella configurazione del tenant (`/api/public/tenant-config` di Taaaac Core).
+- **Nascosto nelle aree gestionali**: non appare in `/dashboard`, `/admin` e `/login`.
+- **Risposta del Core normalizzata**: lettura uniforme dei campi del tenant-config.
+
+### 2. ⚙️ Pannelli Telegram/Fidelity Visibili & Salvataggio Istantaneo dei Toggle
+- **Auto-save**: in `/dashboard/impostazioni` ogni interruttore salva subito nel database e aggiorna la vista, senza un secondo pulsante "Salva".
+- **Pannelli dedicati**: i pannelli Telegram Hub e Fidelity sono ora sempre raggiungibili dalle impostazioni.
+
+---
 
 ## Novità della Versione 1.0.8 (Hotfix / Patch)
 

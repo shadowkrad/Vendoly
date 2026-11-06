@@ -26,7 +26,7 @@ import {
 import EmailSettingsCard from "@/components/dashboard/EmailSettingsCard";
 import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
 import RegisteredDevicesCard from "@/components/dashboard/RegisteredDevicesCard";
-import TelegramSettingsPanel, { TelegramSettingsData } from "@/components/dashboard/TelegramSettingsPanel";
+import TelegramHubCard, { TelegramHubData } from "@/components/dashboard/TelegramHubCard";
 import FidelitySettingsPanel, { FidelitySettingsData } from "@/components/dashboard/FidelitySettingsPanel";
 import { Send, Award } from "lucide-react";
 import ShowcaseVisualStudio from "@/components/dashboard/showcase/ShowcaseVisualStudio";
@@ -115,12 +115,15 @@ export default function VendolyImpostazioniPage() {
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
   // Telegram & Fidelity State
-  const [telegramSettings, setTelegramSettings] = useState<TelegramSettingsData>({
-    enabled: false,
-    botToken: "",
-    botUsername: "",
-    staffChatId: "",
-  });
+  const [telegramHub, setTelegramHub] = useState<TelegramHubData | null>(null);
+  useEffect(() => {
+    fetch("/api/impostazioni")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.telegramHub) setTelegramHub(d.telegramHub);
+      })
+      .catch(() => {});
+  }, []);
 
   const [fidelitySettings, setFidelitySettings] = useState<FidelitySettingsData>({
     enabled: false,
@@ -342,7 +345,6 @@ export default function VendolyImpostazioniPage() {
           ritiroInSede: form.ritiroInSede,
           politicaReso: form.politicaReso,
           messaggioScontrino: form.messaggioScontrino,
-          telegramSettings,
           fidelitySettings,
         }),
       });
@@ -983,6 +985,36 @@ export default function VendolyImpostazioniPage() {
       {activeTab === "email" && (
         <div className="space-y-4">
           <EmailSettingsCard />
+        </div>
+      )}
+
+      {/* TAB: TELEGRAM HUB & STAFF */}
+      {activeTab === "telegram" && (
+        <div className="space-y-4">
+          <TelegramHubCard hub={telegramHub} />
+        </div>
+      )}
+
+      {/* TAB: FIDELITY & PUNTI */}
+      {activeTab === "fidelity" && (
+        <div className="space-y-4">
+          <FidelitySettingsPanel
+            data={fidelitySettings}
+            onChange={(updated) => {
+              const toggled =
+                updated.enabled !== fidelitySettings.enabled ||
+                Boolean(updated.compleanno?.enabled) !== Boolean(fidelitySettings.compleanno?.enabled) ||
+                (updated.rewards?.length || 0) !== (fidelitySettings.rewards?.length || 0);
+              setFidelitySettings(updated);
+              if (toggled) {
+                fetch("/api/impostazioni", {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ fidelitySettings: updated }),
+                }).catch(() => {});
+              }
+            }}
+          />
         </div>
       )}
 

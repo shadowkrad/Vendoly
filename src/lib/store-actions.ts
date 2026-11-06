@@ -1,4 +1,5 @@
 "use server";
+import { gestisciPuntiSpesa } from "@/lib/fidelity";
 
 import { prisma } from "@/lib/db";
 import { MOCK_PRODUCTS, MOCK_ORDERS, MockProduct, MockOrder } from "@/lib/mock-store";
@@ -225,6 +226,9 @@ export async function createOrder(input: CreateOrderInput) {
   }
 }
 
+/** Stati in cui l'ordine e' pagato: da qui in avanti la spesa vale punti fedelta'. */
+const STATI_ORDINE_PAGATO = ["PAGATO", "PRONTO_RITIRO", "SPEDITO", "CONSEGNATO", "COMPLETATO"];
+
 /**
  * Aggiorna lo stato di un ordine e opzionalmente il codice di tracking (Issue #5).
  */
@@ -234,6 +238,7 @@ export async function updateOrderStatus(
   trackingCode?: string
 ) {
   try {
+    const precedente = await prisma.order.findUnique({ where: { id: orderId }, select: { status: true } });
     const updated = await prisma.order.update({
       where: { id: orderId },
       data: {
@@ -241,6 +246,18 @@ export async function updateOrderStatus(
         ...(trackingCode !== undefined ? { trackingCode } : {}),
       },
     });
+
+    // Fidelity: punti sulla spesa quando l'ordine risulta pagato (e storno se viene annullato)
+    if (precedente && precedente.status !== status) {
+      await gestisciPuntiSpesa({
+        rif: updated.id,
+        telefono: updated.customerPhone,
+        importo: updated.totalAmount,
+        eraValido: STATI_ORDINE_PAGATO.includes(precedente.status),
+        oraValido: STATI_ORDINE_PAGATO.includes(status),
+        etichetta: "Ordine pagato",
+      });
+    }
 
     if (status === "COMPLETATO" && updated.customerEmail) {
       triggerGoogleReviewBooster({

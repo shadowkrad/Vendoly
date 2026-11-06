@@ -1,4 +1,6 @@
 "use server";
+import { normalizePhone, parseDataNascita } from "@/lib/phone";
+import { cercaClientePerTelefono } from "@/lib/clienti-telefono";
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
@@ -25,6 +27,8 @@ export interface CustomerData {
   preferredBrands: string | null;
   notes: string | null;
   loyaltyPoints: number;
+  birthDate?: string | null; // "AAAA-MM-GG"
+  marketingConsent?: boolean;
   createdAt: string;
   updatedAt: string;
   ordersCount: number;
@@ -43,7 +47,10 @@ export interface CustomerInput {
   shoeSize?: string | null;
   preferredBrands?: string | null;
   notes?: string | null;
+  /** Ignorato: i punti non si modificano a mano, ogni variazione passa dal registro movimenti. */
   loyaltyPoints?: number;
+  birthDate?: string | null; // "AAAA-MM-GG", facoltativa (buono compleanno)
+  marketingConsent?: boolean;
 }
 
 function isDemoEnvironment(): boolean {
@@ -212,6 +219,8 @@ export async function getCustomers(searchQuery?: string): Promise<CustomerData[]
             preferredBrands: c.preferredBrands,
             notes: c.notes,
             loyaltyPoints: c.loyaltyPoints,
+            birthDate: c.birthDate ? c.birthDate.toISOString().slice(0, 10) : null,
+            marketingConsent: c.marketingConsent,
             createdAt: c.createdAt.toISOString(),
             updatedAt: c.updatedAt.toISOString(),
             ordersCount: c.orders.length,
@@ -277,11 +286,21 @@ export async function getCustomers(searchQuery?: string): Promise<CustomerData[]
  */
 export async function createCustomer(input: CustomerInput): Promise<{ success: boolean; customer?: CustomerData; error?: string }> {
   try {
+    // Un numero, un cliente (in qualunque formato) e telefono salvato normalizzato
+    const esistente = await cercaClientePerTelefono(input.phone);
+    if (esistente) {
+      return { success: false, error: `Questo numero è già registrato per ${`${esistente.firstName} ${esistente.lastName ?? ""}`.trim()}` };
+    }
+    const nascita = input.birthDate ? parseDataNascita(input.birthDate) : null;
+    if (input.birthDate && !nascita) return { success: false, error: "Data di nascita non valida" };
+
     const created = await prisma.customer.create({
       data: {
         firstName: input.firstName.trim(),
         lastName: input.lastName ? input.lastName.trim() : null,
-        phone: input.phone.trim(),
+        phone: normalizePhone(input.phone) || input.phone.trim(),
+        birthDate: nascita,
+        marketingConsent: Boolean(input.marketingConsent),
         email: input.email ? input.email.trim() : null,
         address: input.address ? input.address.trim() : null,
         fiscalCode: input.fiscalCode ? input.fiscalCode.trim().toUpperCase() : null,
@@ -289,7 +308,7 @@ export async function createCustomer(input: CustomerInput): Promise<{ success: b
         shoeSize: input.shoeSize ? input.shoeSize.trim() : null,
         preferredBrands: input.preferredBrands ? input.preferredBrands.trim() : null,
         notes: input.notes ? input.notes.trim() : null,
-        loyaltyPoints: input.loyaltyPoints ?? 0,
+        loyaltyPoints: 0, // i punti nascono a 0 e variano solo con la spesa, la cassa fedelta' e i premi
       },
     });
 
@@ -298,6 +317,8 @@ export async function createCustomer(input: CustomerInput): Promise<{ success: b
     return {
       success: true,
       customer: {
+        birthDate: created.birthDate ? created.birthDate.toISOString().slice(0, 10) : null,
+        marketingConsent: created.marketingConsent,
         id: created.id,
         firstName: created.firstName,
         lastName: created.lastName,
@@ -352,12 +373,32 @@ export async function updateCustomer(
   input: Partial<CustomerInput>
 ): Promise<{ success: boolean; customer?: CustomerData; error?: string }> {
   try {
+    let telefonoDaSalvare: string | undefined;
+    if (input.phone !== undefined) {
+      const altro = await cercaClientePerTelefono(input.phone, id);
+      if (altro) {
+        return { success: false, error: `Questo numero è già registrato per ${`${altro.firstName} ${altro.lastName ?? ""}`.trim()}` };
+      }
+      telefonoDaSalvare = normalizePhone(input.phone) || input.phone.trim();
+    }
+    let nascita: Date | null | undefined;
+    if (input.birthDate !== undefined) {
+      if (input.birthDate) {
+        nascita = parseDataNascita(input.birthDate);
+        if (!nascita) return { success: false, error: "Data di nascita non valida" };
+      } else {
+        nascita = null;
+      }
+    }
+
     const updated = await prisma.customer.update({
       where: { id },
       data: {
+        ...(nascita !== undefined ? { birthDate: nascita } : {}),
+        ...(input.marketingConsent !== undefined ? { marketingConsent: Boolean(input.marketingConsent) } : {}),
         ...(input.firstName !== undefined ? { firstName: input.firstName.trim() } : {}),
         ...(input.lastName !== undefined ? { lastName: input.lastName ? input.lastName.trim() : null } : {}),
-        ...(input.phone !== undefined ? { phone: input.phone.trim() } : {}),
+        ...(telefonoDaSalvare !== undefined ? { phone: telefonoDaSalvare } : {}),
         ...(input.email !== undefined ? { email: input.email ? input.email.trim() : null } : {}),
         ...(input.address !== undefined ? { address: input.address ? input.address.trim() : null } : {}),
         ...(input.fiscalCode !== undefined ? { fiscalCode: input.fiscalCode ? input.fiscalCode.trim().toUpperCase() : null } : {}),
@@ -365,7 +406,6 @@ export async function updateCustomer(
         ...(input.shoeSize !== undefined ? { shoeSize: input.shoeSize ? input.shoeSize.trim() : null } : {}),
         ...(input.preferredBrands !== undefined ? { preferredBrands: input.preferredBrands ? input.preferredBrands.trim() : null } : {}),
         ...(input.notes !== undefined ? { notes: input.notes ? input.notes.trim() : null } : {}),
-        ...(input.loyaltyPoints !== undefined ? { loyaltyPoints: input.loyaltyPoints } : {}),
       },
       include: {
         orders: true,
@@ -391,6 +431,8 @@ export async function updateCustomer(
         preferredBrands: updated.preferredBrands,
         notes: updated.notes,
         loyaltyPoints: updated.loyaltyPoints,
+        birthDate: updated.birthDate ? updated.birthDate.toISOString().slice(0, 10) : null,
+        marketingConsent: updated.marketingConsent,
         createdAt: updated.createdAt.toISOString(),
         updatedAt: updated.updatedAt.toISOString(),
         ordersCount: updated.orders.length,

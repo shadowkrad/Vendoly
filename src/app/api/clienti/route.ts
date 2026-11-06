@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { getCustomers, createCustomer } from "@/lib/customer-actions";
 
 export async function GET(req: NextRequest) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get("q") || undefined;
@@ -16,6 +20,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await isAdminAuthenticated())) {
+    return NextResponse.json({ success: false, error: "Non autorizzato" }, { status: 401 });
+  }
   try {
     const body = await req.json();
     if (!body.firstName || !body.phone) {

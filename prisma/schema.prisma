@@ -56,10 +56,80 @@ model Customer {
   preferredBrands String?  // Brand preferiti (es. Nike, Carhartt, Gucci)
   notes           String?  // Note su preferenze, taglie o wishlist
   loyaltyPoints   Int      @default(0) // Punti fedeltà accumulati
+  marketingConsent Boolean @default(false) // consenso a comunicazioni promozionali (es. buono compleanno)
+  birthDate       DateTime? // facoltativa: serve per il buono compleanno
+  loyaltyToken    String?  @unique // link privato della tessera fedelta' digitale
+  pointsMovements MovimentoPunti[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   orders          Order[]
+}
+
+// Fidelity: movimenti dei punti (i punti vivono nel database dell'attivita', insieme ai clienti)
+model MovimentoPunti {
+  id             String   @id @default(cuid())
+  clienteId      String
+  cliente        Customer @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  punti          Int
+  tipo           String   @default("ACCREDITO") // ACCREDITO | RISCATTO
+  origine        String? // SPESA | APPUNTAMENTO | BENVENUTO | MANUALE | PREMIO | STORNO
+  descrizione    String?
+  importo        Float?
+  appuntamentoId String?
+  premioId       String?
+  saldoDopo      Int?
+  operatore      String?
+  createdAt      DateTime @default(now())
+
+  @@index([clienteId])
+  @@index([appuntamentoId])
+}
+
+// Buoni: regalo, sconto, compensazione, gesto commerciale, premio punti, compleanno, promozione
+model GiftCard {
+  id                    String              @id @default(cuid())
+  codice                String              @unique
+  importoIniziale       Float
+  saldoResiduo          Float
+  acquirenteNome        String
+  acquirenteEmail       String?
+  acquirenteTelefono    String?
+  beneficiarioNome      String
+  beneficiarioMessaggio String?
+  dataScadenza          DateTime?
+  stato                 String              @default("ATTIVA") // ATTIVA | RISCATTATA | SCADUTA | ANNULLATA
+  motivo                String              @default("REGALO")
+  tipoValore            String              @default("IMPORTO") // IMPORTO | PERCENTUALE | SERVIZIO
+  percentuale           Float?
+  descrizioneServizio   String?
+  clienteId             String?
+  spesaMinima           Float?
+  usoParziale           Boolean             @default(true)
+  note                  String?
+  tokenPubblico         String?             @unique
+  creatoDa              String?
+  movimenti             MovimentoGiftCard[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([codice])
+  @@index([stato])
+  @@index([clienteId])
+}
+
+model MovimentoGiftCard {
+  id         String   @id @default(cuid())
+  giftCardId String
+  giftCard   GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+  importo    Float
+  tipo       String? // EMISSIONE | USO | ANNULLO | STAMPA | RISTAMPA | INVIO
+  saldoDopo  Float?
+  operatore  String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([giftCardId])
 }
 
 model Order {
