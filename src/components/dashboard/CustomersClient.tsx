@@ -139,8 +139,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formState.firstName.trim() || !formState.phone.trim()) {
-      showFeedback("Nome e Recapito Cellulare/WhatsApp sono obbligatori", "error");
+    if (!formState.firstName.trim()) {
+      showFeedback("Il nome è obbligatorio", "error");
       return;
     }
 
@@ -502,9 +502,9 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
 
       {/* 5. Modale Form Nuovo/Modifica Cliente */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 my-8 space-y-5 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto px-6 pb-6 pt-0 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
                   {editingCustomer ? <Edit2 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
@@ -562,11 +562,10 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Cellulare (WhatsApp) *
+                    Cellulare (WhatsApp)
                   </label>
                   <input
                     type="tel"
-                    required
                     placeholder="+39 340 1234567"
                     value={formState.phone}
                     onChange={(e) => setFormState({ ...formState, phone: e.target.value })}
@@ -651,10 +650,10 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                       Punti Fedeltà
                     </label>
-                    <div className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 flex items-center justify-between">
-                      <span>{formState.loyaltyPoints ?? 0}</span>
+                    <div className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 leading-tight">
+                      <div className="text-sm font-black text-slate-900">{formState.loyaltyPoints ?? 0} pt</div>
                       <a href="/dashboard/fedelta" className="text-[10px] font-semibold text-emerald-700 underline">
-                        Gestisci dalla cassa fedeltà
+                        Gestisci in cassa fedeltà
                       </a>
                     </div>
                   </div>
@@ -712,7 +711,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
               </div>
 
               {/* Bottoni Salvataggio */}
-              <div className="pt-2 flex items-center justify-end gap-2.5">
+              <div className="py-3 flex items-center justify-end gap-2.5 sticky bottom-0 bg-white border-t border-slate-100 -mx-6 px-6">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

@@ -287,7 +287,8 @@ export async function getCustomers(searchQuery?: string): Promise<CustomerData[]
 export async function createCustomer(input: CustomerInput): Promise<{ success: boolean; customer?: CustomerData; error?: string }> {
   try {
     // Un numero, un cliente (in qualunque formato) e telefono salvato normalizzato
-    const esistente = await cercaClientePerTelefono(input.phone);
+    const telefonoInserito = (input.phone ?? "").trim(); // facoltativo, per ora
+    const esistente = telefonoInserito ? await cercaClientePerTelefono(telefonoInserito) : null;
     if (esistente) {
       return { success: false, error: `Questo numero è già registrato per ${`${esistente.firstName} ${esistente.lastName ?? ""}`.trim()}` };
     }
@@ -298,7 +299,7 @@ export async function createCustomer(input: CustomerInput): Promise<{ success: b
       data: {
         firstName: input.firstName.trim(),
         lastName: input.lastName ? input.lastName.trim() : null,
-        phone: normalizePhone(input.phone) || input.phone.trim(),
+        phone: normalizePhone(telefonoInserito) || telefonoInserito,
         birthDate: nascita,
         marketingConsent: Boolean(input.marketingConsent),
         email: input.email ? input.email.trim() : null,
@@ -375,7 +376,7 @@ export async function updateCustomer(
   try {
     let telefonoDaSalvare: string | undefined;
     if (input.phone !== undefined) {
-      const altro = await cercaClientePerTelefono(input.phone, id);
+      const altro = input.phone.trim() ? await cercaClientePerTelefono(input.phone, id) : null;
       if (altro) {
         return { success: false, error: `Questo numero è già registrato per ${`${altro.firstName} ${altro.lastName ?? ""}`.trim()}` };
       }
