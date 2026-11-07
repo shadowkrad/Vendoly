@@ -19,6 +19,7 @@ import {
   Globe,
   ArrowUpRight,
   Phone,
+  Mail,
   Clock,
   Star,
   Award,
@@ -905,21 +906,36 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               </p>
 
               <div className="space-y-3 pt-2 text-xs sm:text-sm text-slate-700">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>
-                    {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <a
-                    href={`tel:${(showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+390289015678").replace(/\s+/g, '')}`}
-                    className="hover:text-emerald-700 font-semibold"
-                  >
-                    {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}
-                  </a>
-                </div>
+                {showcase.sections?.showAddress !== false && (
+                  <div className="flex items-center gap-3">
+                    <MapPin className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>
+                      {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Sede operativa del negozio (contattaci per dettagli)"}
+                    </span>
+                  </div>
+                )}
+                {showcase.sections?.showPhone !== false && (
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <a
+                      href={`tel:${(showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+390289015678").replace(/\s+/g, '')}`}
+                      className="hover:text-emerald-700 font-semibold"
+                    >
+                      {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}
+                    </a>
+                  </div>
+                )}
+                {showcase.sections?.showEmail !== false && (showcase.contactInfo?.email || tenantConfig.contact?.email) && (
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <a
+                      href={`mailto:${showcase.contactInfo?.email || tenantConfig.contact?.email}`}
+                      className="hover:text-emerald-700 font-semibold break-all"
+                    >
+                      {showcase.contactInfo?.email || tenantConfig.contact?.email}
+                    </a>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{showcase.contactInfo?.notes || "WhatsApp attivo per info e disponibilità immediata"}</span>
@@ -1213,14 +1229,30 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               </ul>
             </div>
 
-            <div className="space-y-2">
-              <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Contatti Rapidi</h5>
-              <p className="text-xs text-slate-400">
-                Telefono: {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}<br />
-                WhatsApp: {showcase.contactInfo?.whatsapp || "Attivo per info e foto dal vivo"}<br />
-                Indirizzo: {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Assistenza Clienti Online & Negozio Fisico"}
-              </p>
-            </div>
+            {showcase.sections?.showContact !== false && (
+              <div className="space-y-2">
+                <h5 className="font-bold text-slate-200 uppercase tracking-wider text-[11px]">Contatti Rapidi</h5>
+                <p className="text-xs text-slate-400">
+                  {showcase.sections?.showPhone !== false && (
+                    <>
+                      Telefono: {showcase.contactInfo?.phone || tenantConfig.contact?.phone || "+39 02 8901 5678"}
+                      <br />
+                      WhatsApp: {showcase.contactInfo?.whatsapp || showcase.contactInfo?.phone || "Attivo per info e foto dal vivo"}
+                      <br />
+                    </>
+                  )}
+                  {showcase.sections?.showEmail !== false && (showcase.contactInfo?.email || tenantConfig.contact?.email) && (
+                    <>
+                      Email: {showcase.contactInfo?.email || tenantConfig.contact?.email}
+                      <br />
+                    </>
+                  )}
+                  {showcase.sections?.showAddress !== false && (
+                    <>Indirizzo: {showcase.contactInfo?.address || tenantConfig.contact?.indirizzo || "Assistenza Clienti Online & Negozio Fisico"}</>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">

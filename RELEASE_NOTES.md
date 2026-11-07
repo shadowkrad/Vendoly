@@ -25,6 +25,11 @@
 - **Buono compleanno automatico**, una volta per cliente e per anno, con email solo a chi ha dato il consenso. Parte quando si apre la pagina Buoni o da `/api/cron/compleanni`.
 - **Premio punti → buono**: riscattando un premio si scalano i punti e nasce un buono intestato al cliente, nella stessa operazione.
 
+### 6. 🏪 Dati del Negozio e Orari in un Solo Posto
+- **Una sola scheda**: nome, indirizzo, telefono, email, **descrizione** e **orari** del negozio si modificano solo in Impostazioni > Negozio. Vetrina, piè di pagina, Google, Facebook e Instagram leggono da lì: gli orari sono sempre identici ovunque, giorni di chiusura e ferie compresi.
+- **Studio Aspetto**: mostra questi dati in sola lettura e decide solo cosa far vedere (interruttori per indirizzo, telefono, email, contatti rapidi). Colori e logo si cambiano solo nello Studio.
+- Lo Studio non può più sovrascrivere i dati del negozio, nemmeno salvando una vecchia copia.
+
 ---
 
 ## Novità della Versione 1.1.1 (Patch)

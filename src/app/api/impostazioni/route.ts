@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { fetchTenantConfig } from "@/lib/taaaac-client";
+import { parseShowcaseConfig } from "@/lib/showcase-defaults";
+import { riallineaVetrinaSalvata } from "@/lib/anagrafica-attivita";
 
 /**
  * Telegram è gestito da Taaaac Core: qui si legge solo lo stato (mai token né chat ID).
@@ -48,6 +50,7 @@ export async function GET() {
         partitaIva: config.partitaIva || "",
         indirizzo: config.indirizzo || "",
         titolare: config.titolare || "",
+        descrizione: parseShowcaseConfig((config as any).showcaseConfig).about.description || "",
         orariFeriali: config.orariFeriali || "09:30 – 13:00 / 15:30 – 19:30",
         orariSabato: config.orariSabato || "09:30 – 19:30 (Continuato)",
         orariDomenica: config.orariDomenica || "Chiuso",
@@ -85,6 +88,7 @@ export async function GET() {
       partitaIva: "",
       indirizzo: "",
       titolare: "",
+      descrizione: "",
       orariFeriali: "09:30 – 13:00 / 15:30 – 19:30",
       orariSabato: "09:30 – 19:30 (Continuato)",
       orariDomenica: "Chiuso",
@@ -123,6 +127,7 @@ export async function PUT(req: NextRequest) {
       partitaIva,
       indirizzo,
       titolare,
+      descrizione,
       orariFeriali,
       orariSabato,
       orariDomenica,
@@ -195,6 +200,13 @@ export async function PUT(req: NextRequest) {
         lastSyncedAt: new Date(),
       },
     });
+
+    // Vetrina e invio ai canali leggono SEMPRE i dati appena salvati: riallinea la copia salvata nello Studio
+    try {
+      await riallineaVetrinaSalvata(typeof descrizione === "string" ? descrizione : undefined);
+    } catch (e) {
+      console.error("Riallineamento vetrina fallito:", e);
+    }
 
     return NextResponse.json({ success: true, config: updated });
   } catch (error) {

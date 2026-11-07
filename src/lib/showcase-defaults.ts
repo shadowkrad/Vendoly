@@ -73,6 +73,9 @@ export interface ShowcaseConfig {
     showAbout: boolean;
     showHours: boolean;
     showContact: boolean;
+    showAddress?: boolean;
+    showPhone?: boolean;
+    showEmail?: boolean;
   };
 
   contactInfo?: ShowcaseContactInfo;
@@ -176,6 +179,9 @@ export const DEFAULT_VENDOLY_SHOWCASE_CONFIG: ShowcaseConfig = {
     showAbout: true,
     showHours: true,
     showContact: true,
+    showAddress: true,
+    showPhone: true,
+    showEmail: true,
   },
 
 

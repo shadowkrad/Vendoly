@@ -1,6 +1,6 @@
 import { getTenantConfig } from "@/lib/taaaac-core";
 import { getStoreProducts } from "@/lib/store-actions";
-import { parseShowcaseConfig } from "@/lib/showcase-defaults";
+import { caricaVetrinaUnificata } from "@/lib/anagrafica-attivita";
 import Storefront from "@/components/Storefront";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const tenantConfig = await getTenantConfig();
   const products = await getStoreProducts();
-  const showcaseConfig = parseShowcaseConfig(tenantConfig.showcaseConfig);
+  const { showcase: showcaseConfig } = await caricaVetrinaUnificata();
 
   return (
     <Storefront

@@ -139,6 +139,7 @@ export default function VendolyImpostazioniPage() {
     ragioneSociale: "",
     partitaIva: "",
     indirizzo: "",
+    descrizione: "",
     titolare: "",
     telefono: "",
     emailContatto: "",
@@ -174,43 +175,10 @@ export default function VendolyImpostazioniPage() {
     setSyncingOmnichannel(true);
     setFeedback(null);
     try {
-      const parseTimeSlots = (str: string) => {
-        if (!str || str.toLowerCase().includes("chiuso")) return [];
-        const parts = str.split("/").map((p) => p.trim());
-        const slots: { open: string; close: string }[] = [];
-        for (const p of parts) {
-          const match = p.match(/(\d{1,2}[:.]\d{2})\s*[-–—]\s*(\d{1,2}[:.]\d{2})/);
-          if (match) {
-            slots.push({
-              open: match[1].replace(".", ":").padStart(5, "0"),
-              close: match[2].replace(".", ":").padStart(5, "0"),
-            });
-          }
-        }
-        if (slots.length === 0) {
-          slots.push({ open: "09:30", close: "19:30" });
-        }
-        return slots;
-      };
-
-      const ferialiSlots = parseTimeSlots(form.orariFeriali);
-      const sabatoSlots = parseTimeSlots(form.orariSabato);
-      const domenicaSlots = parseTimeSlots(form.orariDomenica);
-
-      const weeklyHours = [
-        { dayOfWeek: "MONDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
-        { dayOfWeek: "TUESDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
-        { dayOfWeek: "WEDNESDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
-        { dayOfWeek: "THURSDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
-        { dayOfWeek: "FRIDAY" as const, isOpen: ferialiSlots.length > 0, slots: ferialiSlots },
-        { dayOfWeek: "SATURDAY" as const, isOpen: sabatoSlots.length > 0, slots: sabatoSlots },
-        { dayOfWeek: "SUNDAY" as const, isOpen: domenicaSlots.length > 0, slots: domenicaSlots },
-      ];
-
       const res = await fetch("/api/sync/channels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weeklyHours }),
+        body: JSON.stringify({}),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -246,6 +214,7 @@ export default function VendolyImpostazioniPage() {
             ragioneSociale: data.ragioneSociale || "",
             partitaIva: data.partitaIva || "",
             indirizzo: data.indirizzo || "",
+            descrizione: data.descrizione || "",
             titolare: data.titolare || "",
             logoUrl: data.logoUrl || "",
             faviconUrl: data.faviconUrl || "",
@@ -331,6 +300,7 @@ export default function VendolyImpostazioniPage() {
           ragioneSociale: form.ragioneSociale,
           partitaIva: form.partitaIva,
           indirizzo: form.indirizzo,
+          descrizione: form.descrizione,
           titolare: form.titolare,
           logoUrl: form.logoUrl || null,
           faviconUrl: form.faviconUrl || null,
@@ -639,6 +609,21 @@ export default function VendolyImpostazioniPage() {
             </div>
           </div>
 
+          <div className="pt-2">
+            <label className="block text-xs font-semibold text-slate-700 mb-1">Descrizione dell&apos;attività</label>
+            <textarea
+              rows={4}
+              value={form.descrizione}
+              onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
+              placeholder="Racconta in poche righe chi siete e cosa vi rende speciali"
+              className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden resize-none"
+            />
+            <p className="text-[11px] text-slate-500 mt-1">
+              Nome, indirizzo, telefono, email, descrizione e orari si modificano solo in questa scheda: la vetrina li legge da qui
+              (nello Studio scegli quali mostrare). Colori e logo si cambiano solo in &quot;Aspetto&quot;.
+            </p>
+          </div>
+
           {/* Orari di Apertura Negozio (Issue #11) */}
           <div className="pt-4 border-t border-slate-200/80 space-y-4">
             <div>
@@ -646,7 +631,8 @@ export default function VendolyImpostazioniPage() {
                 ⏰ Orari di Apertura Negozio Fisico
               </h3>
               <p className="text-[11px] text-slate-500">
-                Mostrati nel footer e nella sezione &quot;Negozio &amp; Orari&quot; della vetrina online.
+                Sono gli orari ufficiali: li trovi nella vetrina online e vengono inviati a Google, Facebook e Instagram
+                (&quot;Chiuso&quot; per i giorni di chiusura). Si modificano solo qui: salva prima di sincronizzare.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

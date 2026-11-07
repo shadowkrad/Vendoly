@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  syncOmnichannelChannels,
-  fetchOmnichannelStatus,
-  formatDisponibilitaToOmnichannel,
-  formatEccezioniToSpecialClosures,
-} from "@/lib/omnichannel-client";
+import { syncOmnichannelChannels, fetchOmnichannelStatus } from "@/lib/omnichannel-client";
+import { prisma, ensureDatabase } from "@/lib/db";
+import { orariUfficialiPerCanali, chiusureFuture } from "@/lib/anagrafica-attivita";
 
 async function isCallerAuthorized(): Promise<boolean> {
   try {
@@ -39,34 +36,16 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // 1. Estrazione o conversione di weeklyHours
-    let weeklyHours = body.weeklyHours;
-    if (!weeklyHours && (body.orari || body.disponibilita)) {
-      weeklyHours = formatDisponibilitaToOmnichannel(body.orari || body.disponibilita);
-    }
-
-    // 2. Estrazione o conversione di specialClosures
-    let specialClosures = body.specialClosures;
-    if (!specialClosures && body.eccezioni) {
-      specialClosures = formatEccezioniToSpecialClosures(body.eccezioni);
-    }
-
-    if (!weeklyHours || !Array.isArray(weeklyHours)) {
-      // Fallback con orari standard per moduli a orario continuato (es. Tavoly, Vendoly, Taskly, Showly)
-      weeklyHours = [
-        { dayOfWeek: "MONDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "TUESDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "WEDNESDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "THURSDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "FRIDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "SATURDAY", isOpen: true, slots: [{ open: "09:00", close: "19:00" }] },
-        { dayOfWeek: "SUNDAY", isOpen: false, slots: [] },
-      ];
-    }
+    // Gli orari su Google / Facebook / Instagram sono SEMPRE gli orari ufficiali del negozio salvati in
+    // Impostazioni > Negozio (giorni di chiusura inclusi): quelli inviati dal chiamante non vengono usati.
+    await ensureDatabase();
+    const cache = await prisma.tenantLocalCache.findUnique({ where: { id: "singleton" } });
+    const weeklyHours = orariUfficialiPerCanali(cache);
+    const specialClosures = body.specialClosures || (await chiusureFuture());
 
     const result = await syncOmnichannelChannels({
       weeklyHours,
-      specialClosures: specialClosures || [],
+      specialClosures,
     });
 
     if (!result.ok) {

@@ -989,11 +989,13 @@ export default function ShowcaseVisualStudio() {
 
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Storia &amp; Descrizione Boutique
+                    Storia &amp; Descrizione Boutique <span className="font-normal text-slate-500">(si modifica in Impostazioni &gt; Negozio)</span>
                   </label>
                   <textarea
                     rows={4}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+                    className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-100 text-slate-500 cursor-not-allowed"
+                    readOnly
+                    title="Si modifica in Impostazioni > Negozio"
                     value={config.about.description}
                     onChange={(e) =>
                       setConfig((prev) => ({
@@ -1180,7 +1182,7 @@ export default function ShowcaseVisualStudio() {
                     Sede Negozio, Recapiti & Orari di Apertura
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">
-                    Personalizza l'indirizzo della boutique, i numeri di assistenza, WhatsApp e gli orari feriali e festivi visibili al pubblico.
+                    Indirizzo, telefono, email e orari sono quelli di <strong>Impostazioni &gt; Negozio</strong>: qui li vedi soltanto (così vetrina, Google e social restano identici). Scegli cosa mostrare nella scheda &quot;Sezioni&quot;.
                   </p>
                 </div>
 
@@ -1191,9 +1193,11 @@ export default function ShowcaseVisualStudio() {
                     </label>
                     <input
                       type="text"
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                       placeholder="+39 02 8901 5678"
                       value={config.contactInfo?.phone || ""}
+                      readOnly
+                      title="Si modifica in Impostazioni > Negozio"
                       onChange={(e) =>
                         setConfig((prev) => ({
                           ...prev,
@@ -1212,9 +1216,11 @@ export default function ShowcaseVisualStudio() {
                     </label>
                     <input
                       type="text"
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                       placeholder="+39 340 1234567"
                       value={config.contactInfo?.whatsapp || ""}
+                      readOnly
+                      title="Si modifica in Impostazioni > Negozio"
                       onChange={(e) =>
                         setConfig((prev) => ({
                           ...prev,
@@ -1234,9 +1240,11 @@ export default function ShowcaseVisualStudio() {
                   </label>
                   <input
                     type="text"
-                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                    className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                     placeholder="Via della Moda 12, Milano"
                     value={config.contactInfo?.address || ""}
+                    readOnly
+                    title="Si modifica in Impostazioni > Negozio"
                     onChange={(e) =>
                       setConfig((prev) => ({
                         ...prev,
@@ -1277,9 +1285,11 @@ export default function ShowcaseVisualStudio() {
                     </label>
                     <input
                       type="text"
-                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                      className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                       placeholder="ordini@vendoly.it"
                       value={config.contactInfo?.email || ""}
+                      readOnly
+                      title="Si modifica in Impostazioni > Negozio"
                       onChange={(e) =>
                         setConfig((prev) => ({
                           ...prev,
@@ -1326,9 +1336,11 @@ export default function ShowcaseVisualStudio() {
                       </label>
                       <input
                         type="text"
-                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                         placeholder="09:30 – 13:00 / 15:30 – 19:30"
                         value={config.contactInfo?.hoursWeekday || ""}
+                        readOnly
+                        title="Si modifica in Impostazioni > Negozio"
                         onChange={(e) =>
                           setConfig((prev) => ({
                             ...prev,
@@ -1347,9 +1359,11 @@ export default function ShowcaseVisualStudio() {
                       </label>
                       <input
                         type="text"
-                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                         placeholder="09:30 – 19:30 (Continuato)"
                         value={config.contactInfo?.hoursSaturday || ""}
+                        readOnly
+                        title="Si modifica in Impostazioni > Negozio"
                         onChange={(e) =>
                           setConfig((prev) => ({
                             ...prev,
@@ -1368,9 +1382,11 @@ export default function ShowcaseVisualStudio() {
                       </label>
                       <input
                         type="text"
-                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium"
+                        className="w-full border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-slate-100 text-slate-500 cursor-not-allowed"
                         placeholder="Chiuso"
                         value={config.contactInfo?.hoursSunday || ""}
+                        readOnly
+                        title="Si modifica in Impostazioni > Negozio"
                         onChange={(e) =>
                           setConfig((prev) => ({
                             ...prev,
@@ -1429,7 +1445,10 @@ export default function ShowcaseVisualStudio() {
                     { id: "showGallery", label: "Galleria Foto Showroom" },
                     { id: "showAbout", label: "Chi Siamo & Ricerca Stile" },
                     { id: "showHours", label: "Orari Negozio & Ritiro" },
-                    { id: "showContact", label: "Contatti & Punto Cassa" },
+                    { id: "showContact", label: "Contatti Rapidi (piè di pagina)" },
+                    { id: "showAddress", label: "Mostra Indirizzo" },
+                    { id: "showPhone", label: "Mostra Telefono / WhatsApp" },
+                    { id: "showEmail", label: "Mostra Email" },
                   ].map((sec) => (
                     <label
                       key={sec.id}
