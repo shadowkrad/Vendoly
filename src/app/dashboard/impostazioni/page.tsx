@@ -864,7 +864,7 @@ export default function VendolyImpostazioniPage() {
                 type="checkbox"
                 checked={form.ritiroInSede}
                 onChange={(e) => setForm({ ...form, ritiroInSede: e.target.checked })}
-                className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+                className="shrink-0 w-5 h-5 accent-emerald-600 rounded cursor-pointer"
               />
             </div>
 
@@ -881,7 +881,7 @@ export default function VendolyImpostazioniPage() {
                 type="checkbox"
                 checked={form.sincronizzazioneScorte}
                 onChange={(e) => setForm({ ...form, sincronizzazioneScorte: e.target.checked })}
-                className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+                className="shrink-0 w-5 h-5 accent-emerald-600 rounded cursor-pointer"
               />
             </div>
 
@@ -898,7 +898,7 @@ export default function VendolyImpostazioniPage() {
                 type="checkbox"
                 checked={form.notificaScorteBassecritiche}
                 onChange={(e) => setForm({ ...form, notificaScorteBassecritiche: e.target.checked })}
-                className="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+                className="shrink-0 w-5 h-5 accent-emerald-600 rounded cursor-pointer"
               />
             </div>
           </div>
