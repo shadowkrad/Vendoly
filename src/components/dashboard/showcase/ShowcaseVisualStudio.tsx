@@ -577,7 +577,7 @@ export default function ShowcaseVisualStudio() {
                           gallery: { ...prev.gallery, enabled: e.target.checked },
                         }))
                       }
-                      className="accent-emerald-600 w-4 h-4 rounded cursor-pointer"
+                      className="shrink-0 accent-emerald-600 w-5 h-5 rounded cursor-pointer"
                     />
                   </label>
                 </div>
