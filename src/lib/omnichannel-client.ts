@@ -138,6 +138,14 @@ export async function syncOmnichannelChannels(params: {
   weeklyHours: OmnichannelDayHours[];
   specialClosures?: OmnichannelSpecialClosure[];
 }): Promise<SyncChannelsResult> {
+  // Sicurezza: in sviluppo, senza un dominio di prova esplicito, non si contatta MAI il Core vero
+  if (process.env.NODE_ENV === "development" && !process.env.TAAAAC_TENANT_DOMAIN) {
+    return {
+      ok: true,
+      summary: "Sincronizzazione canali simulata (sviluppo: nessuna chiamata al Core)",
+      channels: { local: { ok: true, message: "Simulazione locale, nulla inviato" } },
+    };
+  }
   const coreUrls = getCoreUrls();
   const tenantDomain = getTargetDomain();
   let lastError = "Impossibile contattare Taaaac Core Sync Hub";

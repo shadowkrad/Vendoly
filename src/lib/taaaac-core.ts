@@ -49,16 +49,6 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
     });
   } catch {}
 
-  let localShowcasePhone: string | undefined;
-  let localShowcaseEmail: string | undefined;
-  if (cached?.showcaseConfig) {
-    try {
-      const sc = JSON.parse(cached.showcaseConfig);
-      if (sc?.contactInfo?.phone?.trim()) localShowcasePhone = sc.contactInfo.phone.trim();
-      if (sc?.contactInfo?.email?.trim()) localShowcaseEmail = sc.contactInfo.email.trim();
-    } catch {}
-  }
-
   try {
     const endpoint = `${coreUrl}/api/public/tenant-config?domain=${encodeURIComponent(
       domain
@@ -95,7 +85,6 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
 
       const resolvedPhone =
         cached?.phone ||
-        localShowcasePhone ||
         tenantData.phone ||
         tenantData.whatsappDisplayNumber ||
         data?.contact?.phone ||
@@ -103,7 +92,6 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
 
       const resolvedEmail =
         cached?.contactEmail ||
-        localShowcaseEmail ||
         tenantData.contactEmail ||
         data?.contact?.email ||
         FALLBACK_CONFIG.contact?.email;
@@ -181,8 +169,8 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
         faviconUrl: cached.faviconUrl,
       },
       contact: {
-        email: cached.contactEmail || localShowcaseEmail || FALLBACK_CONFIG.contact?.email,
-        phone: cached.phone || localShowcasePhone || FALLBACK_CONFIG.contact?.phone,
+        email: cached.contactEmail || FALLBACK_CONFIG.contact?.email,
+        phone: cached.phone || FALLBACK_CONFIG.contact?.phone,
         indirizzo: cached.indirizzo || undefined,
         ragioneSociale: cached.ragioneSociale || undefined,
         partitaIva: cached.partitaIva || undefined,

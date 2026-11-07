@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma, ensureDatabase } from "@/lib/db";
 import { parseShowcaseConfig, ShowcaseConfig, DEFAULT_VENDOLY_SHOWCASE_CONFIG } from "@/lib/showcase-defaults";
+import { applicaAnagrafica, caricaVetrinaUnificata } from "@/lib/anagrafica-attivita";
 
 export async function GET() {
   try {
-    await ensureDatabase();
-    const cache = await prisma.tenantLocalCache.findUnique({
-      where: { id: "singleton" },
-    });
-
-    const parsedConfig = parseShowcaseConfig((cache as any)?.showcaseConfig);
+    // Dati del negozio e orari arrivano da Impostazioni > Negozio (fonte unica)
+    const { showcase: parsedConfig, cache } = await caricaVetrinaUnificata();
 
     // Sincronizza i valori con TenantLocalCache se presenti
     if (cache?.brandName && (!parsedConfig.brandName || parsedConfig.brandName === DEFAULT_VENDOLY_SHOWCASE_CONFIG.brandName)) {
@@ -46,15 +43,21 @@ export async function PUT(req: NextRequest) {
     await ensureDatabase();
     const body: ShowcaseConfig = await req.json();
 
+    // Lo Studio NON puo' cambiare i dati del negozio: nome, indirizzo, telefono, email, orari e descrizione
+    // restano quelli di Impostazioni > Negozio, qualunque cosa arrivi dal browser.
+    const esistente = await prisma.tenantLocalCache.findUnique({ where: { id: "singleton" } });
+    if (esistente) {
+      const salvata = parseShowcaseConfig((esistente as any).showcaseConfig);
+      body.about = { ...(body.about || salvata.about), description: salvata.about.description };
+      applicaAnagrafica(body, esistente);
+    }
+
     const serializedConfig = JSON.stringify(body);
 
     const updateData: any = {
       showcaseConfig: serializedConfig,
     };
 
-    if (body.brandName?.trim()) {
-      updateData.brandName = body.brandName.trim();
-    }
     if (body.primaryColor?.trim()) {
       updateData.primaryColor = body.primaryColor.trim();
     }
