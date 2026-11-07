@@ -2,6 +2,7 @@
 
 ## Novità della Versione 1.1.2 (Patch)
 
+- Il pallino WhatsApp compare solo nella vetrina pubblica del sito: non piu' nelle pagine interne, nelle tessere e nei buoni dei clienti (prima bastava una pagina non prevista per vederlo).
 ### 1. 🔒 Anagrafica Clienti Protetta
 - **Accesso riservato**: l'elenco, la creazione, la modifica e la cancellazione dei clienti tramite indirizzo `/api/clienti` ora richiedono l'accesso del titolare (prima rispondevano a chiunque conoscesse l'indirizzo).
 
