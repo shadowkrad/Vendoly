@@ -943,10 +943,11 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
               </div>
             </div>
 
+            {showcase.contactInfo?.hoursMode !== "NESSUNO" && (
             <div className="bg-white border border-slate-200/80 rounded-3xl p-6 space-y-4 shadow-xs">
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-600" />
-                Orari di Apertura Negozio
+                {showcase.contactInfo?.hoursMode === "ASSISTENZA" ? "Orari Assistenza Clienti" : "Orari di Apertura Negozio"}
               </h3>
               <div className="space-y-2.5 text-xs text-slate-600">
                 <div className="flex justify-between py-1.5 border-b border-slate-200">
@@ -965,6 +966,7 @@ Vorrei avere maggiori informazioni sulla disponibilità e sulle caratteristiche.
                 </div>
               </div>
             </div>
+            )}
           </div>
         </section>
       )}

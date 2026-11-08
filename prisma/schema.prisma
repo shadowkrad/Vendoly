@@ -185,6 +185,7 @@ model TenantLocalCache {
   orariFeriali   String?  @default("09:30 – 13:00 / 15:30 – 19:30")
   orariSabato    String?  @default("09:30 – 19:30 (Continuato)")
   orariDomenica  String?  @default("Chiuso")
+  orariModalita  String   @default("NEGOZIO") // NEGOZIO | ASSISTENZA | NESSUNO
 
   // Politiche di Vendita & Spedizione (Issue #11)
   sogliaSpedizioneGratis  Float?   @default(50)

@@ -143,6 +143,7 @@ export default function VendolyImpostazioniPage() {
     titolare: "",
     telefono: "",
     emailContatto: "",
+    orariModalita: "NEGOZIO",
     orariFeriali: "09:30 – 13:00 / 15:30 – 19:30",
     orariSabato: "09:30 – 19:30 (Continuato)",
     orariDomenica: "Chiuso",
@@ -221,6 +222,7 @@ export default function VendolyImpostazioniPage() {
             colorePrimario: data.accentColor || f.colorePrimario,
             emailContatto: data.contactEmail || f.emailContatto,
             telefono: data.phone || f.telefono,
+            orariModalita: data.orariModalita || f.orariModalita,
             orariFeriali: data.orariFeriali || f.orariFeriali,
             orariSabato: data.orariSabato || f.orariSabato,
             orariDomenica: data.orariDomenica || f.orariDomenica,
@@ -307,6 +309,7 @@ export default function VendolyImpostazioniPage() {
           accentColor: form.colorePrimario,
           contactEmail: form.emailContatto,
           phone: form.telefono,
+          orariModalita: form.orariModalita,
           orariFeriali: form.orariFeriali,
           orariSabato: form.orariSabato,
           orariDomenica: form.orariDomenica,
@@ -624,17 +627,38 @@ export default function VendolyImpostazioniPage() {
             </p>
           </div>
 
-          {/* Orari di Apertura Negozio (Issue #11) */}
+          {/* Orari: facoltativi */}
           <div className="pt-4 border-t border-slate-200/80 space-y-4">
             <div>
-              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                ⏰ Orari di Apertura Negozio Fisico
-              </h3>
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">⏰ Orari</h3>
+              <p className="text-[11px] text-slate-500">
+                Scegli se e come mostrare gli orari: un negozio fisico, un semplice orario di risposta dell&apos;assistenza, oppure nessun orario (solo e-commerce).
+              </p>
+            </div>
+            <select
+              value={form.orariModalita}
+              onChange={(e) => setForm({ ...form, orariModalita: e.target.value })}
+              className="w-full sm:w-96 px-3 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden bg-white"
+            >
+              <option value="NEGOZIO">Ho un negozio fisico: mostra gli orari di apertura</option>
+              <option value="ASSISTENZA">Mostra solo l&apos;orario in cui rispondo ai clienti (assistenza)</option>
+              <option value="NESSUNO">Non mostrare nessun orario</option>
+            </select>
+            {form.orariModalita === "NEGOZIO" && (
               <p className="text-[11px] text-slate-500">
                 Sono gli orari ufficiali: li trovi nella vetrina online e vengono inviati a Google, Facebook e Instagram
                 (&quot;Chiuso&quot; per i giorni di chiusura). Si modificano solo qui: salva prima di sincronizzare.
               </p>
-            </div>
+            )}
+            {form.orariModalita === "ASSISTENZA" && (
+              <p className="text-[11px] text-slate-500">
+                Compare nella vetrina come &quot;Orari assistenza clienti&quot;. Non viene inviato a Google né ai social, perché non è l&apos;apertura di un negozio.
+              </p>
+            )}
+          </div>
+
+          {form.orariModalita !== "NESSUNO" && (
+          <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -674,6 +698,10 @@ export default function VendolyImpostazioniPage() {
               </div>
             </div>
 
+          </div>
+          )}
+
+          <div className="space-y-4">
             {/* Opzioni Ricevute & Cortesia Cassa POS */}
             <div className="pt-4 border-t border-slate-100 space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { syncOmnichannelChannels, fetchOmnichannelStatus } from "@/lib/omnichannel-client";
 import { prisma, ensureDatabase } from "@/lib/db";
-import { orariUfficialiPerCanali, chiusureFuture } from "@/lib/anagrafica-attivita";
+import { orariUfficialiPerCanali, chiusureFuture, modalitaOrari } from "@/lib/anagrafica-attivita";
 
 async function isCallerAuthorized(): Promise<boolean> {
   try {
@@ -40,6 +40,15 @@ export async function POST(req: NextRequest) {
     // Impostazioni > Negozio (giorni di chiusura inclusi): quelli inviati dal chiamante non vengono usati.
     await ensureDatabase();
     const cache = await prisma.tenantLocalCache.findUnique({ where: { id: "singleton" } });
+    // Solo un negozio fisico manda gli orari ai canali: per un e-commerce o un orario di assistenza non si pubblica nulla
+    if (modalitaOrari(cache) !== "NEGOZIO") {
+      return NextResponse.json({
+        ok: true,
+        success: true,
+        summary: "Orari non inviati: nelle impostazioni sono indicati come orario di assistenza o disattivati.",
+        channels: {},
+      });
+    }
     const weeklyHours = orariUfficialiPerCanali(cache);
     const specialClosures = body.specialClosures || (await chiusureFuture());
 

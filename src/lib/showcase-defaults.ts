@@ -18,6 +18,7 @@ export interface ShowcaseContactInfo {
   hoursWeekday?: string;
   hoursSaturday?: string;
   hoursSunday?: string;
+  hoursMode?: "NEGOZIO" | "ASSISTENZA" | "NESSUNO";
   storeBadge?: string;
   storeDescription?: string;
   notes?: string;
