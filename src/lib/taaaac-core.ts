@@ -1,4 +1,4 @@
-import { prisma } from "./db";
+import { prisma, ensureDatabase } from "./db";
 import { TenantConfigResponse, TaaaacModuleKey } from "@/types/taaaac";
 
 const FALLBACK_CONFIG: TenantConfigResponse = {
@@ -44,6 +44,7 @@ export async function getTenantConfig(): Promise<TenantConfigResponse> {
 
   let cached: any = null;
   try {
+    await ensureDatabase();
     cached = await prisma.tenantLocalCache.findUnique({
       where: { id: "singleton" },
     });
