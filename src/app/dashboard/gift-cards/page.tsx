@@ -6,6 +6,7 @@ import { it } from "date-fns/locale";
 import AddonModuleGuard from "@/components/dashboard/AddonModuleGuard";
 import { TAAAAC_ADDONS } from "@/lib/taaaac-client";
 import { classificaTelefono } from "@/lib/phone";
+import EditorCartaGrafica from "@/components/carta-grafica/EditorCartaGrafica";
 
 const MOTIVI: { id: string; etichetta: string }[] = [
   { id: "REGALO", etichetta: "Buono regalo" },
@@ -113,6 +114,7 @@ export default function BuoniPage() {
   const [filtroStato, setFiltroStato] = useState("");
   const [filtroMotivo, setFiltroMotivo] = useState("");
   const [aperto, setAperto] = useState<string | null>(null);
+  const [mostraEditorGrafica, setMostraEditorGrafica] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Cassa
@@ -338,7 +340,7 @@ export default function BuoniPage() {
 
   const linkBuono = (b: Buono) => `${window.location.origin}/buono/${b.tokenPubblico}`;
 
-  const stampa = async (b: Buono, formato: "a4" | "ricevuta") => {
+  const stampa = async (b: Buono, formato: "a4" | "ricevuta" | "cartoncino") => {
     // La finestra va aperta subito (al clic), poi si registra la stampa e la si porta alla pagina giusta
     const finestra = window.open("", "_blank");
     try {
@@ -460,13 +462,24 @@ export default function BuoniPage() {
               Regali, sconti, compensazioni e premi punti: li emetti qui, li usi in cassa e vedi sempre cosa è stato fatto.
             </p>
           </div>
-          <button
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMostraEditorGrafica((v) => !v)}
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-sm font-semibold shadow-2xs transition cursor-pointer"
+            >
+              {mostraEditorGrafica ? "✕ Chiudi Studio Grafico" : "🎨 Grafica Buoni & Biglietto da Visita"}
+            </button>
+            <button
             onClick={apriEmissione}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold shadow-sm transition"
           >
             + Nuovo buono
-          </button>
+            </button>
+          </div>
         </div>
+
+        {mostraEditorGrafica && <EditorCartaGrafica />}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
@@ -686,6 +699,9 @@ export default function BuoniPage() {
                           <div className="rounded-xl border border-slate-200 bg-white p-3 space-y-3">
                             <div className="text-xs font-semibold uppercase tracking-wider text-slate-400">Consegna il buono</div>
                             <div className="flex flex-wrap gap-2">
+                              <button onClick={() => stampa(b, "cartoncino")} className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                                🎁 Stampa cartoncino regalo
+                              </button>
                               <button onClick={() => stampa(b, "a4")} className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                                 Stampa A4
                               </button>

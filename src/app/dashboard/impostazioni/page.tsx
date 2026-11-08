@@ -28,10 +28,11 @@ import { useTenantConfig } from "@/components/providers/TenantConfigProvider";
 import RegisteredDevicesCard from "@/components/dashboard/RegisteredDevicesCard";
 import TelegramHubCard, { TelegramHubData } from "@/components/dashboard/TelegramHubCard";
 import FidelitySettingsPanel, { FidelitySettingsData } from "@/components/dashboard/FidelitySettingsPanel";
-import { Send, Award } from "lucide-react";
+import EditorCartaGrafica from "@/components/carta-grafica/EditorCartaGrafica";
+import { Send, Award, CreditCard } from "lucide-react";
 import ShowcaseVisualStudio from "@/components/dashboard/showcase/ShowcaseVisualStudio";
 
-type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "telegram" | "fidelity" | "dispositivi" | "aspetto";
+type SettingsTab = "negozio" | "vendita" | "dominio" | "email" | "telegram" | "fidelity" | "dispositivi" | "aspetto" | "carta-grafica";
 
 interface TabItem {
   id: SettingsTab;
@@ -106,6 +107,14 @@ const TABS: TabItem[] = [
     iconComponent: Palette,
     shortDescription: "Logo, favicon e colori",
     description: "Personalizzazione tema punto cassa POS, colori vetrina, logo e favicon",
+  },
+  {
+    id: "carta-grafica",
+    label: "Biglietti & Buoni",
+    shortLabel: "Biglietti",
+    iconComponent: CreditCard,
+    shortDescription: "Grafica buoni e biglietto da visita",
+    description: "Editor visivo per buoni regalo e biglietti da visita fronte/retro con sfondo personalizzato",
   },
 ];
 
@@ -1045,6 +1054,11 @@ export default function VendolyImpostazioniPage() {
       {/* TAB 5: ASPETTO & BRAND (LIVE SHOWCASE VISUAL STUDIO) */}
       {activeTab === "aspetto" && (
         <ShowcaseVisualStudio />
+      )}
+      {activeTab === "carta-grafica" && (
+        <div className="space-y-6">
+          <EditorCartaGrafica />
+        </div>
       )}
         </main>
       </div>

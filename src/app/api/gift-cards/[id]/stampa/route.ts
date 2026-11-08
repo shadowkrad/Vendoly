@@ -6,7 +6,7 @@ import { statoEffettivo } from "@/lib/buoni";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const schema = z.object({ formato: z.enum(["a4", "ricevuta"]).default("a4") });
+const schema = z.object({ formato: z.enum(["a4", "ricevuta", "cartoncino"]).default("a4") });
 
 /** Registra la stampa (la prima e' STAMPA, le successive RISTAMPA, con lo stesso codice) e dice quale pagina aprire. */
 export async function POST(req: NextRequest, { params }: Ctx) {
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       importo: 0,
       saldoDopo: b.saldoResiduo,
       operatore,
-      note: `${ristampa ? "Ristampa" : "Stampa"} ${formato === "ricevuta" ? "ricevuta 80 mm" : "A4"} con lo stesso codice`,
+      note: `${ristampa ? "Ristampa" : "Stampa"} ${formato === "ricevuta" ? "ricevuta 80 mm" : formato === "cartoncino" ? "cartoncino regalo" : "A4"} con lo stesso codice`,
     },
   });
   return NextResponse.json({ success: true, ristampa, url: `/buono/${b.tokenPubblico}/stampa?formato=${formato}` });
