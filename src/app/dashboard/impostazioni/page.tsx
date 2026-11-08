@@ -188,7 +188,10 @@ export default function VendolyImpostazioniPage() {
 
       setFeedback({
         type: "success",
-        text: "🚀 Orari negozio sincronizzati all'unisono su Google Maps, Meta e WhatsApp!",
+        text:
+          typeof data.summary === "string" && data.summary.startsWith("Orari non inviati")
+            ? data.summary
+            : "🚀 Orari negozio sincronizzati all'unisono su Google Maps, Meta e WhatsApp!",
       });
       const st = await fetch("/api/sync/channels").then((r) => r.json()).catch(() => null);
       if (st) setChannelStatus(st);
