@@ -115,12 +115,12 @@ export async function salvaCartaGrafica(nuovaConfig: unknown): Promise<CartaGraf
 
   rawJson.cartaGrafica = configNormalizzata;
 
-  if (cache) {
-    await prisma.tenantLocalCache.update({
-      where: { id: "singleton" },
-      data: { showcaseConfig: JSON.stringify(rawJson) },
-    });
-  }
+  // Anche se le impostazioni non sono ancora state salvate (riga assente), la grafica deve salvarsi
+  await prisma.tenantLocalCache.upsert({
+    where: { id: "singleton" },
+    update: { showcaseConfig: JSON.stringify(rawJson) },
+    create: { id: "singleton", domain: "vendoly-demo.taaaac.eu", showcaseConfig: JSON.stringify(rawJson) },
+  });
 
   return configNormalizzata;
 }
