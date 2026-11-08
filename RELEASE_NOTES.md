@@ -29,6 +29,7 @@
 - **Una sola scheda**: nome, indirizzo, telefono, email, **descrizione** e **orari** del negozio si modificano solo in Impostazioni > Negozio. Vetrina, piè di pagina, Google, Facebook e Instagram leggono da lì: gli orari sono sempre identici ovunque, giorni di chiusura e ferie compresi.
 - **Studio Aspetto**: mostra questi dati in sola lettura e decide solo cosa far vedere (interruttori per indirizzo, telefono, email, contatti rapidi). Colori e logo si cambiano solo nello Studio.
 - Lo Studio non può più sovrascrivere i dati del negozio, nemmeno salvando una vecchia copia.
+- **Orari facoltativi**: in Impostazioni > Negozio scegli se avere un negozio fisico (orari di apertura, inviati anche a Google e social), mostrare solo un orario di assistenza clienti (non inviato ai canali) oppure nessun orario, per chi vende solo online.
 
 ---
 

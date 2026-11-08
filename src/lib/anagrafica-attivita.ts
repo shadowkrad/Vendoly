@@ -10,6 +10,14 @@ import { prisma, ensureDatabase } from "@/lib/db";
 import { parseShowcaseConfig, ShowcaseConfig } from "@/lib/showcase-defaults";
 import type { OmnichannelDayHours, OmnichannelSpecialClosure } from "@/lib/omnichannel-client";
 
+export type ModalitaOrari = "NEGOZIO" | "ASSISTENZA" | "NESSUNO";
+
+/** Gli orari sono facoltativi: negozio fisico, semplice orario di risposta dell'assistenza, oppure nessuno (solo e-commerce). */
+export function modalitaOrari(cache: any | null): ModalitaOrari {
+  const m = String(cache?.orariModalita || "NEGOZIO").toUpperCase();
+  return m === "ASSISTENZA" || m === "NESSUNO" ? m : "NEGOZIO";
+}
+
 export const ORARI_FERIALI_DEFAULT = "09:30 – 13:00 / 15:30 – 19:30";
 export const ORARI_SABATO_DEFAULT = "09:30 – 19:30 (Continuato)";
 export const ORARI_DOMENICA_DEFAULT = "Chiuso";
@@ -81,6 +89,7 @@ export function applicaAnagrafica(showcase: ShowcaseConfig, cache: any | null): 
   ci.hoursWeekday = cache.orariFeriali?.trim() || ORARI_FERIALI_DEFAULT;
   ci.hoursSaturday = cache.orariSabato?.trim() || ORARI_SABATO_DEFAULT;
   ci.hoursSunday = cache.orariDomenica?.trim() || ORARI_DOMENICA_DEFAULT;
+  ci.hoursMode = modalitaOrari(cache);
   showcase.contactInfo = ci;
   if (cache.brandName?.trim()) showcase.brandName = cache.brandName.trim();
   return showcase;

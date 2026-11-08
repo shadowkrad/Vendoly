@@ -1326,7 +1326,7 @@ export default function ShowcaseVisualStudio() {
 
                 <div className="pt-2 border-t border-slate-100 space-y-3">
                   <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Orari Settimanali di Apertura
+                    Orari {config.contactInfo?.hoursMode === "ASSISTENZA" ? "Assistenza Clienti" : config.contactInfo?.hoursMode === "NESSUNO" ? "(disattivati in Impostazioni)" : "di Apertura"}
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1850,7 +1850,7 @@ export default function ShowcaseVisualStudio() {
               )}
 
               {/* Sezione Orari & Negozio */}
-              {config.sections?.showHours && (
+              {config.sections?.showHours && config.contactInfo?.hoursMode !== "NESSUNO" && (
                 <div className="p-4 bg-slate-50 border-t border-slate-100 space-y-2 text-[10px]">
                   <h4 className="font-bold text-slate-900 flex items-center gap-1.5">
                     <Clock className="w-3 h-3 text-emerald-600" />

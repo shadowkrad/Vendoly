@@ -88,6 +88,8 @@ export async function ensureDatabase(): Promise<void> {
           // Ignora se la tabella non esiste ancora o la colonna e' presente
         }
       };
+      // Orari facoltativi (1.1.2): negozio fisico, orario assistenza oppure nessun orario
+      await addColumnIfNotExists("TenantLocalCache", "orariModalita", "TEXT NOT NULL DEFAULT 'NEGOZIO'");
       // Fidelity e buoni (1.1.2): colonne e tabelle nel database dell'attivita'
       await addColumnIfNotExists("Customer", "marketingConsent", "BOOLEAN NOT NULL DEFAULT 0");
       await addColumnIfNotExists("Customer", "birthDate", "DATETIME");
