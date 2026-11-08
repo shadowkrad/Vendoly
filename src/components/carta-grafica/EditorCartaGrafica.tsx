@@ -8,7 +8,9 @@ import {
   PresetCartaGrafica,
   CombinazioneColori,
   ContenutoRetro,
+  applicaPersonalizzati,
 } from "@/lib/carta-grafica-types";
+import CampiPersonalizzabili from "@/components/carta-grafica/CampiPersonalizzabili";
 import {
   BigliettoFronte,
   BigliettoRetro,
@@ -17,13 +19,13 @@ import {
 
 export default function EditorCartaGrafica() {
   const [config, setConfig] = useState<CartaGraficaConfig | null>(null);
-  const [attivita, setAttivita] = useState<DatiAttivitaCarta | null>(null);
+  const [ereditata, setEreditata] = useState<DatiAttivitaCarta | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Controlli dell'Editor Visivo
-  const [sezioneAttiva, setSezioneAttiva] = useState<"stile" | "sfondi" | "biglietto" | "buono">("stile");
+  const [sezioneAttiva, setSezioneAttiva] = useState<"stile" | "sfondi" | "biglietto" | "buono" | "dati">("stile");
   const [vistaAnteprima, setVistaAnteprima] = useState<
     "biglietto" | "buono_cartoncino" | "buono_cartaceo" | "buono_web"
   >("biglietto");
@@ -38,9 +40,9 @@ export default function EditorCartaGrafica() {
     fetch("/api/carta-grafica")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.config && d?.attivita) {
+        if (d?.config && d?.ereditata) {
           setConfig(d.config);
-          setAttivita(d.attivita);
+          setEreditata(d.ereditata);
         }
         setLoading(false);
       })
@@ -125,7 +127,7 @@ export default function EditorCartaGrafica() {
     }
   };
 
-  if (loading || !config || !attivita) {
+  if (loading || !config || !ereditata) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-sm text-slate-500">
         Caricamento Editor Visivo Buoni & Biglietti da Visita…
@@ -133,8 +135,11 @@ export default function EditorCartaGrafica() {
     );
   }
 
+  // Dati effettivamente stampati: quelli di Impostazioni, salvo le voci che il titolare ha scelto di cambiare
+  const attivita = applicaPersonalizzati(ereditata, config.personalizzati);
+
   const buonoEsempio = {
-    codice: "REG-BF2026",
+    codice: "REG-ESEMPIO",
     motivoEtichetta: "Buono Regalo",
     valore: "75,00 €",
     destinatario: "Giulia Rossi",
@@ -225,13 +230,14 @@ export default function EditorCartaGrafica() {
         {/* COLONNA SINISTRA: PANNELLO CONTROLLI (5/12) */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
           {/* Tab di navigazione controlli */}
-          <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 text-xs font-bold">
+          <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50 text-xs font-bold">
             {(
               [
                 ["stile", "1. Stile & Colori"],
                 ["sfondi", "2. Sfondo"],
                 ["biglietto", "3. Biglietto"],
                 ["buono", "4. Buoni"],
+                ["dati", "5. Dati"],
               ] as const
             ).map(([id, label]) => (
               <button
@@ -250,6 +256,15 @@ export default function EditorCartaGrafica() {
           </div>
 
           <div className="p-5 space-y-5">
+            {/* TAB 5: DATI STAMPATI (ereditati da Impostazioni, modificabili solo su scelta) */}
+            {sezioneAttiva === "dati" && (
+              <CampiPersonalizzabili
+                ereditata={ereditata}
+                personalizzati={config.personalizzati}
+                onChange={(next) => aggiorna("personalizzati", next)}
+              />
+            )}
+
             {/* TAB 1: STILE & COLORI DEL TEMA */}
             {sezioneAttiva === "stile" && (
               <div className="space-y-5">
@@ -624,7 +639,7 @@ export default function EditorCartaGrafica() {
                         type="text"
                         value={config.firmaBrand}
                         onChange={(e) => aggiorna("firmaBrand", e.target.value)}
-                        placeholder="Es. di Falomi Beatrice"
+                        placeholder="Es. di Maria Rossi"
                         className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200"
                       />
                     </div>
@@ -648,7 +663,7 @@ export default function EditorCartaGrafica() {
                         type="text"
                         value={config.nomeSedeOspite}
                         onChange={(e) => aggiorna("nomeSedeOspite", e.target.value)}
-                        placeholder={attivita.nome || "Es. NUCCIO NEXT"}
+                        placeholder={attivita.nome || "Es. Centro Benessere Aurora"}
                         className="w-full text-xs px-3 py-2 rounded-xl border border-slate-200"
                       />
                     </div>
@@ -683,7 +698,7 @@ export default function EditorCartaGrafica() {
                     <div className="grid grid-cols-1 gap-2">
                       {(
                         [
-                          ["ORARI", "Tabella Orari Ufficiali (Stile BF Estetica)"],
+                          ["ORARI", "Tabella Orari Ufficiali"],
                           ["ORARI_QR", "Orari Ufficiali + QR Code Prenota Online"],
                           ["APPUNTAMENTI_QR", "Righe Promemoria Appuntamenti + QR Code"],
                         ] as Array<[ContenutoRetro, string]>
@@ -940,7 +955,7 @@ export default function EditorCartaGrafica() {
             </div>
           </div>
 
-          {/* TAVOLO DI LAVORO (effetto carta/lino caldo come nella foto del biglietto BF Estetica) */}
+          {/* TAVOLO DI LAVORO (effetto carta/lino caldo come su un biglietto stampato) */}
           <div
             className="rounded-2xl p-5 sm:p-8 transition-all flex flex-col items-center justify-center gap-6"
             style={{
