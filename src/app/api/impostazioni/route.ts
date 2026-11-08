@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensureDatabase } from "@/lib/db";
 import { fetchTenantConfig } from "@/lib/taaaac-client";
 import { parseShowcaseConfig } from "@/lib/showcase-defaults";
 import { riallineaVetrinaSalvata } from "@/lib/anagrafica-attivita";
@@ -24,6 +24,7 @@ async function getTelegramHub() {
 
 export async function GET() {
   try {
+    await ensureDatabase();
     const config = await prisma.tenantLocalCache.findUnique({
       where: { id: "singleton" },
     });
@@ -116,6 +117,7 @@ export async function GET() {
 
 export async function PUT(req: NextRequest) {
   try {
+    await ensureDatabase();
     const body = await req.json();
     const {
       brandName,
