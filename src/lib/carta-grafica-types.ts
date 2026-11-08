@@ -22,7 +22,23 @@ export type ContenutoRetro = "ORARI" | "ORARI_QR" | "APPUNTAMENTI_QR";
 
 export type ModalitaOrariRetro = "GIORNALIERO" | "RAGGRUPPATO";
 
+/**
+ * Testi diversi da Impostazioni, usati SOLO su biglietti e buoni quando il titolare lo sceglie.
+ * Una voce assente = si usa il dato di Impostazioni (sempre aggiornato).
+ */
+export interface DatiPersonalizzati {
+  nome?: string;
+  slogan?: string;
+  indirizzo?: string;
+  citta?: string;
+  telefono?: string;
+  email?: string;
+  /** 7 righe, da Lunedì a Domenica. */
+  orari?: Array<{ giorno: string; orario: string }>;
+}
+
 export interface CartaGraficaConfig {
+  personalizzati: DatiPersonalizzati;
   preset: PresetCartaGrafica;
   formatoBiglietto: FormatoBiglietto;
   combinazioneColori: CombinazioneColori;
@@ -41,9 +57,9 @@ export interface CartaGraficaConfig {
   nascondiTestiRetro: boolean;
   // Testi fronte biglietto
   sottotitoloBrand: string; // es. "ESTETICA"
-  firmaBrand: string; // es. "di Falomi Beatrice"
+  firmaBrand: string; // es. "di Maria Rossi"
   sovratitoloSede: string; // es. "Presso"
-  nomeSedeOspite: string; // es. "NUCCIO NEXT"
+  nomeSedeOspite: string; // es. "Centro Benessere Aurora"
   mostraQrFronte: boolean;
   mostraOrariCompattiFronte: boolean;
   // Configurazione retro biglietto
@@ -84,7 +100,7 @@ export const PRESET_CARTA_LABELS: Array<{
   {
     id: "BOTANICO_LUXURY",
     nome: "Botanico & Luxury",
-    descrizione: "Rami d'ulivo negli angoli, stelline ✦ e filetti dorati (stile BF Estetica)",
+    descrizione: "Rami d'ulivo negli angoli, stelline ✦ e filetti dorati",
   },
   {
     id: "CLASSICO_ORO",
@@ -116,6 +132,7 @@ export function defaultCartaGraficaConfig(opts?: {
   sottotitoloBrand?: string;
 }): CartaGraficaConfig {
   return {
+    personalizzati: {},
     preset: opts?.defaultPreset || "BOTANICO_LUXURY",
     formatoBiglietto: "FRONTE_RETRO",
     combinazioneColori: "SCURO_CHIARO",
@@ -152,6 +169,7 @@ export function normalizzaCartaGraficaConfig(
   if (!raw || typeof raw !== "object") return base;
   const r = raw as Record<string, any>;
   return {
+    personalizzati: normalizzaPersonalizzati(r.personalizzati),
     preset:
       r.preset === "BOTANICO_LUXURY" ||
       r.preset === "CLASSICO_ORO" ||
@@ -197,6 +215,53 @@ export function normalizzaCartaGraficaConfig(
     includiDomenica: Boolean(r.includiDomenica),
     titoloRetro: typeof r.titoloRetro === "string" && r.titoloRetro.trim() ? r.titoloRetro : base.titoloRetro,
   };
+}
+
+const CAMPI_TESTO_PERSONALIZZABILI = ["nome", "slogan", "indirizzo", "citta", "telefono", "email"] as const;
+
+/** Tiene solo i campi noti, come testo breve; una voce vuota ("") significa "non stampare". */
+export function normalizzaPersonalizzati(raw: unknown): DatiPersonalizzati {
+  const out: DatiPersonalizzati = {};
+  if (!raw || typeof raw !== "object") return out;
+  const r = raw as Record<string, any>;
+  for (const k of CAMPI_TESTO_PERSONALIZZABILI) {
+    if (typeof r[k] === "string") out[k] = r[k].slice(0, 160);
+  }
+  if (Array.isArray(r.orari) && r.orari.length === 7) {
+    out.orari = r.orari.map((x: any, i: number) => ({
+      giorno: ["LUNEDÌ", "MARTEDÌ", "MERCOLEDÌ", "GIOVEDÌ", "VENERDÌ", "SABATO", "DOMENICA"][i],
+      orario: typeof x?.orario === "string" ? x.orario.slice(0, 80) : "",
+    }));
+  }
+  return out;
+}
+
+/** Dati effettivi stampati: quelli di Impostazioni, salvo le voci che il titolare ha scelto di cambiare. */
+export function applicaPersonalizzati(base: DatiAttivitaCarta, p?: DatiPersonalizzati): DatiAttivitaCarta {
+  if (!p) return base;
+  const out: DatiAttivitaCarta = { ...base };
+  for (const k of CAMPI_TESTO_PERSONALIZZABILI) {
+    if (typeof p[k] === "string") out[k] = (p[k] as string).trim();
+  }
+  if (p.orari && p.orari.length === 7) {
+    const giornalieri: OrarioGiornoCarta[] = p.orari.map((r) => {
+      const testo = (r.orario || "").trim();
+      const chiuso = !testo || /chiuso/i.test(testo);
+      return { giorno: r.giorno, orario: chiuso ? "CHIUSO" : testo, chiuso };
+    });
+    const raggruppati: OrarioGiornoCarta[] = [];
+    for (const g of giornalieri) {
+      const ultimo = raggruppati[raggruppati.length - 1] as (OrarioGiornoCarta & { _da?: string }) | undefined;
+      if (ultimo && ultimo.orario === g.orario) {
+        ultimo.giorno = `${ultimo._da} - ${g.giorno}`;
+      } else {
+        raggruppati.push({ ...g, _da: g.giorno } as OrarioGiornoCarta & { _da?: string });
+      }
+    }
+    out.orariGiornalieri = giornalieri;
+    out.orariRaggruppati = raggruppati.map(({ giorno, orario, chiuso }) => ({ giorno, orario, chiuso }));
+  }
+  return out;
 }
 
 /** Calcola i colori effettivi di un lato (fronte o retro) in base alla combinazione scelta. */
