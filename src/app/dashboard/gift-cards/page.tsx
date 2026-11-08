@@ -340,7 +340,7 @@ export default function BuoniPage() {
 
   const linkBuono = (b: Buono) => `${window.location.origin}/buono/${b.tokenPubblico}`;
 
-  const stampa = async (b: Buono, formato: "a4" | "ricevuta" | "cartoncino") => {
+  const stampa = async (b: Buono, formato: "a4" | "ricevuta" | "cartoncino" | "cartaceo") => {
     // La finestra va aperta subito (al clic), poi si registra la stampa e la si porta alla pagina giusta
     const finestra = window.open("", "_blank");
     try {

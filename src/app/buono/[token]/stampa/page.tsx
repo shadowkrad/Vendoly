@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Stampa del buono: Cartoncino Regalo (210x99mm su A4), Certificato A4 oppure ricevuta da 80 mm per la cassa.
+// Stampa del buono: Cartoncino Regalo (210x99mm su A4), Buono Cartaceo, Certificato A4 oppure ricevuta da 80 mm per la cassa.
 export default async function StampaBuonoPage({
   params,
   searchParams,
@@ -32,6 +32,8 @@ export default async function StampaBuonoPage({
       ? "ricevuta"
       : formato === "cartoncino"
       ? "cartoncino"
+      : formato === "cartaceo"
+      ? "cartaceo"
       : "a4";
   const cond = condizioniBuono(b);
   const { config, attivita } = b.cartaGrafica;
@@ -58,6 +60,7 @@ export default async function StampaBuonoPage({
           color: "#fff",
           padding: "10px 18px",
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "center",
           justifyContent: "space-between",
           gap: 12,
@@ -66,9 +69,12 @@ export default async function StampaBuonoPage({
         }}
       >
         <div>
-          <strong>{b.brand.nome}</strong> — Stampa Buono <code>{b.codice}</code>
+          <strong>{b.brand.nome}</strong> — Stampa Buono{" "}
+          <span style={{ color: "#fbbf24", fontWeight: 700 }}>
+            Codice Identificativo: <code>{b.codice}</code>
+          </span>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
           <a
             href={`/buono/${token}/stampa?formato=cartoncino`}
             style={{
@@ -80,7 +86,20 @@ export default async function StampaBuonoPage({
               color: fmt === "cartoncino" ? "#0f172a" : "#e2e8f0",
             }}
           >
-            🎁 Cartoncino Regalo (Busta DL)
+            🎁 Cartoncino Regalo (Precompilato)
+          </a>
+          <a
+            href={`/buono/${token}/stampa?formato=cartaceo`}
+            style={{
+              padding: "6px 12px",
+              borderRadius: 8,
+              textDecoration: "none",
+              fontWeight: 700,
+              background: fmt === "cartaceo" ? "#f59e0b" : "#1e293b",
+              color: fmt === "cartaceo" ? "#0f172a" : "#e2e8f0",
+            }}
+          >
+            ✍️ Buono Cartaceo (con Codice ID)
           </a>
           <a
             href={`/buono/${token}/stampa?formato=a4`}
@@ -125,7 +144,21 @@ export default async function StampaBuonoPage({
             alt="QR"
             style={{ width: "38mm", height: "38mm", margin: "6px auto", display: "block" }}
           />
-          <div style={{ fontFamily: "monospace", fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", marginTop: 4 }}>
+            Codice Identificativo per scaricare il buono:
+          </div>
+          <div
+            style={{
+              fontFamily: "monospace",
+              fontSize: 15,
+              fontWeight: 800,
+              letterSpacing: 1.5,
+              border: "1px solid #000",
+              padding: "3px 6px",
+              marginTop: 2,
+              display: "inline-block",
+            }}
+          >
             {b.codice}
           </div>
           <hr style={{ border: 0, borderTop: "1px dashed #000", margin: "6px 0" }} />
@@ -138,8 +171,8 @@ export default async function StampaBuonoPage({
             {[b.brand.indirizzo, b.brand.telefono].filter(Boolean).join(" · ")}
           </div>
         </div>
-      ) : fmt === "cartoncino" ? (
-        /* FORMATO CARTONCINO REGALO (210x99mm con guida di ritaglio + eventuale retro orari sotto) */
+      ) : fmt === "cartoncino" || fmt === "cartaceo" ? (
+        /* FORMATO CARTONCINO REGALO O CARTACEO (186x88mm su foglio A4 con guida di ritaglio + eventuale retro orari sotto) */
         <div className="foglio" style={{ padding: "16mm 12mm" }}>
           <div
             className="no-stampa"
@@ -179,7 +212,7 @@ export default async function StampaBuonoPage({
                 condizioni: cond,
                 stato: b.stato,
               }}
-              layout="cartoncino"
+              layout={fmt === "cartaceo" ? "cartaceo" : "cartoncino"}
             />
           </div>
 
@@ -252,6 +285,18 @@ export default async function StampaBuonoPage({
             />
             <div
               style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: "#555",
+                marginBottom: 4,
+              }}
+            >
+              Codice Identificativo per scaricare il buono:
+            </div>
+            <div
+              style={{
                 fontFamily: "monospace",
                 fontSize: 22,
                 fontWeight: 700,
@@ -262,7 +307,7 @@ export default async function StampaBuonoPage({
               {b.codice}
             </div>
             <div style={{ fontSize: 12, color: "#555", marginTop: 3 }}>
-              Presenta questo codice o il QR Code in cassa
+              Presenta questo codice identificativo o il QR Code in cassa per scaricare il buono
             </div>
           </div>
 

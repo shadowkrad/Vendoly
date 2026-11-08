@@ -24,7 +24,9 @@ export default function EditorCartaGrafica() {
 
   // Controlli dell'Editor Visivo
   const [sezioneAttiva, setSezioneAttiva] = useState<"stile" | "sfondi" | "biglietto" | "buono">("stile");
-  const [vistaAnteprima, setVistaAnteprima] = useState<"biglietto" | "buono_web" | "buono_cartoncino">("biglietto");
+  const [vistaAnteprima, setVistaAnteprima] = useState<
+    "biglietto" | "buono_cartoncino" | "buono_cartaceo" | "buono_web"
+  >("biglietto");
   const [mostraGuideTaglio, setMostraGuideTaglio] = useState(false);
   const [zoomAnteprima, setZoomAnteprima] = useState<"normale" | "grande">("normale");
 
@@ -82,7 +84,9 @@ export default function EditorCartaGrafica() {
     reader.readAsDataURL(file);
   };
 
-  const salva = async (apriStampaDopo?: "a4" | "singolo") => {
+  const salva = async (
+    apriStampaDopo?: "a4" | "singolo" | "buono_cartaceo" | "buono_precompilato"
+  ) => {
     if (!config) return;
     setSaving(true);
     setFeedback(null);
@@ -104,7 +108,13 @@ export default function EditorCartaGrafica() {
         setConfig(d.config);
         setFeedback({ type: "success", text: "Grafica di Buoni e Biglietto da Visita salvata con successo!" });
         if (apriStampaDopo && finestraStampa) {
-          finestraStampa.location.href = `/dashboard/biglietto-visita/stampa?formato=${apriStampaDopo}`;
+          if (apriStampaDopo === "buono_cartaceo") {
+            finestraStampa.location.href = `/dashboard/biglietto-visita/stampa?tipo=buono_cartaceo`;
+          } else if (apriStampaDopo === "buono_precompilato") {
+            finestraStampa.location.href = `/dashboard/biglietto-visita/stampa?tipo=buono_precompilato`;
+          } else {
+            finestraStampa.location.href = `/dashboard/biglietto-visita/stampa?formato=${apriStampaDopo}`;
+          }
         }
       }
     } catch {
@@ -130,10 +140,11 @@ export default function EditorCartaGrafica() {
     destinatario: "Giulia Rossi",
     acquirente: "Marco",
     messaggio: "Un momento speciale di relax e bellezza tutto per te!",
+    scadenzaTesto: "31/12/2027",
     qrDataUrl: attivita.qrVetrinaDataUrl,
     condizioni: [
       "Valido per 12 mesi dalla data di emissione.",
-      "Utilizzabile anche in più sedute fino a esaurimento del credito.",
+      "Presenta il codice identificativo o il QR Code in cassa per scaricare il buono.",
     ],
     stato: "ATTIVA",
   };
@@ -150,7 +161,7 @@ export default function EditorCartaGrafica() {
             </h2>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Personalizza lo stile, carica uno sfondo personalizzato e stampa biglietti da visita (solo fronte o fronte/retro) e buoni coordinati ai dati ufficiali della tua attività.
+            Personalizza lo stile, carica uno sfondo personalizzato e stampa biglietti da visita (solo fronte o fronte/retro) e buoni regalo cartacei o digitali con codice identificativo.
           </p>
         </div>
 
@@ -161,7 +172,15 @@ export default function EditorCartaGrafica() {
             disabled={saving}
             className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition cursor-pointer"
           >
-            🖨️ Stampa Foglio A4 ({config.formatoBiglietto === "SOLO_FRONTE" ? "10 Fronti" : "10 Fronte/Retro"})
+            🖨️ Stampa Biglietti A4 ({config.formatoBiglietto === "SOLO_FRONTE" ? "10 Fronti" : "10 Fronte/Retro"})
+          </button>
+          <button
+            type="button"
+            onClick={() => salva("buono_cartaceo")}
+            disabled={saving}
+            className="px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-950 text-xs font-bold transition cursor-pointer"
+          >
+            ✍️ Stampa Buoni Cartacei A4 (2 per foglio)
           </button>
           <button
             type="button"
@@ -169,7 +188,7 @@ export default function EditorCartaGrafica() {
             disabled={saving}
             className="px-3.5 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition cursor-pointer"
           >
-            🖼️ Stampa / PDF 1:1 Tipografia
+            🖼️ PDF 1:1 Tipografia
           </button>
           <button
             type="button"
@@ -745,11 +764,16 @@ export default function EditorCartaGrafica() {
               </div>
             )}
 
-            {/* TAB 4: OPZIONI BUONI REGALO */}
+            {/* TAB 4: OPZIONI BUONI REGALO (CARTACEO E DIGITALE) */}
             {sezioneAttiva === "buono" && (
               <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700">
-                  I <strong>Buoni Regalo</strong> (pagina digitale del cliente, Cartoncino Regalo da busta e foglio A4) ereditano automaticamente il <strong>Preset</strong>, i <strong>Colori</strong> e il <strong>Medaglione/Logo</strong> scelti per l&apos;attività.
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5">
+                  <div>
+                    I <strong>Buoni Regalo</strong> (sia <strong>Cartacei da stampare al cliente</strong> che <strong>Digitali</strong>) ereditano automaticamente il <strong>Preset</strong>, i <strong>Colori</strong> e il <strong>Medaglione/Logo</strong> dell&apos;attività.
+                  </div>
+                  <div className="text-[11px] text-slate-600">
+                    Ogni buono include sempre il riquadro <strong>CODICE IDENTIFICATIVO PER SCARICARE IL BUONO</strong> per scalare il credito in cassa.
+                  </div>
                 </div>
 
                 <label className="flex items-center gap-2 text-xs font-semibold text-slate-800 cursor-pointer">
@@ -799,14 +823,43 @@ export default function EditorCartaGrafica() {
                   </button>
                 </div>
 
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setVistaAnteprima("buono_cartoncino")}
-                    className="w-full py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer"
-                  >
-                    👁️ Mostra subito l&apos;anteprima del Cartoncino Regalo a destra →
-                  </button>
+                <div className="space-y-2 pt-2 border-t border-slate-100">
+                  <div className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Anteprima & Stampa Rapida Buoni
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setVistaAnteprima("buono_cartaceo")}
+                      className="py-2.5 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-950 text-xs font-bold transition cursor-pointer"
+                    >
+                      ✍️ Vedi Buono Cartaceo (da compilare)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setVistaAnteprima("buono_cartoncino")}
+                      className="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition cursor-pointer"
+                    >
+                      🎁 Vedi Buono Precompilato
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => salva("buono_cartaceo")}
+                      className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer"
+                    >
+                      🖨️ Stampa Foglio A4 con 2 Buoni Cartacei da compilare in negozio →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => salva("buono_precompilato")}
+                      className="w-full py-2.5 px-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold transition cursor-pointer"
+                    >
+                      🖨️ Compila al volo e Stampa Buono Regalo con Codice & QR →
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -839,6 +892,17 @@ export default function EditorCartaGrafica() {
                 }`}
               >
                 🎁 Cartoncino Buono Regalo
+              </button>
+              <button
+                type="button"
+                onClick={() => setVistaAnteprima("buono_cartaceo")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                  vistaAnteprima === "buono_cartaceo"
+                    ? "bg-white text-slate-900 shadow-2xs"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                ✍️ Buono Cartaceo (da compilare)
               </button>
               <button
                 type="button"
@@ -932,9 +996,9 @@ export default function EditorCartaGrafica() {
             )}
 
             {vistaAnteprima === "buono_cartoncino" && (
-              <div className="w-full max-w-[600px] space-y-2">
+              <div className="w-full max-w-[640px] space-y-2">
                 <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-700 px-1">
-                  <span>Cartoncino Regalo Panoramico (210 × 99 mm — Formato Busta Regalo)</span>
+                  <span>Cartoncino Buono Regalo con Codice Identificativo & QR (210 × 99 mm)</span>
                   <span>Anteprima Live</span>
                 </div>
                 <BuonoRegaloCard
@@ -946,10 +1010,28 @@ export default function EditorCartaGrafica() {
               </div>
             )}
 
+            {vistaAnteprima === "buono_cartaceo" && (
+              <div className="w-full max-w-[640px] space-y-2">
+                <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-slate-700 px-1">
+                  <span>Buono Regalo Cartaceo da compilare a mano (con Codice Identificativo)</span>
+                  <span>Stampa A4</span>
+                </div>
+                <BuonoRegaloCard
+                  config={config}
+                  attivita={attivita}
+                  buono={{
+                    ...buonoEsempio,
+                    codice: "",
+                  }}
+                  layout="cartaceo"
+                />
+              </div>
+            )}
+
             {vistaAnteprima === "buono_web" && (
-              <div className="w-full max-w-[380px] space-y-2">
+              <div className="w-full max-w-[440px] space-y-2">
                 <div className="text-center text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                  Pagina Pubblica /buono/[token] su Smartphone
+                  Pagina Pubblica /buono/[token] su Smartphone (con Codice Identificativo)
                 </div>
                 <BuonoRegaloCard
                   config={config}
@@ -964,15 +1046,24 @@ export default function EditorCartaGrafica() {
           {/* Barra inferiore consigli di stampa */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400">
             <span>
-              💡 Su foglio A4 vengono impaginati 10 biglietti da 85×55 mm con crocini di taglio.
+              💡 Puoi stampare su foglio A4 sia i <strong>10 Biglietti da Visita (85×55 mm)</strong> sia i <strong>2 Buoni Regalo Cartacei</strong> con guida di ritaglio.
             </span>
-            <button
-              type="button"
-              onClick={() => salva("a4")}
-              className="text-amber-300 hover:text-amber-200 font-bold underline cursor-pointer"
-            >
-              Apri pagina di stampa A4 →
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => salva("buono_cartaceo")}
+                className="text-emerald-300 hover:text-emerald-200 font-bold underline cursor-pointer"
+              >
+                Stampa Buoni Cartacei A4 →
+              </button>
+              <button
+                type="button"
+                onClick={() => salva("a4")}
+                className="text-amber-300 hover:text-amber-200 font-bold underline cursor-pointer"
+              >
+                Stampa Biglietti A4 →
+              </button>
+            </div>
           </div>
         </div>
       </div>
