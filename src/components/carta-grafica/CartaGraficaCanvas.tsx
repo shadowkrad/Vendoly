@@ -9,7 +9,6 @@ import {
   paletteLato,
 } from "@/lib/carta-grafica-types";
 
-/** Stellina a 4 punte ✦ usata sui divisori e sui medaglioni */
 export function StellinaSvg({
   color,
   size = 12,
@@ -36,307 +35,372 @@ export function StellinaSvg({
   );
 }
 
-/** Ramo d'ulivo botanico vettoriale per gli angoli (stile BF Estetica) */
-export function RamoUlivoCornerSvg({
+/** Stellina a 4 punte posizionata in coordinate SVG (cx, cy, r) */
+function SvgStar({ cx, cy, r = 8, fill }: { cx: number; cy: number; r?: number; fill: string }) {
+  const k = r * 0.22;
+  const d = [
+    `M ${cx} ${cy - r}`,
+    `C ${cx + k} ${cy - k}, ${cx + k} ${cy - k}, ${cx + r} ${cy}`,
+    `C ${cx + k} ${cy + k}, ${cx + k} ${cy + k}, ${cx} ${cy + r}`,
+    `C ${cx - k} ${cy + k}, ${cx - k} ${cy + k}, ${cx - r} ${cy}`,
+    `C ${cx - k} ${cy - k}, ${cx - k} ${cy - k}, ${cx} ${cy - r}`,
+    "Z",
+  ].join(" ");
+  return <path d={d} fill={fill} />;
+}
+
+/** Ramo d'ulivo botanico in coordinate SVG (180x180 base) */
+function SvgOliveBranch({
+  x,
+  y,
+  scale = 1,
+  flipX = false,
+  flipY = false,
   leafFill,
   strokeColor,
-  position,
 }: {
+  x: number;
+  y: number;
+  scale?: number;
+  flipX?: boolean;
+  flipY?: boolean;
   leafFill: string;
   strokeColor: string;
-  position: "bottom-right" | "bottom-left" | "top-right" | "top-left";
 }) {
-  const transformMap: Record<typeof position, string> = {
-    "bottom-right": "rotate(0)",
-    "bottom-left": "scale(-1, 1)",
-    "top-right": "scale(1, -1)",
-    "top-left": "scale(-1, -1)",
-  };
-
-  const posStyle: Record<typeof position, React.CSSProperties> = {
-    "bottom-right": { right: 0, bottom: 0 },
-    "bottom-left": { left: 0, bottom: 0 },
-    "top-right": { right: 0, top: 0 },
-    "top-left": { left: 0, top: 0 },
-  };
-
+  const sx = (flipX ? -1 : 1) * scale;
+  const sy = (flipY ? -1 : 1) * scale;
   return (
-    <svg
-      viewBox="0 0 180 180"
-      className="pointer-events-none absolute w-[30%] h-[48%]"
-      style={{
-        ...posStyle[position],
-        transform: transformMap[position],
-      }}
-      aria-hidden="true"
-    >
-      {/* Stelo dorato principale */}
+    <g transform={`translate(${x}, ${y}) scale(${sx}, ${sy})`} opacity="0.92">
       <path
         d="M175 180 C150 140, 125 95, 95 45"
         stroke={strokeColor}
-        strokeWidth="2.2"
+        strokeWidth="2.4"
         fill="none"
         strokeLinecap="round"
       />
       <path
         d="M150 180 C145 148, 152 115, 168 78"
         stroke={strokeColor}
-        strokeWidth="1.6"
+        strokeWidth="1.7"
         fill="none"
         strokeLinecap="round"
       />
-      {/* Foglie d'ulivo */}
       <path
         d="M102 52 C84 36, 78 18, 92 14 C106 24, 110 40, 102 52 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M112 75 C86 68, 70 55, 65 40 C85 42, 104 56, 112 75 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M116 72 C122 50, 136 35, 152 30 C146 50, 132 66, 116 72 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M128 104 C98 98, 82 85, 74 68 C96 72, 116 86, 128 104 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M132 100 C138 78, 154 62, 170 56 C164 78, 148 94, 132 100 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M144 136 C114 130, 96 118, 88 102 C110 104, 130 118, 144 136 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M158 118 C162 96, 170 82, 178 72 C178 92, 170 108, 158 118 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
       <path
         d="M156 164 C126 160, 106 150, 96 136 C118 136, 140 148, 156 164 Z"
         fill={leafFill}
         stroke={strokeColor}
-        strokeWidth="1.1"
+        strokeWidth="1.2"
       />
-    </svg>
+    </g>
   );
 }
 
-/** Ornamenti di sfondo e cornice in base al preset selezionato */
-export function OrnamentiPreset({
+/** Ornamenti SVG su canvas di larghezza W e altezza H */
+function SvgOrnamentiPreset({
   config,
   lato,
+  w,
+  h,
 }: {
   config: CartaGraficaConfig;
   lato: "fronte" | "retro";
+  w: number;
+  h: number;
 }) {
   const pal = paletteLato(config, lato);
 
   if (config.preset === "SFONDO_LIBERO") return null;
 
   if (config.preset === "BOTANICO_LUXURY") {
-    return (
+    const s = h / 380;
+    return lato === "fronte" ? (
+      <SvgOliveBranch
+        x={w - 180 * s}
+        y={h - 180 * s}
+        scale={s}
+        leafFill={pal.leafFill}
+        strokeColor={pal.accent}
+      />
+    ) : (
       <>
-        {lato === "fronte" ? (
-          <RamoUlivoCornerSvg
-            leafFill={pal.leafFill}
-            strokeColor={pal.accent}
-            position="bottom-right"
-          />
-        ) : (
-          <>
-            <RamoUlivoCornerSvg
-              leafFill={pal.leafFill}
-              strokeColor={pal.accent}
-              position="top-right"
-            />
-            <RamoUlivoCornerSvg
-              leafFill={pal.leafFill}
-              strokeColor={pal.accent}
-              position="bottom-left"
-            />
-          </>
-        )}
+        <SvgOliveBranch
+          x={w - 180 * s}
+          y={180 * s}
+          scale={s}
+          flipY
+          leafFill={pal.leafFill}
+          strokeColor={pal.accent}
+        />
+        <SvgOliveBranch
+          x={180 * s}
+          y={h - 180 * s}
+          scale={s}
+          flipX
+          leafFill={pal.leafFill}
+          strokeColor={pal.accent}
+        />
       </>
     );
   }
 
   if (config.preset === "CLASSICO_ORO") {
+    const m = 26;
     return (
-      <div className="pointer-events-none absolute inset-[4%] border" style={{ borderColor: `${pal.accent}88` }}>
-        <div
-          className="absolute inset-[3px] border"
-          style={{ borderColor: `${pal.accent}44` }}
+      <g>
+        <rect
+          x={m}
+          y={m}
+          width={w - m * 2}
+          height={h - m * 2}
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="1.6"
+          strokeOpacity="0.7"
         />
-        <StellinaSvg color={pal.accent} size={10} className="absolute -top-1.5 -left-1.5" />
-        <StellinaSvg color={pal.accent} size={10} className="absolute -top-1.5 -right-1.5" />
-        <StellinaSvg color={pal.accent} size={10} className="absolute -bottom-1.5 -left-1.5" />
-        <StellinaSvg color={pal.accent} size={10} className="absolute -bottom-1.5 -right-1.5" />
-      </div>
+        <rect
+          x={m + 6}
+          y={m + 6}
+          width={w - (m + 6) * 2}
+          height={h - (m + 6) * 2}
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="0.8"
+          strokeOpacity="0.4"
+        />
+        <SvgStar cx={m} cy={m} r={7} fill={pal.accent} />
+        <SvgStar cx={w - m} cy={m} r={7} fill={pal.accent} />
+        <SvgStar cx={m} cy={h - m} r={7} fill={pal.accent} />
+        <SvgStar cx={w - m} cy={h - m} r={7} fill={pal.accent} />
+      </g>
     );
   }
 
   if (config.preset === "HERITAGE_VINTAGE") {
+    const m = 28;
     return (
-      <div
-        className="pointer-events-none absolute inset-[4.5%] border-2"
-        style={{ borderColor: pal.accent }}
-      >
-        <span
-          className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: pal.accent }}
+      <g>
+        <rect
+          x={m}
+          y={m}
+          width={w - m * 2}
+          height={h - m * 2}
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="2.8"
         />
-        <span
-          className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: pal.accent }}
-        />
-        <span
-          className="absolute bottom-1.5 left-1.5 w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: pal.accent }}
-        />
-        <span
-          className="absolute bottom-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-          style={{ backgroundColor: pal.accent }}
-        />
-      </div>
+        <circle cx={m + 12} cy={m + 12} r="4.5" fill={pal.accent} />
+        <circle cx={w - m - 12} cy={m + 12} r="4.5" fill={pal.accent} />
+        <circle cx={m + 12} cy={h - m - 12} r="4.5" fill={pal.accent} />
+        <circle cx={w - m - 12} cy={h - m - 12} r="4.5" fill={pal.accent} />
+      </g>
     );
   }
 
   if (config.preset === "MODERNO_MINIMAL") {
-    return (
-      <div
-        className="pointer-events-none absolute left-0 top-0 bottom-0 w-[2.2%]"
-        style={{ backgroundColor: pal.accent }}
-      />
-    );
+    return <rect x={0} y={0} width={18} height={h} fill={pal.accent} />;
   }
 
   return null;
 }
 
-/** Medaglione / Logo intelligente (mai tagliato da object-cover) */
-export function BrandEmblem({
+/** Medaglione / Logo in coordinate SVG centrato in (cx, cy) con raggio r */
+function SvgBrandEmblem({
+  cx,
+  cy,
+  r,
   config,
   attivita,
   lato = "fronte",
-  sizeClass = "w-28 h-28",
 }: {
+  cx: number;
+  cy: number;
+  r: number;
   config: CartaGraficaConfig;
   attivita: DatiAttivitaCarta;
   lato?: "fronte" | "retro";
-  sizeClass?: string;
 }) {
   const pal = paletteLato(config, lato);
   const iniziali = inizialiBrand(attivita.nome);
 
-  // Se l'attività ha un medaglione circolare dedicato (logoHeroUrl), mostriamolo a pieno formato
   if (attivita.logoHeroUrl) {
+    const size = r * 2.15;
     return (
-      <div className={`relative flex items-center justify-center ${sizeClass}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={attivita.logoHeroUrl}
-          alt={attivita.nome}
-          className="w-full h-full object-contain drop-shadow-xs"
-        />
-      </div>
+      <image
+        href={attivita.logoHeroUrl}
+        x={cx - size / 2}
+        y={cy - size / 2}
+        width={size}
+        height={size}
+        preserveAspectRatio="xMidYMid meet"
+      />
     );
   }
 
-  // Se c'è un logo standard (anche orizzontale), lo incorniciamo o mostriamo in object-contain senza tagliarlo
   if (attivita.logoUrl) {
+    const imgSize = r * 1.5;
     return (
-      <div className={`relative flex items-center justify-center ${sizeClass}`}>
-        <svg viewBox="0 0 160 160" className="absolute inset-0 w-full h-full" aria-hidden="true">
-          <circle cx="80" cy="80" r="72" fill="none" stroke={pal.accent} strokeWidth="1.2" opacity="0.85" />
-          <circle cx="80" cy="80" r="66" fill="none" stroke={pal.accent} strokeWidth="0.6" opacity="0.45" />
-        </svg>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={attivita.logoUrl}
-          alt={attivita.nome}
-          className="w-[76%] h-[76%] object-contain z-10"
+      <g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="2"
+          strokeOpacity="0.85"
         />
-      </div>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r - 7}
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="0.9"
+          strokeOpacity="0.45"
+        />
+        <SvgStar cx={cx} cy={cy - r} r={7} fill={pal.accent} />
+        <SvgStar cx={cx} cy={cy + r} r={7} fill={pal.accent} />
+        <image
+          href={attivita.logoUrl}
+          x={cx - imgSize / 2}
+          y={cy - imgSize / 2}
+          width={imgSize}
+          height={imgSize}
+          preserveAspectRatio="xMidYMid meet"
+        />
+      </g>
     );
   }
 
-  // Fallback: Medaglione vettoriale con monogramma e rami d'ulivo / stelline
+  // Fallback vettoriale: doppio anello + geometria sacra + stelline + monogramma perfettamente centrato
   return (
-    <div className={`relative flex items-center justify-center ${sizeClass}`}>
-      <svg viewBox="0 0 180 180" className="w-full h-full" aria-hidden="true">
-        {/* Cerchi sacri interni */}
-        <circle cx="90" cy="90" r="46" fill="none" stroke={pal.accent} strokeWidth="0.5" opacity="0.22" />
-        <circle cx="90" cy="74" r="32" fill="none" stroke={pal.accent} strokeWidth="0.5" opacity="0.18" />
-        <circle cx="90" cy="106" r="32" fill="none" stroke={pal.accent} strokeWidth="0.5" opacity="0.18" />
-        <circle cx="74" cy="90" r="32" fill="none" stroke={pal.accent} strokeWidth="0.5" opacity="0.18" />
-        <circle cx="106" cy="90" r="32" fill="none" stroke={pal.accent} strokeWidth="0.5" opacity="0.18" />
-        {/* Anello dorato principale */}
-        <circle cx="90" cy="90" r="72" fill="none" stroke={pal.accent} strokeWidth="1.3" />
-        {/* Stellina superiore e inferiore */}
-        <path
-          d="M90 10 C91 15, 93 17, 98 18 C93 19, 91 21, 90 26 C89 21, 87 19, 82 18 C87 17, 89 15, 90 10 Z"
-          fill={pal.accent}
-        />
-        <path
-          d="M90 154 C91 159, 93 161, 98 162 C93 163, 91 165, 90 170 C89 165, 87 163, 82 162 C87 161, 89 159, 90 154 Z"
-          fill={pal.accent}
-        />
-        {/* Monogramma centrale */}
-        <text
-          x="90"
-          y="108"
-          textAnchor="middle"
-          fill={pal.accent}
-          fontFamily="Georgia, 'Times New Roman', serif"
-          fontSize="58"
-          fontStyle="italic"
-          fontWeight="600"
-          letterSpacing="2"
-        >
-          {iniziali}
-        </text>
-      </svg>
-    </div>
+    <g>
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r * 0.65}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.8"
+        strokeOpacity="0.22"
+      />
+      <circle
+        cx={cx}
+        cy={cy - r * 0.22}
+        r={r * 0.44}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.7"
+        strokeOpacity="0.18"
+      />
+      <circle
+        cx={cx}
+        cy={cy + r * 0.22}
+        r={r * 0.44}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.7"
+        strokeOpacity="0.18"
+      />
+      <circle
+        cx={cx - r * 0.22}
+        cy={cy}
+        r={r * 0.44}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.7"
+        strokeOpacity="0.18"
+      />
+      <circle
+        cx={cx + r * 0.22}
+        cy={cy}
+        r={r * 0.44}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.7"
+        strokeOpacity="0.18"
+      />
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={pal.accent} strokeWidth="2.2" />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r - 7}
+        fill="none"
+        stroke={pal.accent}
+        strokeWidth="0.9"
+        strokeOpacity="0.5"
+      />
+      <SvgStar cx={cx} cy={cy - r} r={8} fill={pal.accent} />
+      <SvgStar cx={cx} cy={cy + r} r={8} fill={pal.accent} />
+      <text
+        x={cx}
+        y={cy + r * 0.26}
+        textAnchor="middle"
+        fill={pal.accent}
+        fontFamily="Georgia, 'Cormorant Garamond', 'Times New Roman', serif"
+        fontSize={r * 0.78}
+        fontStyle="italic"
+        fontWeight="600"
+        letterSpacing="2"
+      >
+        {iniziali}
+      </text>
+    </g>
   );
 }
 
-/** Guide di taglio e margine di sicurezza (solo per anteprima nell'Editor Visivo) */
-function GuideTipograficheOverlay({ mostra }: { mostra?: boolean }) {
-  if (!mostra) return null;
-  return (
-    <div className="pointer-events-none absolute inset-0 z-30">
-      {/* Area sicura interna (4mm su 85x55mm ~ 4.7% x 7.2%) */}
-      <div
-        className="absolute border border-dashed border-sky-400/80"
-        style={{ left: "4.7%", right: "4.7%", top: "7.2%", bottom: "7.2%" }}
-      >
-        <span className="absolute -top-4 left-1 bg-sky-500/90 text-white text-[9px] font-sans px-1.5 py-0.2 rounded">
-          Area sicura di stampa (4 mm dal bordo)
-        </span>
-      </div>
-    </div>
-  );
+/** Tronca una stringa se supera maxChars per evitare sbordamenti in SVG */
+function tronca(str: string, maxChars: number): string {
+  const s = (str || "").trim();
+  if (s.length <= maxChars) return s;
+  return s.slice(0, maxChars - 1).trim() + "…";
 }
 
 /**
- * FRONTE DEL BIGLIETTO DA VISITA (proporzione 85×55 mm = 17:11)
+ * FRONTE DEL BIGLIETTO DA VISITA (SVG vettoriale puro 850×550 = 85×55 mm)
+ * Centratura matematica garantita su qualsiasi schermo e in stampa.
  */
 export function BigliettoFronte({
   config,
@@ -350,224 +414,309 @@ export function BigliettoFronte({
   className?: string;
 }) {
   const pal = paletteLato(config, "fronte");
+  const fontMain =
+    config.preset === "MODERNO_MINIMAL"
+      ? "Inter, system-ui, -apple-system, sans-serif"
+      : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif";
 
-  // Separazione indirizzo su 2 righe se contiene virgola
-  const partiIndirizzo = (attivita.indirizzo || "").split(",").map((s) => s.trim()).filter(Boolean);
-  const rigaIndirizzo1 = partiIndirizzo[0] || attivita.indirizzo || "Via / Piazza";
-  const rigaIndirizzo2 =
-    partiIndirizzo.slice(1).join(", ") || attivita.citta || "";
+  const partiIndirizzo = (attivita.indirizzo || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const rigaIndirizzo1 = tronca(partiIndirizzo[0] || attivita.indirizzo || "", 34);
+  const rigaIndirizzo2 = tronca(
+    partiIndirizzo.slice(1).join(", ") || attivita.citta || "",
+    34
+  );
 
-  const sottotitolo = (config.sottotitoloBrand || "").trim();
-  const firma = (config.firmaBrand || "").trim();
-  const sovratitolo = (config.sovratitoloSede || "").trim();
-  const sedeOspite = (config.nomeSedeOspite || "").trim() || attivita.nome;
+  const sottotitolo = tronca(config.sottotitoloBrand || "", 20);
+  const firma = tronca(config.firmaBrand || "", 28);
+  const sovratitolo = tronca(config.sovratitoloSede || "", 22);
+  const sedeOspite = tronca(config.nomeSedeOspite || attivita.nome || "ATTIVITÀ", 22);
 
-  const orariCompatti = attivita.orariRaggruppati
-    .filter((o) => !o.chiuso)
-    .map((o) => `${o.giorno}: ${o.orario}`)
-    .join(" • ");
+  const orariCompatti = tronca(
+    attivita.orariRaggruppati
+      .filter((o) => !o.chiuso)
+      .map((o) => `${o.giorno}: ${o.orario}`)
+      .join(" • "),
+    46
+  );
+
+  const leftCx = 218;
 
   return (
     <div
-      className={`relative w-full aspect-[85/55] overflow-hidden select-none ${className}`}
-      style={{
-        backgroundColor: pal.bg,
-        color: pal.textPrimary,
-        fontFamily:
-          config.preset === "MODERNO_MINIMAL"
-            ? "Inter, system-ui, sans-serif"
-            : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif",
-      }}
+      className={`relative w-full overflow-hidden select-none ${className}`}
+      style={{ aspectRatio: "85 / 55" }}
     >
-      {/* Sfondo Personalizzato (se caricato) */}
-      {config.sfondoFronteUrl && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={config.sfondoFronteUrl}
-            alt=""
-            className="pointer-events-none absolute inset-0 w-full h-full"
-            style={{ objectFit: config.sfondoFit }}
-          />
-          {config.veloOpacitaFronte > 0 && (
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundColor: pal.bg,
-                opacity: config.veloOpacitaFronte / 100,
-              }}
+      <svg
+        viewBox="0 0 850 550"
+        className="w-full h-full block"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Fondo */}
+        <rect x="0" y="0" width="850" height="550" fill={pal.bg} />
+
+        {/* Sfondo personalizzato */}
+        {config.sfondoFronteUrl && (
+          <>
+            <image
+              href={config.sfondoFronteUrl}
+              x="0"
+              y="0"
+              width="850"
+              height="550"
+              preserveAspectRatio={
+                config.sfondoFit === "contain" ? "xMidYMid meet" : "xMidYMid slice"
+              }
             />
-          )}
-        </>
-      )}
+            {config.veloOpacitaFronte > 0 && (
+              <rect
+                x="0"
+                y="0"
+                width="850"
+                height="550"
+                fill={pal.bg}
+                fillOpacity={config.veloOpacitaFronte / 100}
+              />
+            )}
+          </>
+        )}
 
-      {/* Ornamenti vettoriali del preset */}
-      <OrnamentiPreset config={config} lato="fronte" />
+        {/* Ornamenti del Preset */}
+        <SvgOrnamentiPreset config={config} lato="fronte" w={850} h={550} />
 
-      {/* Guide tipografiche nell'editor */}
-      <GuideTipograficheOverlay mostra={mostraGuideTaglio} />
-
-      {/* Contenuto testuale/logo del fronte (nascosto se l'utente ha caricato uno sfondo già completo) */}
-      {!config.nascondiTestiFronte && (
-        <div className="relative z-10 w-full h-full grid grid-cols-[48%_4%_48%] items-center px-[6%] py-[5%]">
-          {/* COLONNA SINISTRA: Medaglione + Sottotitolo + Firma */}
-          <div className="flex flex-col items-center justify-center text-center pr-1">
-            <BrandEmblem
+        {/* Contenuto Fronte */}
+        {!config.nascondiTestiFronte && (
+          <g fontFamily={fontMain}>
+            {/* COLONNA SINISTRA: Medaglione + Sottotitolo + Firma */}
+            <SvgBrandEmblem
+              cx={leftCx}
+              cy={220}
+              r={112}
               config={config}
               attivita={attivita}
               lato="fronte"
-              sizeClass="w-[64%] aspect-square max-w-[140px]"
             />
 
             {sottotitolo ? (
-              <div className="mt-1.5 flex items-center justify-center gap-2 w-full">
-                <span
-                  className="h-[1px] flex-1 max-w-[26px]"
-                  style={{ backgroundColor: pal.accent }}
+              <g>
+                <line
+                  x1={leftCx - 135}
+                  y1={392}
+                  x2={leftCx - 92}
+                  y2={392}
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
                 />
-                <span
-                  className="text-[11px] sm:text-xs tracking-[0.26em] uppercase font-medium whitespace-nowrap"
-                  style={{ color: pal.textPrimary }}
+                <text
+                  x={leftCx}
+                  y={399}
+                  textAnchor="middle"
+                  fill={pal.textPrimary}
+                  fontSize="21"
+                  fontWeight="600"
+                  letterSpacing="5"
                 >
-                  {sottotitolo}
-                </span>
-                <span
-                  className="h-[1px] flex-1 max-w-[26px]"
-                  style={{ backgroundColor: pal.accent }}
+                  {sottotitolo.toUpperCase()}
+                </text>
+                <line
+                  x1={leftCx + 92}
+                  y1={392}
+                  x2={leftCx + 135}
+                  y2={392}
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
                 />
-              </div>
+              </g>
             ) : (
-              <div
-                className="mt-1.5 text-xs sm:text-sm tracking-[0.18em] uppercase font-semibold"
-                style={{ color: pal.textPrimary }}
+              <text
+                x={leftCx}
+                y={402}
+                textAnchor="middle"
+                fill={pal.textPrimary}
+                fontSize="22"
+                fontWeight="600"
+                letterSpacing="3"
               >
-                {attivita.nome}
-              </div>
+                {tronca(attivita.nome, 20).toUpperCase()}
+              </text>
             )}
 
             {firma && (
-              <div
-                className="mt-0.5 text-[10px] sm:text-[11px] tracking-wider opacity-90"
-                style={{ color: pal.textSecondary }}
+              <text
+                x={leftCx}
+                y={434}
+                textAnchor="middle"
+                fill={pal.textSecondary}
+                fontSize="17"
+                letterSpacing="1.5"
               >
                 {firma}
-              </div>
+              </text>
             )}
-          </div>
 
-          {/* DIVISORE CENTRALE VERTICALE CON STELLINA ✦ */}
-          <div className="h-[78%] flex flex-col items-center justify-center">
-            <div
-              className="w-[1px] flex-1"
-              style={{ backgroundColor: `${pal.accent}AA` }}
+            {/* DIVISORE VERTICALE CENTRALE CON STELLINA ✦ */}
+            <line
+              x1="425"
+              y1="72"
+              x2="425"
+              y2="255"
+              stroke={pal.accent}
+              strokeWidth="1.5"
+              strokeOpacity="0.8"
             />
-            <StellinaSvg color={pal.accent} size={13} className="my-1 shrink-0" />
-            <div
-              className="w-[1px] flex-1"
-              style={{ backgroundColor: `${pal.accent}AA` }}
+            <SvgStar cx={425} cy={275} r={10} fill={pal.accent} />
+            <line
+              x1="425"
+              y1="295"
+              x2="425"
+              y2="478"
+              stroke={pal.accent}
+              strokeWidth="1.5"
+              strokeOpacity="0.8"
             />
-          </div>
 
-          {/* COLONNA DESTRA: Presso / Sede + Indirizzo + Telefono (+ eventuale QR/Orari in Solo Fronte) */}
-          <div className="flex flex-col justify-center pl-3 pr-2 text-left">
+            {/* COLONNA DESTRA: Sede, Indirizzo, Telefono */}
             {sovratitolo && (
-              <div
-                className="text-base sm:text-lg italic leading-none mb-0.5"
-                style={{
-                  color: pal.textSecondary,
-                  fontFamily: "'Snell Roundhand', 'Brush Script MT', 'Cormorant Garamond', Georgia, serif",
-                }}
+              <text
+                x="468"
+                y="170"
+                fill={pal.textSecondary}
+                fontSize="34"
+                fontStyle="italic"
+                fontFamily="Georgia, 'Cormorant Garamond', serif"
               >
                 {sovratitolo}
-              </div>
+              </text>
             )}
 
-            <div
-              className="text-sm sm:text-base font-medium tracking-[0.14em] uppercase leading-snug"
-              style={{ color: pal.textPrimary }}
+            <text
+              x="468"
+              y={sovratitolo ? 216 : 196}
+              fill={pal.textPrimary}
+              fontSize={sedeOspite.length > 16 ? "25" : "29"}
+              fontWeight="600"
+              letterSpacing="3"
             >
-              {sedeOspite}
-            </div>
-
-            {attivita.slogan && !sovratitolo && (
-              <div
-                className="text-[10px] italic opacity-85 mt-0.5"
-                style={{ color: pal.textSecondary }}
-              >
-                {attivita.slogan}
-              </div>
-            )}
+              {sedeOspite.toUpperCase()}
+            </text>
 
             {/* Filetto orizzontale oro */}
-            <div
-              className="w-full h-[1px] my-2"
-              style={{ backgroundColor: `${pal.accent}AA` }}
+            <line
+              x1="468"
+              y1="244"
+              x2="788"
+              y2="244"
+              stroke={pal.accent}
+              strokeWidth="1.5"
+              strokeOpacity="0.85"
             />
 
             {/* Indirizzo */}
-            <div
-              className="text-[11px] sm:text-xs leading-snug space-y-0.5"
-              style={{ color: pal.textPrimary }}
-            >
-              {rigaIndirizzo1 && <div>{rigaIndirizzo1}</div>}
-              {rigaIndirizzo2 && <div>{rigaIndirizzo2}</div>}
-            </div>
-
-            {/* Telefono */}
-            {attivita.telefono && (
-              <div
-                className="mt-2 flex items-center gap-1.5 text-[11px] sm:text-xs font-medium tracking-wide"
-                style={{ color: pal.textPrimary }}
-              >
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill={pal.accent}
-                  className="shrink-0"
-                  aria-hidden="true"
-                >
-                  <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z" />
-                </svg>
-                <span>Cel. {attivita.telefono}</span>
-              </div>
+            {rigaIndirizzo1 && (
+              <text x="468" y="292" fill={pal.textPrimary} fontSize="22" letterSpacing="0.5">
+                {rigaIndirizzo1}
+              </text>
+            )}
+            {rigaIndirizzo2 && (
+              <text x="468" y="324" fill={pal.textPrimary} fontSize="22" letterSpacing="0.5">
+                {rigaIndirizzo2}
+              </text>
             )}
 
-            {/* Orari compatti sul fronte (opzionale, utile per SOLO_FRONTE) */}
+            {/* Telefono con icona cornetta */}
+            {attivita.telefono && (
+              <g transform={`translate(468, ${rigaIndirizzo2 ? 356 : 330})`}>
+                <path
+                  d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.25 1.01l-2.2 2.2z"
+                  fill={pal.accent}
+                  transform="scale(1.05)"
+                />
+                <text
+                  x="32"
+                  y="20"
+                  fill={pal.textPrimary}
+                  fontSize="22"
+                  fontWeight="500"
+                  letterSpacing="0.8"
+                >
+                  Cel. {attivita.telefono}
+                </text>
+              </g>
+            )}
+
+            {/* Orari compatti sul fronte (se attivato) */}
             {config.mostraOrariCompattiFronte && orariCompatti && (
-              <div
-                className="mt-1.5 text-[9px] leading-tight opacity-90 line-clamp-2"
-                style={{ color: pal.textSecondary }}
+              <text
+                x="468"
+                y="428"
+                fill={pal.textSecondary}
+                fontSize="14.5"
+                letterSpacing="0.4"
               >
                 {orariCompatti}
-              </div>
+              </text>
             )}
 
             {/* QR Code discreto sul fronte (se attivato) */}
             {config.mostraQrFronte && attivita.qrVetrinaDataUrl && (
-              <div className="mt-2 flex items-center gap-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={attivita.qrVetrinaDataUrl}
-                  alt="QR Prenota"
-                  className="w-9 h-9 rounded bg-white p-0.5 border"
-                  style={{ borderColor: pal.accent }}
+              <g transform="translate(700, 395)">
+                <rect
+                  x="0"
+                  y="0"
+                  width="96"
+                  height="96"
+                  rx="8"
+                  fill="#FFFFFF"
+                  stroke={pal.accent}
+                  strokeWidth="2"
                 />
-                <span className="text-[9px] uppercase tracking-wider opacity-85">
-                  Prenota online
-                </span>
-              </div>
+                <image
+                  href={attivita.qrVetrinaDataUrl}
+                  x="5"
+                  y="5"
+                  width="86"
+                  height="86"
+                />
+              </g>
             )}
-          </div>
-        </div>
-      )}
+          </g>
+        )}
+
+        {/* Guide di taglio tipografiche (4mm = 40 unità su 850x550) */}
+        {mostraGuideTaglio && (
+          <g>
+            <rect
+              x="40"
+              y="40"
+              width="770"
+              height="470"
+              fill="none"
+              stroke="#38bdf8"
+              strokeWidth="2"
+              strokeDasharray="8 6"
+            />
+            <rect x="40" y="14" width="245" height="22" rx="4" fill="#0284c7" />
+            <text
+              x="50"
+              y="29"
+              fill="#ffffff"
+              fontFamily="system-ui, sans-serif"
+              fontSize="13"
+              fontWeight="700"
+            >
+              Area sicura di stampa (4 mm)
+            </text>
+          </g>
+        )}
+      </svg>
     </div>
   );
 }
 
 /**
- * RETRO DEL BIGLIETTO DA VISITA (proporzione 85×55 mm = 17:11)
- * Legge in automatico gli orari ufficiali dell'attività da anagrafica-attivita.ts
+ * RETRO DEL BIGLIETTO DA VISITA (SVG vettoriale puro 850×550 = 85×55 mm)
  */
 export function BigliettoRetro({
   config,
@@ -581,6 +730,10 @@ export function BigliettoRetro({
   className?: string;
 }) {
   const pal = paletteLato(config, "retro");
+  const fontMain =
+    config.preset === "MODERNO_MINIMAL"
+      ? "Inter, system-ui, -apple-system, sans-serif"
+      : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif";
 
   const righeOrari: OrarioGiornoCarta[] =
     config.modalitaOrariRetro === "RAGGRUPPATO"
@@ -589,209 +742,350 @@ export function BigliettoRetro({
       ? attivita.orariGiornalieri
       : attivita.orariGiornalieri.filter((g) => g.giorno !== "DOMENICA");
 
+  const titolo =
+    config.contenutoRetro === "APPUNTAMENTI_QR"
+      ? "APPUNTAMENTI"
+      : (config.titoloRetro || "ORARI").toUpperCase();
+
+  const numRighe = Math.max(1, righeOrari.length);
+  const startY = numRighe <= 4 ? 210 : numRighe === 6 ? 175 : 162;
+  const stepY = numRighe <= 4 ? 56 : numRighe === 6 ? 45 : 40;
+
   return (
     <div
-      className={`relative w-full aspect-[85/55] overflow-hidden select-none ${className}`}
-      style={{
-        backgroundColor: pal.bg,
-        color: pal.textPrimary,
-        fontFamily:
-          config.preset === "MODERNO_MINIMAL"
-            ? "Inter, system-ui, sans-serif"
-            : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif",
-      }}
+      className={`relative w-full overflow-hidden select-none ${className}`}
+      style={{ aspectRatio: "85 / 55" }}
     >
-      {/* Sfondo Personalizzato Retro (se caricato) */}
-      {config.sfondoRetroUrl && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={config.sfondoRetroUrl}
-            alt=""
-            className="pointer-events-none absolute inset-0 w-full h-full"
-            style={{ objectFit: config.sfondoFit }}
-          />
-          {config.veloOpacitaRetro > 0 && (
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundColor: pal.bg,
-                opacity: config.veloOpacitaRetro / 100,
-              }}
+      <svg
+        viewBox="0 0 850 550"
+        className="w-full h-full block"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="0" y="0" width="850" height="550" fill={pal.bg} />
+
+        {config.sfondoRetroUrl && (
+          <>
+            <image
+              href={config.sfondoRetroUrl}
+              x="0"
+              y="0"
+              width="850"
+              height="550"
+              preserveAspectRatio={
+                config.sfondoFit === "contain" ? "xMidYMid meet" : "xMidYMid slice"
+              }
             />
-          )}
-        </>
-      )}
+            {config.veloOpacitaRetro > 0 && (
+              <rect
+                x="0"
+                y="0"
+                width="850"
+                height="550"
+                fill={pal.bg}
+                fillOpacity={config.veloOpacitaRetro / 100}
+              />
+            )}
+          </>
+        )}
 
-      {/* Ornamenti vettoriali del preset */}
-      <OrnamentiPreset config={config} lato="retro" />
+        <SvgOrnamentiPreset config={config} lato="retro" w={850} h={550} />
 
-      {/* Guide tipografiche nell'editor */}
-      <GuideTipograficheOverlay mostra={mostraGuideTaglio} />
-
-      {!config.nascondiTestiRetro && (
-        <div className="relative z-10 w-full h-full flex flex-col items-center justify-between px-[8%] py-[6%]">
-          {/* INTESTAZIONE RETRO (es. ——— O R A R I ———) */}
-          <div className="w-full flex items-center justify-center gap-3">
-            <span
-              className="h-[1px] flex-1 max-w-[75px]"
-              style={{ backgroundColor: pal.accent }}
+        {!config.nascondiTestiRetro && (
+          <g fontFamily={fontMain}>
+            {/* INTESTAZIONE RETRO: ——— O R A R I ——— */}
+            <line
+              x1="185"
+              y1="82"
+              x2="310"
+              y2="82"
+              stroke={pal.accent}
+              strokeWidth="1.5"
             />
-            <span
-              className="text-sm sm:text-base tracking-[0.32em] uppercase font-semibold"
-              style={{ color: pal.textPrimary }}
+            <text
+              x="425"
+              y="91"
+              textAnchor="middle"
+              fill={pal.textPrimary}
+              fontSize="28"
+              fontWeight="600"
+              letterSpacing="8"
             >
-              {config.contenutoRetro === "APPUNTAMENTI_QR"
-                ? "PROSSIMI APPUNTAMENTI"
-                : config.titoloRetro || "ORARI"}
-            </span>
-            <span
-              className="h-[1px] flex-1 max-w-[75px]"
-              style={{ backgroundColor: pal.accent }}
+              {titolo}
+            </text>
+            <line
+              x1="540"
+              y1="82"
+              x2="665"
+              y2="82"
+              stroke={pal.accent}
+              strokeWidth="1.5"
             />
-          </div>
 
-          {/* CORPO CENTRALE DEL RETRO */}
-          {config.contenutoRetro === "ORARI" && (
-            <div className="w-full flex-1 grid grid-cols-[45%_10%_45%] items-center my-1">
-              {/* Giorni a sinistra */}
-              <div className="flex flex-col justify-center space-y-1 text-left pl-4 sm:pl-6">
-                {righeOrari.map((r) => (
-                  <div
-                    key={r.giorno}
-                    className="text-[10px] sm:text-[11px] tracking-[0.14em] uppercase font-medium leading-tight"
-                    style={{ color: pal.textPrimary }}
-                  >
-                    {r.giorno}
-                  </div>
-                ))}
-              </div>
-
-              {/* Divisore verticale con stelline ✦ in alto e al centro */}
-              <div className="h-full flex flex-col items-center justify-center">
-                <StellinaSvg color={pal.accent} size={10} className="mb-0.5 shrink-0" />
-                <div
-                  className="w-[1px] flex-1"
-                  style={{ backgroundColor: `${pal.accent}AA` }}
+            {config.contenutoRetro === "ORARI" && (
+              <g>
+                <SvgStar cx={425} cy={128} r={8} fill={pal.accent} />
+                <line
+                  x1="425"
+                  y1="140"
+                  x2="425"
+                  y2="275"
+                  stroke={pal.accent}
+                  strokeWidth="1.4"
+                  strokeOpacity="0.8"
                 />
-                <StellinaSvg color={pal.accent} size={11} className="my-0.5 shrink-0" />
-                <div
-                  className="w-[1px] flex-1"
-                  style={{ backgroundColor: `${pal.accent}AA` }}
+                <SvgStar cx={425} cy={290} r={9} fill={pal.accent} />
+                <line
+                  x1="425"
+                  y1="305"
+                  x2="425"
+                  y2="455"
+                  stroke={pal.accent}
+                  strokeWidth="1.4"
+                  strokeOpacity="0.8"
                 />
-              </div>
 
-              {/* Orari a destra */}
-              <div className="flex flex-col justify-center space-y-1 text-left pl-2">
-                {righeOrari.map((r) => (
-                  <div
-                    key={r.giorno}
-                    className="text-[10px] sm:text-[11px] tracking-[0.1em] uppercase font-medium leading-tight"
-                    style={{ color: pal.textPrimary }}
-                  >
-                    {r.orario}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                {righeOrari.map((r, i) => {
+                  const y = startY + i * stepY;
+                  return (
+                    <g key={r.giorno}>
+                      <text
+                        x="235"
+                        y={y}
+                        textAnchor="start"
+                        fill={pal.textPrimary}
+                        fontSize="20"
+                        fontWeight="500"
+                        letterSpacing="2.5"
+                      >
+                        {r.giorno}
+                      </text>
+                      <text
+                        x="458"
+                        y={y}
+                        textAnchor="start"
+                        fill={pal.textPrimary}
+                        fontSize="20"
+                        fontWeight="500"
+                        letterSpacing="2"
+                      >
+                        {r.orario}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            )}
 
-          {config.contenutoRetro === "ORARI_QR" && (
-            <div className="w-full flex-1 grid grid-cols-[62%_6%_32%] items-center my-1">
-              <div className="space-y-1 pr-2">
-                {righeOrari.map((r) => (
-                  <div
-                    key={r.giorno}
-                    className="flex items-center justify-between text-[9.5px] sm:text-[10.5px] tracking-wider uppercase"
-                  >
-                    <span className="font-semibold">{r.giorno}</span>
-                    <span>{r.orario}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="h-full flex flex-col items-center justify-center">
-                <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}AA` }} />
-                <StellinaSvg color={pal.accent} size={10} className="my-1" />
-                <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}AA` }} />
-              </div>
-              <div className="flex flex-col items-center justify-center text-center pl-2">
+            {config.contenutoRetro === "ORARI_QR" && (
+              <g>
+                {righeOrari.map((r, i) => {
+                  const y = startY + i * stepY;
+                  return (
+                    <g key={r.giorno}>
+                      <text
+                        x="95"
+                        y={y}
+                        fill={pal.textPrimary}
+                        fontSize="18"
+                        fontWeight="600"
+                        letterSpacing="1.8"
+                      >
+                        {r.giorno}
+                      </text>
+                      <text
+                        x="295"
+                        y={y}
+                        fill={pal.textPrimary}
+                        fontSize="18"
+                        letterSpacing="1.2"
+                      >
+                        {r.orario}
+                      </text>
+                    </g>
+                  );
+                })}
+
+                <line
+                  x1="545"
+                  y1="140"
+                  x2="545"
+                  y2="450"
+                  stroke={pal.accent}
+                  strokeWidth="1.4"
+                  strokeOpacity="0.8"
+                />
+                <SvgStar cx={545} cy={295} r={9} fill={pal.accent} />
+
                 {attivita.qrVetrinaDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={attivita.qrVetrinaDataUrl}
-                    alt="QR"
-                    className="w-16 h-16 bg-white p-1 rounded border"
-                    style={{ borderColor: pal.accent }}
-                  />
+                  <g transform="translate(605, 190)">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="165"
+                      height="165"
+                      rx="12"
+                      fill="#FFFFFF"
+                      stroke={pal.accent}
+                      strokeWidth="2.5"
+                    />
+                    <image
+                      href={attivita.qrVetrinaDataUrl}
+                      x="10"
+                      y="10"
+                      width="145"
+                      height="145"
+                    />
+                    <text
+                      x="82.5"
+                      y="194"
+                      textAnchor="middle"
+                      fill={pal.textPrimary}
+                      fontSize="15"
+                      fontWeight="600"
+                      letterSpacing="2.5"
+                    >
+                      PRENOTA ONLINE
+                    </text>
+                  </g>
                 )}
-                <span className="mt-1 text-[8.5px] uppercase tracking-widest font-semibold">
-                  Prenota Online
-                </span>
-              </div>
-            </div>
-          )}
+              </g>
+            )}
 
-          {config.contenutoRetro === "APPUNTAMENTI_QR" && (
-            <div className="w-full flex-1 grid grid-cols-[62%_6%_32%] items-center my-1">
-              <div className="space-y-2.5 pr-2">
-                {[1, 2, 3].map((n) => (
-                  <div key={n} className="flex items-end gap-2 text-[10px]">
-                    <span className="uppercase tracking-wider opacity-80">Data:</span>
-                    <span
-                      className="flex-1 border-b border-dotted h-3"
-                      style={{ borderColor: pal.accent }}
-                    />
-                    <span className="uppercase tracking-wider opacity-80">Ora:</span>
-                    <span
-                      className="w-14 border-b border-dotted h-3"
-                      style={{ borderColor: pal.accent }}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="h-full flex flex-col items-center justify-center">
-                <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}AA` }} />
-                <StellinaSvg color={pal.accent} size={10} className="my-1" />
-                <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}AA` }} />
-              </div>
-              <div className="flex flex-col items-center justify-center text-center pl-2">
+            {config.contenutoRetro === "APPUNTAMENTI_QR" && (
+              <g>
+                {[0, 1, 2, 3].map((idx) => {
+                  const y = 185 + idx * 68;
+                  return (
+                    <g key={idx}>
+                      <text
+                        x="95"
+                        y={y}
+                        fill={pal.textPrimary}
+                        fontSize="17"
+                        fontWeight="600"
+                        letterSpacing="1.5"
+                      >
+                        DATA:
+                      </text>
+                      <line
+                        x1="165"
+                        y1={y + 2}
+                        x2="345"
+                        y2={y + 2}
+                        stroke={pal.accent}
+                        strokeWidth="1.5"
+                        strokeDasharray="3 4"
+                      />
+                      <text
+                        x="365"
+                        y={y}
+                        fill={pal.textPrimary}
+                        fontSize="17"
+                        fontWeight="600"
+                        letterSpacing="1.5"
+                      >
+                        ORA:
+                      </text>
+                      <line
+                        x1="420"
+                        y1={y + 2}
+                        x2="515"
+                        y2={y + 2}
+                        stroke={pal.accent}
+                        strokeWidth="1.5"
+                        strokeDasharray="3 4"
+                      />
+                    </g>
+                  );
+                })}
+
+                <line
+                  x1="545"
+                  y1="140"
+                  x2="545"
+                  y2="450"
+                  stroke={pal.accent}
+                  strokeWidth="1.4"
+                  strokeOpacity="0.8"
+                />
+                <SvgStar cx={545} cy={295} r={9} fill={pal.accent} />
+
                 {attivita.qrVetrinaDataUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={attivita.qrVetrinaDataUrl}
-                    alt="QR"
-                    className="w-16 h-16 bg-white p-1 rounded border"
-                    style={{ borderColor: pal.accent }}
-                  />
+                  <g transform="translate(605, 190)">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="165"
+                      height="165"
+                      rx="12"
+                      fill="#FFFFFF"
+                      stroke={pal.accent}
+                      strokeWidth="2.5"
+                    />
+                    <image
+                      href={attivita.qrVetrinaDataUrl}
+                      x="10"
+                      y="10"
+                      width="145"
+                      height="145"
+                    />
+                    <text
+                      x="82.5"
+                      y="194"
+                      textAnchor="middle"
+                      fill={pal.textPrimary}
+                      fontSize="15"
+                      fontWeight="600"
+                      letterSpacing="2.5"
+                    >
+                      PRENOTA ONLINE
+                    </text>
+                  </g>
                 )}
-                <span className="mt-1 text-[8.5px] uppercase tracking-widest font-semibold">
-                  Prenota Online
-                </span>
-              </div>
-            </div>
-          )}
+              </g>
+            )}
 
-          {/* FILETTO INFERIORE CON STELLINA ✦ */}
-          <div className="w-full flex items-center justify-center gap-2">
-            <span
-              className="h-[1px] flex-1 max-w-[70px]"
-              style={{ backgroundColor: pal.accent }}
+            {/* FILETTO INFERIORE CON STELLINA ✦ */}
+            <line
+              x1="285"
+              y1="490"
+              x2="405"
+              y2="490"
+              stroke={pal.accent}
+              strokeWidth="1.4"
             />
-            <StellinaSvg color={pal.accent} size={11} />
-            <span
-              className="h-[1px] flex-1 max-w-[70px]"
-              style={{ backgroundColor: pal.accent }}
+            <SvgStar cx={425} cy={490} r={8.5} fill={pal.accent} />
+            <line
+              x1="445"
+              y1="490"
+              x2="565"
+              y2="490"
+              stroke={pal.accent}
+              strokeWidth="1.4"
             />
-          </div>
-        </div>
-      )}
+          </g>
+        )}
+
+        {mostraGuideTaglio && (
+          <rect
+            x="40"
+            y="40"
+            width="770"
+            height="470"
+            fill="none"
+            stroke="#38bdf8"
+            strokeWidth="2"
+            strokeDasharray="8 6"
+          />
+        )}
+      </svg>
     </div>
   );
 }
 
 /**
  * CARD GRAFICA DEL BUONO REGALO / VOUCHER
- * Usata nell'Editor Visivo, nella pagina pubblica /buono/[token] e nella stampa Cartoncino/A4
+ * Include SEMPRE il CODICE IDENTIFICATIVO PER SCARICARE IL BUONO in cassa.
  */
 export interface DatiBuonoRender {
   codice: string;
@@ -803,6 +1097,7 @@ export interface DatiBuonoRender {
   destinatario?: string | null;
   acquirente?: string | null;
   messaggio?: string | null;
+  scadenzaTesto?: string | null;
   qrDataUrl?: string;
   condizioni?: string[];
   stato?: string;
@@ -818,229 +1113,657 @@ export function BuonoRegaloCard({
   config: CartaGraficaConfig;
   attivita: DatiAttivitaCarta;
   buono: DatiBuonoRender;
-  layout?: "web" | "cartoncino";
+  layout?: "web" | "cartoncino" | "cartaceo";
   className?: string;
 }) {
   const pal = paletteLato(config, "fronte");
   const sfondoUrl =
     config.sfondoBuonoUrl || (config.usaSfondoFronteSuBuono ? config.sfondoFronteUrl : null);
+  const fontMain =
+    config.preset === "MODERNO_MINIMAL"
+      ? "Inter, system-ui, -apple-system, sans-serif"
+      : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif";
 
-  return (
-    <div
-      className={`relative overflow-hidden rounded-3xl shadow-xl select-none ${
-        layout === "cartoncino" ? "aspect-[210/99] w-full rounded-2xl" : "w-full"
-      } ${className}`}
-      style={{
-        backgroundColor: pal.bg,
-        color: pal.textPrimary,
-        fontFamily:
-          config.preset === "MODERNO_MINIMAL"
-            ? "Inter, system-ui, sans-serif"
-            : "Georgia, 'Cormorant Garamond', 'Times New Roman', serif",
-      }}
-    >
-      {/* Sfondo personalizzato sul buono */}
-      {sfondoUrl && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={sfondoUrl}
-            alt=""
-            className="pointer-events-none absolute inset-0 w-full h-full"
-            style={{ objectFit: config.sfondoFit }}
-          />
-          {config.veloOpacitaFronte > 0 && (
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                backgroundColor: pal.bg,
-                opacity: config.veloOpacitaFronte / 100,
-              }}
-            />
-          )}
-        </>
-      )}
+  const recapitoRiga1 = tronca(
+    [attivita.indirizzo, attivita.citta].filter(Boolean).join(", "),
+    38
+  );
+  const recapitoRiga2 = attivita.telefono ? `Tel. ${attivita.telefono}` : "";
 
-      {/* Ornamenti vettoriali */}
-      <OrnamentiPreset config={config} lato="fronte" />
+  /* ============================================================================
+   * 1. LAYOUT CARTONCINO (Precompilato con QR oppure Cartaceo da compilare a mano)
+   *    Proporzione 1050 × 495 (210 × 99 mm — Formato Busta Regalo DL)
+   * ============================================================================ */
+  if (layout === "cartoncino" || layout === "cartaceo") {
+    const isCartaceo = layout === "cartaceo";
+    const leftCx = 195;
+    const valText = tronca(buono.valore || "75,00 €", 24);
+    const valFontSize = valText.length > 16 ? 36 : valText.length > 10 ? 46 : 56;
+    const codiceId = (buono.codice || "BUO-XXXXX-XXXXX").toUpperCase();
 
-      {/* Cornice interna dorata */}
+    return (
       <div
-        className="pointer-events-none absolute inset-3 rounded-2xl border"
-        style={{ borderColor: `${pal.accent}66` }}
-      />
+        className={`relative w-full overflow-hidden rounded-2xl shadow-lg select-none ${className}`}
+        style={{ aspectRatio: "210 / 99" }}
+      >
+        <svg
+          viewBox="0 0 1050 495"
+          className="w-full h-full block"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Fondo */}
+          <rect x="0" y="0" width="1050" height="495" fill={pal.bg} />
 
-      {layout === "cartoncino" ? (
-        /* LAYOUT CARTONCINO PANORAMICO (210×99 mm per busta regalo) */
-        <div className="relative z-10 w-full h-full grid grid-cols-[34%_3%_63%] items-center px-[5%] py-[4%]">
-          {/* Sinistra: Medaglione + Nome + Recapiti */}
-          <div className="flex flex-col items-center justify-center text-center pr-2">
-            <BrandEmblem
+          {/* Sfondo personalizzato */}
+          {sfondoUrl && (
+            <>
+              <image
+                href={sfondoUrl}
+                x="0"
+                y="0"
+                width="1050"
+                height="495"
+                preserveAspectRatio={
+                  config.sfondoFit === "contain" ? "xMidYMid meet" : "xMidYMid slice"
+                }
+              />
+              {config.veloOpacitaFronte > 0 && (
+                <rect
+                  x="0"
+                  y="0"
+                  width="1050"
+                  height="495"
+                  fill={pal.bg}
+                  fillOpacity={config.veloOpacitaFronte / 100}
+                />
+              )}
+            </>
+          )}
+
+          {/* Ornamenti */}
+          <SvgOrnamentiPreset config={config} lato="fronte" w={1050} h={495} />
+
+          {/* Cornice interna dorata */}
+          <rect
+            x="22"
+            y="22"
+            width="1006"
+            height="451"
+            rx="18"
+            fill="none"
+            stroke={pal.accent}
+            strokeWidth="1.6"
+            strokeOpacity="0.65"
+          />
+
+          <g fontFamily={fontMain}>
+            {/* COLONNA SINISTRA (x = 30..360, centro = 195): Medaglione + Nome + Recapiti */}
+            <SvgBrandEmblem
+              cx={leftCx}
+              cy={185}
+              r={96}
               config={config}
               attivita={attivita}
               lato="fronte"
-              sizeClass="w-24 h-24"
             />
-            <div className="mt-1.5 text-xs tracking-[0.2em] uppercase font-semibold">
-              {attivita.nome}
-            </div>
-            {config.firmaBrand && (
-              <div className="text-[10px] opacity-85" style={{ color: pal.textSecondary }}>
-                {config.firmaBrand}
-              </div>
-            )}
-            <div
-              className="mt-2 text-[9.5px] opacity-85 leading-snug"
-              style={{ color: pal.textSecondary }}
+
+            <text
+              x={leftCx}
+              y={324}
+              textAnchor="middle"
+              fill={pal.textPrimary}
+              fontSize="21"
+              fontWeight="700"
+              letterSpacing="3.5"
             >
-              {[attivita.indirizzo, attivita.citta].filter(Boolean).join(" - ")}
-              {attivita.telefono ? ` • Tel. ${attivita.telefono}` : ""}
-            </div>
-          </div>
+              {tronca(attivita.nome, 22).toUpperCase()}
+            </text>
 
-          {/* Divisore verticale con stellina */}
-          <div className="h-[82%] flex flex-col items-center justify-center">
-            <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}99` }} />
-            <StellinaSvg color={pal.accent} size={12} className="my-1" />
-            <div className="w-[1px] flex-1" style={{ backgroundColor: `${pal.accent}99` }} />
-          </div>
-
-          {/* Destra: Dettagli del Buono + QR Code */}
-          <div className="flex items-center justify-between gap-4 pl-3 pr-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <StellinaSvg color={pal.accent} size={10} />
-                <span
-                  className="text-[10px] tracking-[0.28em] uppercase font-semibold"
-                  style={{ color: pal.accent }}
-                >
-                  {buono.motivoEtichetta}
-                </span>
-              </div>
-
-              <div
-                className="mt-1 text-3xl sm:text-4xl font-bold leading-tight"
-                style={{ color: pal.textPrimary }}
+            {config.firmaBrand && (
+              <text
+                x={leftCx}
+                y={350}
+                textAnchor="middle"
+                fill={pal.textSecondary}
+                fontSize="15.5"
+                letterSpacing="1"
               >
-                {buono.valore}
-              </div>
-
-              {buono.destinatario && (
-                <div className="mt-1 text-xs" style={{ color: pal.textSecondary }}>
-                  Per: <strong style={{ color: pal.textPrimary }}>{buono.destinatario}</strong>
-                  {buono.acquirente ? ` • Da: ${buono.acquirente}` : ""}
-                </div>
-              )}
-
-              {buono.messaggio && (
-                <p
-                  className="mt-1.5 text-xs italic line-clamp-2"
-                  style={{ color: pal.textSecondary }}
-                >
-                  “{buono.messaggio}”
-                </p>
-              )}
-
-              {buono.condizioni && buono.condizioni.length > 0 && (
-                <div
-                  className="mt-2 pt-1.5 border-t text-[9px] opacity-85 space-y-0.5"
-                  style={{ borderColor: `${pal.accent}55`, color: pal.textSecondary }}
-                >
-                  {buono.condizioni.slice(0, 2).map((c) => (
-                    <div key={c}>• {c}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {buono.qrDataUrl && (
-              <div className="flex flex-col items-center shrink-0">
-                <div
-                  className="p-1.5 bg-white rounded-xl border-2 shadow-sm"
-                  style={{ borderColor: pal.accent }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={buono.qrDataUrl} alt="QR Buono" className="w-20 h-20 block" />
-                </div>
-                <span
-                  className="mt-1 font-mono text-[11px] font-bold tracking-widest"
-                  style={{ color: pal.accent }}
-                >
-                  {buono.codice}
-                </span>
-              </div>
+                {tronca(config.firmaBrand, 28)}
+              </text>
             )}
-          </div>
-        </div>
-      ) : (
-        /* LAYOUT WEB / MOBILE CARD */
-        <div className="relative z-10 p-6 sm:p-7 flex flex-col items-center text-center">
-          <BrandEmblem
+
+            {recapitoRiga1 && (
+              <text
+                x={leftCx}
+                y={392}
+                textAnchor="middle"
+                fill={pal.textSecondary}
+                fontSize="14.5"
+              >
+                {recapitoRiga1}
+              </text>
+            )}
+            {recapitoRiga2 && (
+              <text
+                x={leftCx}
+                y={416}
+                textAnchor="middle"
+                fill={pal.textSecondary}
+                fontSize="15"
+                fontWeight="600"
+              >
+                {recapitoRiga2}
+              </text>
+            )}
+
+            {/* DIVISORE VERTICALE A X = 370 */}
+            <line
+              x1="370"
+              y1="58"
+              x2="370"
+              y2="225"
+              stroke={pal.accent}
+              strokeWidth="1.5"
+              strokeOpacity="0.8"
+            />
+            <SvgStar cx={370} cy={247.5} r={9.5} fill={pal.accent} />
+            <line
+              x1="370"
+              y1="270"
+              x2="370"
+              y2="437"
+              stroke={pal.accent}
+              strokeWidth="1.5"
+              strokeOpacity="0.8"
+            />
+
+            {isCartaceo ? (
+              /* ============================================================
+               * MODALITÀ BUONO CARTACEO DA COMPILARE A MANO IN NEGOZIO
+               * (Con riquadro CODICE IDENTIFICATIVO PER SCARICARE IL BUONO)
+               * ============================================================ */
+              <g>
+                {/* Titolo */}
+                <SvgStar cx={420} cy={76} r={8} fill={pal.accent} />
+                <text
+                  x="442"
+                  y="83"
+                  fill={pal.accent}
+                  fontSize="21"
+                  fontWeight="700"
+                  letterSpacing="6"
+                >
+                  BUONO REGALO
+                </text>
+
+                {/* Riga 1: Per */}
+                <text x="412" y="138" fill={pal.textPrimary} fontSize="18" fontStyle="italic">
+                  Per:
+                </text>
+                <line
+                  x1="460"
+                  y1="140"
+                  x2="985"
+                  y2="140"
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
+                  strokeDasharray="3 5"
+                />
+
+                {/* Riga 2: Da parte di */}
+                <text x="412" y="190" fill={pal.textPrimary} fontSize="18" fontStyle="italic">
+                  Da parte di:
+                </text>
+                <line
+                  x1="522"
+                  y1="192"
+                  x2="985"
+                  y2="192"
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
+                  strokeDasharray="3 5"
+                />
+
+                {/* Riga 3: Valore / Servizio */}
+                <text x="412" y="244" fill={pal.textPrimary} fontSize="18" fontWeight="600">
+                  Valore / Servizio:
+                </text>
+                <line
+                  x1="578"
+                  y1="246"
+                  x2="985"
+                  y2="246"
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
+                  strokeDasharray="3 5"
+                />
+
+                {/* Riga 4: Dedica */}
+                <text x="412" y="296" fill={pal.textPrimary} fontSize="17" fontStyle="italic">
+                  Dedica:
+                </text>
+                <line
+                  x1="485"
+                  y1="298"
+                  x2="985"
+                  y2="298"
+                  stroke={pal.accent}
+                  strokeWidth="1.5"
+                  strokeDasharray="3 5"
+                />
+
+                {/* Riga 5: Data emissione e Scadenza */}
+                <text x="412" y="348" fill={pal.textSecondary} fontSize="15">
+                  Emesso il:
+                </text>
+                <line
+                  x1="498"
+                  y1="350"
+                  x2="665"
+                  y2="350"
+                  stroke={pal.accent}
+                  strokeWidth="1.3"
+                  strokeDasharray="2 4"
+                />
+                <text x="690" y="348" fill={pal.textSecondary} fontSize="15">
+                  Valido fino al:
+                </text>
+                <line
+                  x1="802"
+                  y1="350"
+                  x2="985"
+                  y2="350"
+                  stroke={pal.accent}
+                  strokeWidth="1.3"
+                  strokeDasharray="2 4"
+                />
+
+                {/* Riquadro ufficiale CODICE IDENTIFICATIVO PER SCARICARE IL BUONO */}
+                <rect
+                  x="412"
+                  y="374"
+                  width="573"
+                  height="64"
+                  rx="10"
+                  fill={pal.isScuro ? "#FFFFFF14" : "#00000008"}
+                  stroke={pal.accent}
+                  strokeWidth="1.8"
+                />
+                <text
+                  x="430"
+                  y="398"
+                  fill={pal.accent}
+                  fontSize="11.5"
+                  fontWeight="700"
+                  letterSpacing="2"
+                >
+                  CODICE IDENTIFICATIVO PER SCARICARE IL BUONO IN CASSA:
+                </text>
+                {buono.codice && buono.codice.trim() !== "" ? (
+                  <text
+                    x="430"
+                    y="426"
+                    fill={pal.textPrimary}
+                    fontFamily="monospace"
+                    fontSize="22"
+                    fontWeight="700"
+                    letterSpacing="2.5"
+                  >
+                    {buono.codice.trim().toUpperCase()}
+                  </text>
+                ) : (
+                  <line
+                    x1="430"
+                    y1="424"
+                    x2="965"
+                    y2="424"
+                    stroke={pal.accent}
+                    strokeWidth="1.2"
+                    strokeDasharray="3 4"
+                  />
+                )}
+              </g>
+            ) : (
+              /* ============================================================
+               * MODALITÀ BUONO PRECOMPILATO CON VALORE, CODICE IDENTIFICATIVO E QR
+               * ============================================================ */
+              <g>
+                {/* Etichetta motivo */}
+                <SvgStar cx={418} cy={80} r={7.5} fill={pal.accent} />
+                <text
+                  x="436"
+                  y="86"
+                  fill={pal.accent}
+                  fontSize="17"
+                  fontWeight="700"
+                  letterSpacing="5"
+                >
+                  {(buono.motivoEtichetta || "BUONO REGALO").toUpperCase()}
+                </text>
+
+                {/* Valore principale su 1 sola riga ben proporzionata */}
+                <text
+                  x="412"
+                  y="162"
+                  fill={pal.textPrimary}
+                  fontSize={valFontSize}
+                  fontWeight="700"
+                >
+                  {valText}
+                </text>
+
+                {/* Destinatario e Acquirente */}
+                {buono.destinatario && (
+                  <text x="412" y="210" fill={pal.textSecondary} fontSize="19">
+                    Per:{" "}
+                    <tspan fill={pal.textPrimary} fontWeight="700">
+                      {tronca(buono.destinatario, 22)}
+                    </tspan>
+                    {buono.acquirente ? `  •  Da: ${tronca(buono.acquirente, 18)}` : ""}
+                  </text>
+                )}
+
+                {/* Messaggio di auguri */}
+                {buono.messaggio && (
+                  <text
+                    x="412"
+                    y="248"
+                    fill={pal.textSecondary}
+                    fontSize="16.5"
+                    fontStyle="italic"
+                  >
+                    “{tronca(buono.messaggio, 44)}”
+                  </text>
+                )}
+
+                {/* RIQUADRO CODICE IDENTIFICATIVO PER SCARICARE IL BUONO */}
+                <g transform="translate(412, 272)">
+                  <rect
+                    x="0"
+                    y="0"
+                    width="370"
+                    height="72"
+                    rx="10"
+                    fill={pal.isScuro ? "#FFFFFF14" : "#0000000A"}
+                    stroke={pal.accent}
+                    strokeWidth="1.8"
+                  />
+                  <text
+                    x="16"
+                    y="24"
+                    fill={pal.accent}
+                    fontSize="11"
+                    fontWeight="700"
+                    letterSpacing="1.8"
+                  >
+                    CODICE IDENTIFICATIVO PER SCARICARE IL BUONO:
+                  </text>
+                  <text
+                    x="16"
+                    y="55"
+                    fill={pal.textPrimary}
+                    fontFamily="monospace"
+                    fontSize="24"
+                    fontWeight="700"
+                    letterSpacing="2.5"
+                  >
+                    {codiceId}
+                  </text>
+                </g>
+
+                {/* Condizioni sotto al riquadro codice */}
+                {(buono.condizioni || []).slice(0, 2).map((c, idx) => (
+                  <text
+                    key={idx}
+                    x="412"
+                    y={378 + idx * 24}
+                    fill={pal.textSecondary}
+                    fontSize="13.5"
+                  >
+                    • {tronca(c, 56)}
+                  </text>
+                ))}
+
+                {/* Box QR Code a destra (x = 810..990) */}
+                {buono.qrDataUrl && (
+                  <g transform="translate(812, 118)">
+                    <rect
+                      x="0"
+                      y="0"
+                      width="178"
+                      height="178"
+                      rx="16"
+                      fill="#FFFFFF"
+                      stroke={pal.accent}
+                      strokeWidth="3"
+                    />
+                    <image
+                      href={buono.qrDataUrl}
+                      x="11"
+                      y="11"
+                      width="156"
+                      height="156"
+                    />
+                    <text
+                      x="89"
+                      y="206"
+                      textAnchor="middle"
+                      fill={pal.textSecondary}
+                      fontSize="12"
+                      fontWeight="600"
+                      letterSpacing="1.5"
+                    >
+                      SCANSIONA IN CASSA
+                    </text>
+                    <text
+                      x="89"
+                      y="228"
+                      textAnchor="middle"
+                      fill={pal.accent}
+                      fontFamily="monospace"
+                      fontSize="16"
+                      fontWeight="700"
+                      letterSpacing="1.5"
+                    >
+                      {codiceId}
+                    </text>
+                  </g>
+                )}
+              </g>
+            )}
+          </g>
+        </svg>
+      </div>
+    );
+  }
+
+  /* ============================================================================
+   * 2. LAYOUT WEB / SMARTPHONE & INTESTAZIONE A4 (SVG 800 × 520)
+   *    Include anche qui il box con il CODICE IDENTIFICATIVO PER SCARICARE IL BUONO
+   * ============================================================================ */
+  const valWeb = tronca(buono.valore || "75,00 €", 24);
+  const valWebSize = valWeb.length > 16 ? 40 : valWeb.length > 10 ? 50 : 60;
+  const codiceIdWeb = (buono.codice || "BUO-XXXXX-XXXXX").toUpperCase();
+
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-3xl shadow-xl select-none ${className}`}
+      style={{ aspectRatio: "800 / 520" }}
+    >
+      <svg
+        viewBox="0 0 800 520"
+        className="w-full h-full block"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect x="0" y="0" width="800" height="520" fill={pal.bg} />
+
+        {sfondoUrl && (
+          <>
+            <image
+              href={sfondoUrl}
+              x="0"
+              y="0"
+              width="800"
+              height="520"
+              preserveAspectRatio={
+                config.sfondoFit === "contain" ? "xMidYMid meet" : "xMidYMid slice"
+              }
+            />
+            {config.veloOpacitaFronte > 0 && (
+              <rect
+                x="0"
+                y="0"
+                width="800"
+                height="520"
+                fill={pal.bg}
+                fillOpacity={config.veloOpacitaFronte / 100}
+              />
+            )}
+          </>
+        )}
+
+        <SvgOrnamentiPreset config={config} lato="fronte" w={800} h={520} />
+
+        <rect
+          x="20"
+          y="20"
+          width="760"
+          height="480"
+          rx="20"
+          fill="none"
+          stroke={pal.accent}
+          strokeWidth="1.5"
+          strokeOpacity="0.65"
+        />
+
+        <g fontFamily={fontMain}>
+          <SvgBrandEmblem
+            cx={400}
+            cy={108}
+            r={64}
             config={config}
             attivita={attivita}
             lato="fronte"
-            sizeClass="w-24 h-24"
           />
 
-          <div className="mt-2 text-base font-bold tracking-[0.18em] uppercase">
-            {attivita.nome}
-          </div>
-          {config.firmaBrand && (
-            <div className="text-xs opacity-85" style={{ color: pal.textSecondary }}>
-              {config.firmaBrand}
-            </div>
-          )}
+          <text
+            x="400"
+            y="204"
+            textAnchor="middle"
+            fill={pal.textPrimary}
+            fontSize="21"
+            fontWeight="700"
+            letterSpacing="4"
+          >
+            {tronca(attivita.nome, 28).toUpperCase()}
+          </text>
 
-          {/* Divisore con stellina */}
-          <div className="my-3 flex items-center justify-center gap-2.5 w-full max-w-[220px]">
-            <span className="h-[1px] flex-1" style={{ backgroundColor: `${pal.accent}99` }} />
-            <StellinaSvg color={pal.accent} size={11} />
-            <span
-              className="text-[10px] tracking-[0.26em] uppercase font-semibold"
-              style={{ color: pal.accent }}
-            >
-              {buono.motivoEtichetta}
-            </span>
-            <StellinaSvg color={pal.accent} size={11} />
-            <span className="h-[1px] flex-1" style={{ backgroundColor: `${pal.accent}99` }} />
-          </div>
+          {/* Filetto + Etichetta motivo */}
+          <line
+            x1="200"
+            y1="234"
+            x2="295"
+            y2="234"
+            stroke={pal.accent}
+            strokeWidth="1.3"
+          />
+          <SvgStar cx={312} cy={234} r={6.5} fill={pal.accent} />
+          <text
+            x="400"
+            y="240"
+            textAnchor="middle"
+            fill={pal.accent}
+            fontSize="14.5"
+            fontWeight="700"
+            letterSpacing="4"
+          >
+            {(buono.motivoEtichetta || "BUONO REGALO").toUpperCase()}
+          </text>
+          <SvgStar cx={488} cy={234} r={6.5} fill={pal.accent} />
+          <line
+            x1="505"
+            y1="234"
+            x2="600"
+            y2="234"
+            stroke={pal.accent}
+            strokeWidth="1.3"
+          />
 
           {buono.destinatario && (
-            <div className="text-sm opacity-90" style={{ color: pal.textSecondary }}>
-              Dedicato a <strong style={{ color: pal.textPrimary }}>{buono.destinatario}</strong>
-            </div>
+            <text
+              x="400"
+              y="274"
+              textAnchor="middle"
+              fill={pal.textSecondary}
+              fontSize="18"
+            >
+              Per{" "}
+              <tspan fill={pal.textPrimary} fontWeight="700">
+                {tronca(buono.destinatario, 26)}
+              </tspan>
+            </text>
           )}
 
-          <div
-            className="mt-1 text-4xl sm:text-5xl font-bold tracking-tight"
-            style={{ color: pal.textPrimary }}
+          <text
+            x="400"
+            y={buono.destinatario ? 340 : 322}
+            textAnchor="middle"
+            fill={pal.textPrimary}
+            fontSize={valWebSize}
+            fontWeight="700"
           >
-            {buono.valore}
-          </div>
-
-          {buono.tipoValore === "IMPORTO" &&
-            typeof buono.saldoResiduo === "number" &&
-            typeof buono.importoIniziale === "number" &&
-            buono.saldoResiduo !== buono.importoIniziale &&
-            buono.stato === "ATTIVA" && (
-              <div
-                className="mt-1.5 inline-block px-3 py-0.5 rounded-full text-xs font-semibold border"
-                style={{ borderColor: pal.accent, color: pal.accent }}
-              >
-                Credito residuo: {buono.saldoResiduo.toFixed(2)} €
-              </div>
-            )}
+            {valWeb}
+          </text>
 
           {buono.messaggio && (
-            <p
-              className="mt-3 text-sm italic max-w-xs leading-relaxed"
-              style={{ color: pal.textSecondary }}
+            <text
+              x="400"
+              y="382"
+              textAnchor="middle"
+              fill={pal.textSecondary}
+              fontSize="16.5"
+              fontStyle="italic"
             >
-              “{buono.messaggio}”
-            </p>
+              “{tronca(buono.messaggio, 54)}”
+            </text>
           )}
-        </div>
-      )}
+
+          {/* Badge Codice Identificativo Buono in basso */}
+          <rect
+            x="185"
+            y="404"
+            width="430"
+            height="68"
+            rx="12"
+            fill={pal.isScuro ? "#FFFFFF14" : "#0000000A"}
+            stroke={pal.accent}
+            strokeWidth="1.6"
+          />
+          <text
+            x="400"
+            y="426"
+            textAnchor="middle"
+            fill={pal.accent}
+            fontSize="11"
+            fontWeight="700"
+            letterSpacing="2"
+          >
+            CODICE IDENTIFICATIVO PER SCARICARE IL BUONO
+          </text>
+          <text
+            x="400"
+            y="456"
+            textAnchor="middle"
+            fill={pal.textPrimary}
+            fontFamily="monospace"
+            fontSize="23"
+            fontWeight="700"
+            letterSpacing="3"
+          >
+            {codiceIdWeb}
+          </text>
+        </g>
+      </svg>
     </div>
   );
 }

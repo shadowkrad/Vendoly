@@ -6,7 +6,7 @@ import { statoEffettivo } from "@/lib/buoni";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-const schema = z.object({ formato: z.enum(["a4", "ricevuta", "cartoncino"]).default("a4") });
+const schema = z.object({ formato: z.enum(["a4", "ricevuta", "cartoncino", "cartaceo"]).default("a4") });
 
 /** Registra la stampa (la prima e' STAMPA, le successive RISTAMPA, con lo stesso codice) e dice quale pagina aprire. */
 export async function POST(req: NextRequest, { params }: Ctx) {

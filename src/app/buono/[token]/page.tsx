@@ -64,7 +64,9 @@ export default async function BuonoPage({ params }: { params: Promise<{ token: s
             className="bg-white rounded-2xl border p-5 shadow-xs text-center"
             style={{ borderColor: `${b.cartaGrafica.config.coloreDettaglio}66` }}
           >
-            <p className="text-xs text-gray-500 mb-2">Mostra questo codice in cassa</p>
+            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">
+              Codice Identificativo per scaricare il buono in cassa
+            </p>
             <div
               className="inline-block p-2 rounded-2xl border-2 bg-white"
               style={{ borderColor: b.cartaGrafica.config.coloreDettaglio }}
@@ -75,7 +77,7 @@ export default async function BuonoPage({ params }: { params: Promise<{ token: s
             <p className="mt-2.5 font-mono font-bold text-lg tracking-widest text-gray-900">
               {b.codice}
             </p>
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               <a
                 href={`/buono/${token}/stampa?formato=cartoncino`}
                 target="_blank"
@@ -83,6 +85,14 @@ export default async function BuonoPage({ params }: { params: Promise<{ token: s
                 className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50"
               >
                 🖨️ Stampa Cartoncino Regalo
+              </a>
+              <a
+                href={`/buono/${token}/stampa?formato=cartaceo`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 text-amber-950 hover:bg-amber-100"
+              >
+                ✍️ Stampa Buono Cartaceo
               </a>
             </div>
           </section>
