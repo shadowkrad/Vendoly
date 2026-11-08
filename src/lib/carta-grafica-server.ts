@@ -5,6 +5,7 @@ import {
   ORARI_FERIALI_DEFAULT,
   ORARI_SABATO_DEFAULT,
   ORARI_DOMENICA_DEFAULT,
+  modalitaOrari,
 } from "@/lib/anagrafica-attivita";
 import {
   CartaGraficaConfig,
@@ -45,7 +46,9 @@ export async function caricaCartaGrafica(origineUrl?: string): Promise<{
   const sabato = (cache?.orariSabato || ORARI_SABATO_DEFAULT).trim();
   const domenica = (cache?.orariDomenica || ORARI_DOMENICA_DEFAULT).trim();
 
-  const orariGiornalieri: OrarioGiornoCarta[] = [
+  // Orari facoltativi: se il negozio e' solo online (nessun orario) i biglietti e i buoni non li stampano
+  const senzaOrari = modalitaOrari(cache) === "NESSUNO";
+  const orariGiornalieriTutti: OrarioGiornoCarta[] = [
     { giorno: "LUNEDÌ", orario: feriali, chiuso: /chiuso/i.test(feriali) },
     { giorno: "MARTEDÌ", orario: feriali, chiuso: /chiuso/i.test(feriali) },
     { giorno: "MERCOLEDÌ", orario: feriali, chiuso: /chiuso/i.test(feriali) },
@@ -55,7 +58,7 @@ export async function caricaCartaGrafica(origineUrl?: string): Promise<{
     { giorno: "DOMENICA", orario: domenica, chiuso: /chiuso/i.test(domenica) },
   ];
 
-  const orariRaggruppati: OrarioGiornoCarta[] = [
+  const orariRaggruppatiTutti: OrarioGiornoCarta[] = [
     { giorno: "LUNEDÌ - VENERDÌ", orario: feriali, chiuso: /chiuso/i.test(feriali) },
     { giorno: "SABATO", orario: sabato, chiuso: /chiuso/i.test(sabato) },
     { giorno: "DOMENICA", orario: domenica, chiuso: /chiuso/i.test(domenica) },
@@ -80,8 +83,8 @@ export async function caricaCartaGrafica(origineUrl?: string): Promise<{
     logoHeroUrl: (showcase as any)?.hero?.logoUrl || null,
     colorePrimario,
     coloreSecondario: "#EAE0D0",
-    orariGiornalieri,
-    orariRaggruppati,
+    orariGiornalieri: senzaOrari ? [] : orariGiornalieriTutti,
+    orariRaggruppati: senzaOrari ? [] : orariRaggruppatiTutti,
   };
 
   return { config, attivita };
