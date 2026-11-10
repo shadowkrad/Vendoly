@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { calcolaHashLogoTessera } from "@/lib/pwa-icon-version";
 import { leggiRegole } from "@/lib/fidelity";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -13,13 +14,15 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
   const { token } = await params;
   const imp = await prisma.tenantLocalCache.findUnique({ where: { id: "singleton" } }).catch(() => null);
   const nome = imp?.brandName || "Tessera fedeltà";
+  const accento = imp?.accentColor || "#d97706";
+  const v = calcolaHashLogoTessera(imp?.logoUrl, accento, nome);
   return {
     title: `${nome} — Tessera fedeltà`,
     robots: { index: false, follow: false },
     manifest: `/tessera/${token}/manifest.webmanifest`,
     icons: {
-      icon: [{ url: `/tessera/${token}/icona?size=192`, sizes: "192x192", type: "image/png" }],
-      apple: [{ url: `/tessera/${token}/icona?size=180`, sizes: "180x180", type: "image/png" }],
+      icon: [{ url: `/tessera/${token}/icona?size=192&v=${v}`, sizes: "192x192", type: "image/png" }],
+      apple: [{ url: `/tessera/${token}/icona?size=180&v=${v}`, sizes: "180x180", type: "image/png" }],
     },
     appleWebApp: { capable: true, title: nome.length > 14 ? nome.slice(0, 14) : nome, statusBarStyle: "default" },
   };

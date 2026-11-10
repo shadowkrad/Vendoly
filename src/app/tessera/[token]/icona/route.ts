@@ -33,6 +33,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
 
   const richiesta = parseInt(req.nextUrl.searchParams.get("size") || "512", 10);
   const size = [180, 192, 512].includes(richiesta) ? richiesta : 512;
+  const hasVersion = Boolean(req.nextUrl.searchParams.get("v")?.trim());
 
   const imp = await prisma.tenantLocalCache.findUnique({ where: { id: "singleton" } });
   const sfondo = "#ffffff";
@@ -47,10 +48,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
         .resize(interno, interno, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 0 } })
         .png()
         .toBuffer();
-      png = await sharp({ create: { width: size, height: size, channels: 4, background: sfondo } })
+      const comp = await sharp({ create: { width: size, height: size, channels: 4, background: sfondo } })
         .composite([{ input: logo, gravity: "centre" }])
         .png()
         .toBuffer();
+      png = await sharp(comp).flatten({ background: sfondo }).png().toBuffer();
     } catch {
       png = null;
     }
@@ -60,11 +62,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     const accento = /^#[0-9a-fA-F]{6}$/.test(imp?.accentColor || "") ? imp!.accentColor : "#d97706";
     const iniziale = (imp?.brandName || "S").trim().charAt(0).toUpperCase().replace(/[<>&"']/g, "S");
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><rect width="100%" height="100%" fill="${accento}"/><text x="50%" y="50%" dy=".35em" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="${Math.round(size * 0.55)}" fill="#ffffff">${iniziale}</text></svg>`;
-    png = await sharp(Buffer.from(svg)).png().toBuffer();
+    png = await sharp(Buffer.from(svg)).flatten({ background: accento }).png().toBuffer();
   }
 
   return new NextResponse(new Uint8Array(png), {
     status: 200,
-    headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" },
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": hasVersion ? "public, max-age=31536000, immutable" : "no-cache",
+    },
   });
 }
