@@ -1,5 +1,6 @@
 "use client";
 
+import { numeroPerWhatsApp } from "@/lib/phone";
 import React, { useState, useMemo } from "react";
 import { MockOrder } from "@/lib/mock-store";
 import {
@@ -176,7 +177,7 @@ export default function OrdersDashboardClient({
 
   // Helper WhatsApp Link
   const getWhatsAppMessageUrl = (order: MockOrder) => {
-    const rawPhone = order.customerPhone.replace(/\D/g, "");
+    const rawPhone = numeroPerWhatsApp(order.customerPhone);
     let text = "";
 
     if (order.status === "PRONTO_RITIRO" || order.fulfillmentType === "RITIRO_IN_NEGOZIO") {

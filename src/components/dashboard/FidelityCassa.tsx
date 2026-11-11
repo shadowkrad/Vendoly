@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import QRCode from "qrcode";
-import { classificaTelefono } from "@/lib/phone";
+import { classificaTelefono, numeroPerWhatsApp } from "@/lib/phone";
 
 interface Premio {
   id: string;
@@ -284,7 +284,7 @@ export default function FidelityCassa({ onChange }: { onChange?: () => void }) {
                 </button>
                 {puoWhatsApp ? (
                   <a
-                    href={`https://wa.me/39${cliente.telefono.replace(/\D/g, "")}?text=${encodeURIComponent(
+                    href={`https://wa.me/${numeroPerWhatsApp(cliente.telefono)}?text=${encodeURIComponent(
                       `Ecco la tua tessera fedeltà: ${linkTessera(cliente)}`
                     )}`}
                     target="_blank"

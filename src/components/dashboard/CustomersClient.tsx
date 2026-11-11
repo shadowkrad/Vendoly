@@ -1,5 +1,6 @@
 "use client";
 
+import { numeroPerWhatsApp } from "@/lib/phone";
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { CustomerData, CustomerInput, createCustomer, deleteCustomer } from "@/lib/customer-actions";
@@ -162,7 +163,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
   };
 
   const getWhatsAppChatUrl = (customer: CustomerData) => {
-    const raw = customer.phone.replace(/\D/g, "");
+    const raw = numeroPerWhatsApp(customer.phone);
     const name = customer.firstName;
     const msg = `👋 Ciao ${name}! Ti contattiamo da ${storeName}. Come possiamo aiutarti?`;
     return `https://wa.me/${raw}?text=${encodeURIComponent(msg)}`;

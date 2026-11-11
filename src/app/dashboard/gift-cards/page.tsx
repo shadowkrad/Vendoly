@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import AddonModuleGuard from "@/components/dashboard/AddonModuleGuard";
 import { TAAAAC_ADDONS } from "@/lib/taaaac-client";
-import { classificaTelefono } from "@/lib/phone";
+import { classificaTelefono, numeroPerWhatsApp } from "@/lib/phone";
 import EditorCartaGrafica from "@/components/carta-grafica/EditorCartaGrafica";
 
 const MOTIVI: { id: string; etichetta: string }[] = [
@@ -460,9 +460,9 @@ export default function BuoniPage() {
   };
 
   const apriWhatsApp = async (b: Buono, telefono: string) => {
-    const numero = telefono.replace(/\D/g, "");
+    const numero = numeroPerWhatsApp(telefono);
     const testo = `Ciao! Ecco il tuo buono: ${linkBuono(b)}`;
-    window.open(`https://wa.me/39${numero}?text=${encodeURIComponent(testo)}`, "_blank");
+    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(testo)}`, "_blank");
     fetch(`/api/gift-cards/${b.id}/invia`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
