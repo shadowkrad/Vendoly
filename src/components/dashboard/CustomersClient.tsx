@@ -306,145 +306,224 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredCustomers.map((c) => (
-            <div
-              key={c.id}
-              className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs hover:border-emerald-300 transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-3">
-                {/* Header card: Nome + Punti fedeltà */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden">
+          {/* VISTA MOBILE: RIGHE COMPATTE */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {filteredCustomers.map((c) => (
+              <div key={c.id} className="p-4 space-y-2.5 hover:bg-slate-50/70 transition-colors">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-bold text-base text-slate-900 leading-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-sm text-slate-900">
                       {c.firstName} {c.lastName || ""}
                     </h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5">
-                      Registrato il {formatDate(c.createdAt)}
-                    </p>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs">
+                      <span className="font-semibold text-emerald-700">{c.phone}</span>
+                      <a
+                        href={getWhatsAppChatUrl(c)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md inline-flex items-center gap-1"
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        WA
+                      </a>
+                    </div>
+                    {c.email && <div className="text-[11px] text-slate-500 truncate">{c.email}</div>}
+                    {c.address && <div className="text-[11px] text-slate-400 truncate">{c.address}</div>}
                   </div>
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold shrink-0">
-                    <Award className="w-3.5 h-3.5 text-amber-500" />
-                    <span>{c.loyaltyPoints} pt</span>
-                  </div>
-                </div>
-
-                {/* Recapiti Contatto */}
-                <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50/70 p-3 rounded-xl border border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{c.phone}</span>
+                  <div className="text-right shrink-0 space-y-1">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold">
+                      {c.loyaltyPoints} pt
                     </span>
-                    <a
-                      href={getWhatsAppChatUrl(c)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 hover:bg-emerald-200 px-2 py-0.5 rounded-lg transition-colors"
-                      title="Avvia chat WhatsApp"
-                    >
-                      <MessageCircle className="w-3 h-3 text-emerald-600" />
-                      <span>WhatsApp</span>
-                    </a>
+                    <div className="text-[11px] font-bold text-slate-700">
+                      {c.ordersCount} ord. · <span className="text-emerald-600">{formatCurrency(c.totalSpent)}</span>
+                    </div>
                   </div>
-
-                  {c.email && (
-                    <div className="flex items-center gap-1.5 text-slate-500 truncate">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{c.email}</span>
-                    </div>
-                  )}
-
-                  {c.address && (
-                    <div className="flex items-start gap-1.5 text-slate-500 text-[11px] leading-snug">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                      <span className="line-clamp-2">{c.address}</span>
-                    </div>
-                  )}
-
-                  {c.fiscalCode && (
-                    <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-mono">
-                      <FileText className="w-3 h-3 text-slate-400 shrink-0" />
-                      <span>CF/P.IVA: {c.fiscalCode}</span>
-                    </div>
-                  )}
                 </div>
 
-                {/* Taglie & Brand Preferiti */}
-                {(c.clothingSize || c.shoeSize || c.preferredBrands) && (
-                  <div className="space-y-1.5 pt-1">
-                    <div className="flex items-center gap-1.5 flex-wrap text-xs">
-                      {c.clothingSize && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[11px] font-semibold">
-                          <Shirt className="w-3 h-3 text-purple-500" />
-                          <span>Taglia: {c.clothingSize}</span>
-                        </span>
-                      )}
-                      {c.shoeSize && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold">
-                          <Footprints className="w-3 h-3 text-blue-500" />
-                          <span>Scarpe: {c.shoeSize}</span>
-                        </span>
-                      )}
-                    </div>
+                {(c.clothingSize || c.shoeSize || c.preferredBrands || c.notes) && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    {c.clothingSize && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-semibold">
+                        <Shirt className="w-3 h-3" />
+                        {c.clothingSize}
+                      </span>
+                    )}
+                    {c.shoeSize && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-semibold">
+                        <Footprints className="w-3 h-3" />
+                        {c.shoeSize}
+                      </span>
+                    )}
                     {c.preferredBrands && (
-                      <p className="text-[11px] text-slate-600 flex items-center gap-1">
-                        <Heart className="w-3 h-3 text-rose-500 shrink-0" />
-                        <span className="font-semibold text-slate-700">Brand:</span>
-                        <span className="truncate">{c.preferredBrands}</span>
-                      </p>
+                      <span className="text-slate-600 truncate max-w-full">
+                        ❤️ {c.preferredBrands}
+                      </span>
+                    )}
+                    {c.notes && (
+                      <span className="text-amber-800 truncate max-w-full">
+                        📝 {c.notes}
+                      </span>
                     )}
                   </div>
                 )}
 
-                {/* Note / Wishlist Capi */}
-                {c.notes && (
-                  <div className="p-2.5 bg-amber-50/50 rounded-xl border border-amber-200/60 text-xs text-amber-900">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-700 mb-0.5">
-                      Note &amp; Wishlist Capi
-                    </p>
-                    <p className="text-[11px] line-clamp-2 leading-relaxed">{c.notes}</p>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer card: Storico ordini + Azioni */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <div>
-                  <span className="text-[11px] text-slate-400 block">Acquisti / LTV</span>
-                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                    <span>{c.ordersCount} ord.</span>
-                    <span>•</span>
-                    <span className="text-emerald-600">{formatCurrency(c.totalSpent)}</span>
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-slate-400">
+                    Dal {formatDate(c.createdAt)}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setHistoryCustomer(c)}
+                      className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer"
+                      title="Visualizza storico acquisti"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <Link
+                      href={`/dashboard/clienti/${c.id}`}
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold"
+                    >
+                      Scheda →
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(c)}
+                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                      title="Elimina cliente"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-1.5">
-                  <Link
-                    href={`/dashboard/clienti/${c.id}`}
-                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-2xs"
-                    title="Apri scheda completa e tessera punti"
-                  >
-                    Scheda →
-                  </Link>
-                  <button
-                    onClick={() => setHistoryCustomer(c)}
-                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                    title="Visualizza storico acquisti"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(c)}
-                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                    title="Elimina cliente"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* VISTA DESKTOP: TABELLA A RIGHE */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left text-sm text-slate-600">
+              <thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th className="px-5 py-3">Cliente</th>
+                  <th className="px-5 py-3">Contatti</th>
+                  <th className="px-5 py-3">Taglie &amp; Preferenze</th>
+                  <th className="px-5 py-3">Fedeltà &amp; Ordini</th>
+                  <th className="px-5 py-3 text-right">Dettagli</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredCustomers.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="px-5 py-3.5 align-top">
+                      <div className="font-semibold text-slate-900">
+                        {c.firstName} {c.lastName || ""}
+                      </div>
+                      {c.address && (
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1 truncate max-w-[240px] mt-0.5">
+                          <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate">{c.address}</span>
+                        </div>
+                      )}
+                      <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-2">
+                        <span>Dal {formatDate(c.createdAt)}</span>
+                        {c.fiscalCode && <span className="font-mono">· {c.fiscalCode}</span>}
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5 align-top">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-semibold text-slate-800">{c.phone}</span>
+                        <a
+                          href={getWhatsAppChatUrl(c)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 text-emerald-700 hover:bg-emerald-50 rounded-md transition-colors"
+                          title="Avvia chat WhatsApp"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                      {c.email && (
+                        <div className="text-xs text-slate-500 truncate max-w-[220px] mt-0.5">
+                          {c.email}
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="px-5 py-3.5 align-top space-y-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {c.clothingSize && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[11px] font-semibold">
+                            <Shirt className="w-3 h-3 text-purple-500" />
+                            <span>{c.clothingSize}</span>
+                          </span>
+                        )}
+                        {c.shoeSize && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-semibold">
+                            <Footprints className="w-3 h-3 text-blue-500" />
+                            <span>{c.shoeSize}</span>
+                          </span>
+                        )}
+                      </div>
+                      {c.preferredBrands && (
+                        <div className="text-[11px] text-slate-600 flex items-center gap-1 truncate max-w-[240px]">
+                          <Heart className="w-3 h-3 text-rose-500 shrink-0" />
+                          <span className="truncate">{c.preferredBrands}</span>
+                        </div>
+                      )}
+                      {c.notes && (
+                        <div className="text-[11px] text-amber-800 truncate max-w-[240px]" title={c.notes}>
+                          📝 {c.notes}
+                        </div>
+                      )}
+                      {!c.clothingSize && !c.shoeSize && !c.preferredBrands && !c.notes && (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </td>
+
+                    <td className="px-5 py-3.5 align-top">
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
+                          <Award className="w-3.5 h-3.5 text-amber-500" />
+                          <span>{c.loyaltyPoints} pt</span>
+                        </span>
+                      </div>
+                      <div className="text-xs font-bold text-slate-700 mt-1">
+                        {c.ordersCount} ord. ·{" "}
+                        <span className="text-emerald-600">{formatCurrency(c.totalSpent)}</span>
+                      </div>
+                    </td>
+
+                    <td className="px-5 py-3.5 align-top text-right">
+                      <div className="inline-flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setHistoryCustomer(c)}
+                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Visualizza storico acquisti"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <Link
+                          href={`/dashboard/clienti/${c.id}`}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-2xs"
+                          title="Apri scheda completa e tessera punti"
+                        >
+                          Scheda →
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(c)}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Elimina cliente"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
