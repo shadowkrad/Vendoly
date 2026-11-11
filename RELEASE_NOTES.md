@@ -37,6 +37,10 @@ Le app web (PWA) già aggiunte in precedenza sulla schermata Home del telefono c
 - **Buoni e biglietti senza contatto**: se il buono non ha un cliente con email o cellulare, il modulo lo segnala, propone di creare la scheda cliente e, prima di emettere, chiede conferma (senza contatto il buono si può solo stampare). Nella consegna il pulsante WhatsApp mancante ora ha una spiegazione.
 - **Riscatto rapido dall'elenco buoni**: ogni buono attivo ha il pulsante "Riscatta" direttamente nella riga (dove si vede il codice): per i servizi basta confermare, per gli importi si scrive la spesa del cliente e si vede lo sconto prima di confermare.
 
+### 🖨 Stampa dei Buoni
+- **Niente biglietto da visita nel buono**: stampando il cartoncino non compare più il riquadro con gli orari: sul foglio c'è solo il buono. "Stampa buono A4" è ora il primo pulsante e usa la grafica dell'attività.
+- **Testi dentro le caselle**: titolo, destinatario, messaggio e codice si rimpiccioliscono da soli quando sono lunghi, senza uscire dai riquadri né finire sotto il QR code.
+
 ## Novità della Versione 1.1.2 (Patch)
 
 - Il pallino WhatsApp compare solo nella vetrina pubblica del sito: non piu' nelle pagine interne, nelle tessere e nei buoni dei clienti (prima bastava una pagina non prevista per vederlo).
