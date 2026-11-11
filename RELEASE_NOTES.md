@@ -7,6 +7,9 @@
 - **Formato e dimensioni perfetti per ogni schermo (`sharp`)**: l'endpoint `/api/pwa-icon` e l'icona della tessera fedeltà digitale (`/tessera/[token]/icona`) convertono e ridimensionano sempre l'immagine in un **PNG quadrato reale** alle misure esatte richieste (`32×32`, `180×180`, `192×192`, `512×512`), partendo anche da immagini WebP, JPEG o SVG.
 - **Icona iPhone su fondo opaco e icona Android adattiva (`maskable`)**: per iPhone (`180×180`) le trasparenze vengono appiattite su sfondo bianco evitando il riquadro nero di iOS; per Android (`maskable=1`) il logo viene centrato con margine di sicurezza del 10% per lato sul colore del negozio così da non venire tagliato dalle icone tonde o a goccia.
 
+### 🔄 Sincronizzazione Canali Più Chiara
+- **Sincronizzazione canali più chiara**: se il servizio centrale non risponde per un momento, la scheda dice "stato non disponibile, riprova tra poco" invece di far credere che Google e Facebook non siano collegati, e non blocca la sincronizzazione.
+
 #### 💡 Guida per Aggiornare l'Icona già Salvata sulla Schermata Home dello Smartphone
 Le app web (PWA) già aggiunte in precedenza sulla schermata Home del telefono conservano la vecchia icona perché i sistemi operativi mobili (iOS Safari e Android Chrome) salvano l'immagine in una memoria permanente del telefono al momento del primo salvataggio. Per vedere subito la nuova icona ad alta definizione:
 1. **Su iPhone (Safari)**:
@@ -15,6 +18,7 @@ Le app web (PWA) già aggiunte in precedenza sulla schermata Home del telefono c
 2. **Su Android (Chrome)**:
    - Tieni premuto il dito sulla vecchia icona nella schermata Home e trascinala su **Rimuovi** / **Disinstalla**.
    - Apri **Chrome**, visita l'indirizzo del gestionale (o della tua tessera fedeltà), tocca il menu **⋮** in alto a destra e seleziona **Aggiungi a schermata Home** (oppure **Installa app**).
+
 
 ---
 
