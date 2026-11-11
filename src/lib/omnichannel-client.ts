@@ -167,7 +167,13 @@ export async function syncOmnichannelChannels(params: {
         signal: AbortSignal.timeout(8000),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        data = { ok: false, error: "Servizio centrale temporaneamente occupato" };
+      }
       if (res.ok && data.ok) {
         return { ok: true, summary: data.summary, channels: data.channels };
       } else {
@@ -213,7 +219,13 @@ export async function fetchOmnichannelStatus(): Promise<OmnichannelStatusResult>
         signal: AbortSignal.timeout(5000),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        data = { ok: false, error: "Servizio centrale temporaneamente occupato" };
+      }
       if (res.ok && data.ok) {
         return {
           ok: true,
@@ -264,7 +276,13 @@ export async function triggerGoogleReviewBooster(params: {
         signal: AbortSignal.timeout(6000),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        data = { ok: false, error: "Servizio centrale temporaneamente occupato" };
+      }
       if (res.ok && data.ok) {
         return { ok: true, message: data.message };
       }

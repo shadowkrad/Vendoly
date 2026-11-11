@@ -48,10 +48,23 @@ export default function OmnichannelSyncCard({
   const [syncResult, setSyncResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const isGoogleActive = channelStatus?.google?.enabled ?? false;
+  const isMetaActive = channelStatus?.meta?.enabled ?? false;
+  const isWhatsappActive = channelStatus?.whatsapp?.enabled ?? false;
+
   const handleManualSync = async () => {
     setSyncing(true);
     setErrorMsg(null);
     setSyncResult(null);
+
+    // Se nessun canale esterno è collegato, avvisiamo con gentilezza senza crash o chiamate a vuoto
+    if (!isGoogleActive && !isMetaActive) {
+      setSyncing(false);
+      setErrorMsg(
+        "Nessun canale social collegato (Google Maps o Facebook/Instagram). Connetti prima il tuo account dal Portale Clienti Taaaac per sincronizzare gli orari."
+      );
+      return;
+    }
 
     try {
       const res = await fetch("/api/sync/channels", {
@@ -64,9 +77,21 @@ export default function OmnichannelSyncCard({
         }),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("content-type") || "";
+      let data: any = null;
+
+      if (contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        console.warn("[Omnichannel Sync] Risposta non JSON ricevuta:", text.slice(0, 120));
+        throw new Error(
+          "Il server centrale di sincronizzazione è momentaneamente occupato. Riprova tra poco."
+        );
+      }
+
       if (!res.ok || (!data.ok && !data.success)) {
-        throw new Error(data.error || "Impossibile completare la sincronizzazione");
+        throw new Error(data?.error || "Impossibile completare la sincronizzazione");
       }
 
       setSyncResult(data);
@@ -79,10 +104,6 @@ export default function OmnichannelSyncCard({
       setSyncing(false);
     }
   };
-
-  const isGoogleActive = channelStatus?.google?.enabled ?? false;
-  const isMetaActive = channelStatus?.meta?.enabled ?? false;
-  const isWhatsappActive = channelStatus?.whatsapp?.enabled ?? false;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5 space-y-4">
@@ -143,9 +164,21 @@ export default function OmnichannelSyncCard({
             </span>
           </div>
           <p className="text-[11px] text-gray-500 leading-tight">
-            {isGoogleActive
-              ? "Orari e giorni festivi sincronizzati sulla scheda dell'attività."
-              : "Collegabile tramite il supporto per aggiornare la scheda Google."}
+            {isGoogleActive ? (
+              "Orari e giorni festivi sincronizzati sulla scheda dell'attività."
+            ) : (
+              <span>
+                Collega la scheda Google dal{" "}
+                <a
+                  href="https://admin.taaaac.eu/portal#social"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:text-indigo-700 underline font-semibold"
+                >
+                  Portale Clienti Taaaac ↗
+                </a>
+              </span>
+            )}
           </p>
         </div>
 
@@ -166,9 +199,21 @@ export default function OmnichannelSyncCard({
             </span>
           </div>
           <p className="text-[11px] text-gray-500 leading-tight">
-            {isMetaActive
-              ? "Orari di apertura allineati sui profili social aziendali."
-              : "Collegabile per sincronizzare la pagina Facebook e Instagram."}
+            {isMetaActive ? (
+              "Orari di apertura allineati sui profili social aziendali."
+            ) : (
+              <span>
+                Collega la Pagina Facebook & IG dal{" "}
+                <a
+                  href="https://admin.taaaac.eu/portal#social"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-indigo-600 hover:text-indigo-700 underline font-semibold"
+                >
+                  Portale Clienti Taaaac ↗
+                </a>
+              </span>
+            )}
           </p>
         </div>
 
