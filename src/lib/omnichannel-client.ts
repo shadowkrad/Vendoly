@@ -39,6 +39,8 @@ export interface OmnichannelStatusResult {
   };
   lastOmnichannelSyncAt?: string | null;
   error?: string;
+  /** true = il Core non ha risposto: lo stato dei canali e' SCONOSCIUTO (non vuol dire "non collegato") */
+  unavailable?: boolean;
 }
 
 /**
@@ -236,13 +238,16 @@ export async function fetchOmnichannelStatus(): Promise<OmnichannelStatusResult>
     } catch {}
   }
 
+  // Il Core non ha risposto (o ha risposto con una pagina non valida): lo stato e' SCONOSCIUTO.
+  // Non va letto come "non collegato" e non si inventano numeri o servizi attivi.
   return {
     ok: true,
+    unavailable: true,
     channels: {
-      google: { enabled: false, status: "NON_COLLEGATO" },
-      meta: { enabled: false, status: "NON_COLLEGATO" },
-      whatsapp: { enabled: true, displayNumber: "+39 340 1234567" },
-      reviewBooster: { enabled: true, totalSent: 0 },
+      google: { enabled: false, status: "SCONOSCIUTO" },
+      meta: { enabled: false, status: "SCONOSCIUTO" },
+      whatsapp: { enabled: false, displayNumber: null },
+      reviewBooster: { enabled: false, totalSent: 0 },
     },
   };
 }

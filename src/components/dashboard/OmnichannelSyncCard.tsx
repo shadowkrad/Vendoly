@@ -51,6 +51,8 @@ export default function OmnichannelSyncCard({
   const isGoogleActive = channelStatus?.google?.enabled ?? false;
   const isMetaActive = channelStatus?.meta?.enabled ?? false;
   const isWhatsappActive = channelStatus?.whatsapp?.enabled ?? false;
+  // Se il Core non ha risposto lo stato e' sconosciuto: non si dice "non collegato" e non si blocca la sincronizzazione
+  const statoNonDisponibile = channelStatus?.google?.status === "SCONOSCIUTO" && channelStatus?.meta?.status === "SCONOSCIUTO";
 
   const handleManualSync = async () => {
     setSyncing(true);
@@ -58,7 +60,7 @@ export default function OmnichannelSyncCard({
     setSyncResult(null);
 
     // Se nessun canale esterno è collegato, avvisiamo con gentilezza senza crash o chiamate a vuoto
-    if (!isGoogleActive && !isMetaActive) {
+    if (!statoNonDisponibile && !isGoogleActive && !isMetaActive) {
       setSyncing(false);
       setErrorMsg(
         "Nessun canale social collegato (Google Maps o Facebook/Instagram). Connetti prima il tuo account dal Portale Clienti Taaaac per sincronizzare gli orari."
@@ -166,6 +168,8 @@ export default function OmnichannelSyncCard({
           <p className="text-[11px] text-gray-500 leading-tight">
             {isGoogleActive ? (
               "Orari e giorni festivi sincronizzati sulla scheda dell'attività."
+            ) : statoNonDisponibile ? (
+              "Stato non disponibile al momento: riprova tra poco."
             ) : (
               <span>
                 Collega la scheda Google dal{" "}
@@ -201,6 +205,8 @@ export default function OmnichannelSyncCard({
           <p className="text-[11px] text-gray-500 leading-tight">
             {isMetaActive ? (
               "Orari di apertura allineati sui profili social aziendali."
+            ) : statoNonDisponibile ? (
+              "Stato non disponibile al momento: riprova tra poco."
             ) : (
               <span>
                 Collega la Pagina Facebook & IG dal{" "}
