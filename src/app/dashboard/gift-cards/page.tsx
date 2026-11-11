@@ -228,6 +228,17 @@ export default function BuoniPage() {
   const emetti = async (e: React.FormEvent) => {
     e.preventDefault();
     setErroreModale(null);
+    // Controllo: senza email o cellulare il buono non si puo' inviare. Si avvisa l'esercente prima di emettere.
+    const haEmailInvio = Boolean(clienteScelto?.email) || Boolean(acquirenteEmail.trim());
+    const haCellulareInvio = Boolean(clienteScelto?.telefono) && classificaTelefono(clienteScelto!.telefono) === "CELLULARE";
+    if (!haEmailInvio && !haCellulareInvio) {
+      const procedi = window.confirm(
+        "Questo buono non ha un'email né un cellulare a cui inviarlo, quindi potrai solo stamparlo.\n\n" +
+          "OK = emetti lo stesso (solo stampa)\n" +
+          "Annulla = torna indietro per scegliere il cliente o crearne la scheda"
+      );
+      if (!procedi) return;
+    }
     setInvio(true);
     try {
       const corpo: any = {
@@ -713,7 +724,15 @@ export default function BuoniPage() {
                               </button>
                               {(() => {
                                 const tel = b.clienteTelefono || b.acquirenteTelefono || "";
-                                if (!tel) return null;
+                                if (!tel)
+                                  return (
+                                    <span className="text-[11px] text-amber-700 self-center">
+                                      Nessun cellulare salvato: per WhatsApp{" "}
+                                      <a href="/dashboard/clienti" target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                                        completa la scheda cliente
+                                      </a>
+                                    </span>
+                                  );
                                 return classificaTelefono(tel) === "CELLULARE" ? (
                                   <button onClick={() => apriWhatsApp(b, tel)} className="px-3 py-1.5 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-700 hover:bg-emerald-50">
                                     WhatsApp
@@ -879,7 +898,22 @@ export default function BuoniPage() {
                 Invia subito per email a {clienteScelto.email}
               </label>
             ) : clienteScelto ? (
-              <p className="text-xs text-amber-700">Questo cliente non ha un&apos;email: potrai stampare il buono o inviarlo da WhatsApp.</p>
+              <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                {classificaTelefono(clienteScelto.telefono) === "CELLULARE"
+                  ? "Questo cliente non ha un'email: potrai stampare il buono o inviarlo da WhatsApp. "
+                  : "Questo cliente non ha né un'email né un cellulare: il buono potrà solo essere stampato. "}
+                <a href="/dashboard/clienti" target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                  Completa la scheda cliente
+                </a>
+              </div>
+            ) : !acquirenteEmail.trim() ? (
+              <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                Nessun cliente scelto: senza un cliente con email o cellulare il buono non si può inviare, solo stampare.{" "}
+                <a href="/dashboard/clienti" target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                  Crea la scheda cliente
+                </a>{" "}
+                (si apre in una nuova scheda) e poi cercalo qui sopra.
+              </div>
             ) : null}
 
             {motivo === "REGALO" && (
