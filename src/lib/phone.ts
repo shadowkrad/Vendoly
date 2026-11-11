@@ -119,3 +119,20 @@ export function parseDataNascita(value?: string | null): Date | null {
   if (d.getUTCFullYear() < 1900) return null;
   return d;
 }
+
+/**
+ * Numero pronto per i link WhatsApp (wa.me): solo cifre, SEMPRE con il prefisso del paese.
+ * Un cellulare italiano salvato senza prefisso ("334 776 4925") diventa "393347764925";
+ * uno salvato con "+39", "0039" o "39" davanti non viene raddoppiato; un numero estero con "+" resta com'e'.
+ */
+export function numeroPerWhatsApp(rawPhone?: string | null): string {
+  const t = (rawPhone || "").trim();
+  if (!t) return "";
+  const cifre = t.replace(/\D/g, "");
+  if (!cifre) return "";
+  if (t.startsWith("+")) return cifre;
+  if (cifre.startsWith("00")) return cifre.slice(2);
+  if (cifre.length === 12 && cifre.startsWith("39")) return cifre;
+  if (cifre.length >= 8 && cifre.length <= 11 && !cifre.startsWith("39")) return "39" + cifre;
+  return cifre;
+}

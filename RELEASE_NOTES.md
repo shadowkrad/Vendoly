@@ -41,6 +41,9 @@ Le app web (PWA) già aggiunte in precedenza sulla schermata Home del telefono c
 - **Niente biglietto da visita nel buono**: stampando il cartoncino non compare più il riquadro con gli orari: sul foglio c'è solo il buono. "Stampa buono A4" è ora il primo pulsante e usa la grafica dell'attività.
 - **Testi dentro le caselle**: titolo, destinatario, messaggio e codice si rimpiccioliscono da soli quando sono lunghi, senza uscire dai riquadri né finire sotto il QR code.
 
+### 💬 Messaggi WhatsApp ai Clienti
+- **Numero sempre completo di prefisso**: i pulsanti WhatsApp (clienti, buoni, tessera, ordini e prenotazioni) ora aggiungono da soli il prefisso +39 ai cellulari salvati senza, e non lo raddoppiano per quelli che già lo hanno. Prima un cliente salvato come "334 776 4925" apriva WhatsApp con un numero sbagliato.
+
 ## Novità della Versione 1.1.2 (Patch)
 
 - Il pallino WhatsApp compare solo nella vetrina pubblica del sito: non piu' nelle pagine interne, nelle tessere e nei buoni dei clienti (prima bastava una pagina non prevista per vederlo).
