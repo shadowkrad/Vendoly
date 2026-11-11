@@ -2,6 +2,10 @@
 
 ## Novità della Versione 1.1.3 (Patch)
 
+### 🧭 Menu Gestionale e Impostazioni Riorganizzati in Gruppi
+- **Menu laterale più ordinato (`SidebarGruppi.tsx`, `DashboardSidebar.tsx`)**: le voci vendite/cassa/canali sono raccolte nel gruppo apribile *Vendite* con apertura automatica sulla pagina attiva.
+- **Impostazioni raggruppate per area e salvataggio comodo su mobile (`/dashboard/impostazioni`)**: le sezioni sono riunite in 5 gruppi chiari (*Negozio*, *Notifiche*, *Fidelity e buoni*, *Aspetto e dominio*, *Dispositivi*; *Fidelity e buoni* visibile solo se attiva dal Portale) con barra fissa **Salva modifiche** su mobile.
+
 ### 👤 CRM & Scheda Cliente Unificata in Stile Schedly con Gestione Punti e Invio Tessera
 - **Nuova scheda dettaglio cliente (`/dashboard/clienti/[id]`) e endpoint `GET /api/clienti/[id]`**: dalla lista CRM (`CustomersClient`) il tasto diretto **Scheda →** apre la pagina completa con anagrafica, taglie/brand, codice fiscale, consenso marketing, buoni attivi e storico ordini.
 - **Gestione punti nel profilo e invio manuale tessera (`ClienteFedeltaPanel`)**: nella scheda cliente si possono accreditare punti da spesa (€) o punti extra manuali, riscattare premi disponibili, aprire/copiare la tessera digitale (`/tessera/[token]`) e generare il testo precompilato per inviare manualmente la scheda punti via **WhatsApp (`wa.me`)** o **Email (`mailto:`)**.
