@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { caricaBuonoPubblico, condizioniBuono } from "@/lib/buono-pubblico";
 import {
   BuonoRegaloCard,
-  BigliettoRetro,
 } from "@/components/carta-grafica/CartaGraficaCanvas";
 import StampaAuto from "./StampaAuto";
 
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-// Stampa del buono: Cartoncino Regalo (210x99mm su A4), Buono Cartaceo, Certificato A4 oppure ricevuta da 80 mm per la cassa.
+// Stampa del buono: Cartoncino Regalo (210x99mm su A4, solo il buono: niente biglietto da visita), Buono Cartaceo, Certificato A4 oppure ricevuta da 80 mm per la cassa.
 export default async function StampaBuonoPage({
   params,
   searchParams,
@@ -215,27 +214,6 @@ export default async function StampaBuonoPage({
               layout={fmt === "cartaceo" ? "cartaceo" : "cartoncino"}
             />
           </div>
-
-          {/* Se il biglietto prevede il retro con gli orari, stampiamo sotto anche il retro pieghevole/abbinato */}
-          {config.formatoBiglietto === "FRONTE_RETRO" && (
-            <div style={{ width: "110mm", margin: "12mm auto 0" }}>
-              <div
-                className="no-stampa"
-                style={{
-                  fontSize: 10,
-                  color: "#64748b",
-                  textAlign: "center",
-                  marginBottom: "2mm",
-                  fontFamily: "system-ui, sans-serif",
-                }}
-              >
-                Orari & Recapiti Ufficiali dell&apos;Attività (Ritaglio opzionale da inserire nella busta)
-              </div>
-              <div style={{ border: "0.25mm dashed #cbd5e1" }}>
-                <BigliettoRetro config={config} attivita={attivita} />
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         /* FORMATO CERTIFICATO A4 COMPLETO CON TEMA ATTIVITÀ */

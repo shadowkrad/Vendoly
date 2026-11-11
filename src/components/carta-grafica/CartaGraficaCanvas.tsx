@@ -398,6 +398,14 @@ function tronca(str: string, maxChars: number): string {
   return s.slice(0, maxChars - 1).trim() + "…";
 }
 
+// Il testo in SVG non va a capo: se la riga e' troppo larga per lo spazio disponibile si riduce il carattere
+function adattaFont(testo: string, fontSize: number, maxLarghezza: number, k = 0.6, spaziatura = 0, minFattore = 0.55): number {
+  const n = Math.max(1, testo.length);
+  const larghezza = n * (fontSize * k + spaziatura);
+  if (larghezza <= maxLarghezza) return fontSize;
+  return Math.max(fontSize * minFattore, (maxLarghezza / n - spaziatura) / k);
+}
+
 /**
  * FRONTE DEL BIGLIETTO DA VISITA (SVG vettoriale puro 850×550 = 85×55 mm)
  * Centratura matematica garantita su qualsiasi schermo e in stampa.
@@ -1137,7 +1145,7 @@ export function BuonoRegaloCard({
   if (layout === "cartoncino" || layout === "cartaceo") {
     const isCartaceo = layout === "cartaceo";
     const leftCx = 195;
-    const valText = tronca(buono.valore || "75,00 €", 24);
+    const valText = tronca(buono.valore || "75,00 €", 34);
     const valFontSize = valText.length > 16 ? 36 : valText.length > 10 ? 46 : 56;
     const codiceId = (buono.codice || "BUO-XXXXX-XXXXX").toUpperCase();
 
@@ -1446,7 +1454,7 @@ export function BuonoRegaloCard({
                   x="412"
                   y="162"
                   fill={pal.textPrimary}
-                  fontSize={valFontSize}
+                  fontSize={adattaFont(valText, valFontSize, 380, 0.6, 0, 0.38)}
                   fontWeight="700"
                 >
                   {valText}
@@ -1454,7 +1462,17 @@ export function BuonoRegaloCard({
 
                 {/* Destinatario e Acquirente */}
                 {buono.destinatario && (
-                  <text x="412" y="210" fill={pal.textSecondary} fontSize="19">
+                  <text
+                    x="412"
+                    y="210"
+                    fill={pal.textSecondary}
+                    fontSize={adattaFont(
+                      `Per: ${tronca(buono.destinatario, 22)}${buono.acquirente ? `  •  Da: ${tronca(buono.acquirente, 18)}` : ""}`,
+                      19,
+                      380,
+                      0.55
+                    )}
+                  >
                     Per:{" "}
                     <tspan fill={pal.textPrimary} fontWeight="700">
                       {tronca(buono.destinatario, 22)}
@@ -1469,7 +1487,7 @@ export function BuonoRegaloCard({
                     x="412"
                     y="248"
                     fill={pal.textSecondary}
-                    fontSize="16.5"
+                    fontSize={adattaFont(`“${tronca(buono.messaggio, 44)}”`, 16.5, 380, 0.5)}
                     fontStyle="italic"
                   >
                     “{tronca(buono.messaggio, 44)}”
@@ -1492,9 +1510,9 @@ export function BuonoRegaloCard({
                     x="16"
                     y="24"
                     fill={pal.accent}
-                    fontSize="11"
+                    fontSize={adattaFont("CODICE IDENTIFICATIVO PER SCARICARE IL BUONO:", 11, 338, 0.66, 1.2)}
                     fontWeight="700"
-                    letterSpacing="1.8"
+                    letterSpacing="1.2"
                   >
                     CODICE IDENTIFICATIVO PER SCARICARE IL BUONO:
                   </text>
@@ -1503,7 +1521,7 @@ export function BuonoRegaloCard({
                     y="55"
                     fill={pal.textPrimary}
                     fontFamily="monospace"
-                    fontSize="24"
+                    fontSize={adattaFont(codiceId, 24, 338, 0.62, 2.5)}
                     fontWeight="700"
                     letterSpacing="2.5"
                   >
@@ -1581,7 +1599,7 @@ export function BuonoRegaloCard({
    * 2. LAYOUT WEB / SMARTPHONE & INTESTAZIONE A4 (SVG 800 × 520)
    *    Include anche qui il box con il CODICE IDENTIFICATIVO PER SCARICARE IL BUONO
    * ============================================================================ */
-  const valWeb = tronca(buono.valore || "75,00 €", 24);
+  const valWeb = tronca(buono.valore || "75,00 €", 34);
   const valWebSize = valWeb.length > 16 ? 40 : valWeb.length > 10 ? 50 : 60;
   const codiceIdWeb = (buono.codice || "BUO-XXXXX-XXXXX").toUpperCase();
 
@@ -1709,7 +1727,7 @@ export function BuonoRegaloCard({
             y={buono.destinatario ? 340 : 322}
             textAnchor="middle"
             fill={pal.textPrimary}
-            fontSize={valWebSize}
+            fontSize={adattaFont(valWeb, valWebSize, 700, 0.6, 0, 0.38)}
             fontWeight="700"
           >
             {valWeb}
@@ -1744,9 +1762,9 @@ export function BuonoRegaloCard({
             y="426"
             textAnchor="middle"
             fill={pal.accent}
-            fontSize="11"
+            fontSize={adattaFont("CODICE IDENTIFICATIVO PER SCARICARE IL BUONO", 11, 400, 0.66, 1.5)}
             fontWeight="700"
-            letterSpacing="2"
+            letterSpacing="1.5"
           >
             CODICE IDENTIFICATIVO PER SCARICARE IL BUONO
           </text>
@@ -1756,7 +1774,7 @@ export function BuonoRegaloCard({
             textAnchor="middle"
             fill={pal.textPrimary}
             fontFamily="monospace"
-            fontSize="23"
+            fontSize={adattaFont(codiceIdWeb, 23, 400, 0.62, 3)}
             fontWeight="700"
             letterSpacing="3"
           >
