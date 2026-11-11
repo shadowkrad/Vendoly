@@ -401,20 +401,20 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
 
           {/* VISTA DESKTOP: TABELLA A RIGHE */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-600">
-              <thead className="bg-slate-50/80 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200">
+            <table className="w-full text-left text-sm text-slate-600 border-separate border-spacing-0">
+              <thead className="bg-slate-50 text-xs font-semibold text-slate-500 border-b border-slate-200">
                 <tr>
-                  <th className="px-5 py-3">Cliente</th>
-                  <th className="px-5 py-3">Contatti</th>
-                  <th className="px-5 py-3">Taglie &amp; Preferenze</th>
-                  <th className="px-5 py-3">Fedeltà &amp; Ordini</th>
-                  <th className="px-5 py-3 text-right">Dettagli</th>
+                  <th className="px-4 py-4 font-semibold">Cliente</th>
+                  <th className="px-4 py-4 font-semibold">Contatti</th>
+                  <th className="px-4 py-4 font-semibold">Taglie &amp; Preferenze</th>
+                  <th className="px-4 py-4 font-semibold">Fedeltà &amp; Ordini</th>
+                  <th className="px-4 py-4 font-semibold text-right">Dettagli</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="[&>tr]:border-b [&>tr]:border-slate-100 [&>tr:last-child]:border-0">
                 {filteredCustomers.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5 align-top">
+                    <td className="px-4 py-5 align-middle">
                       <div className="font-semibold text-slate-900">
                         {c.firstName} {c.lastName || ""}
                       </div>
@@ -430,7 +430,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                       </div>
                     </td>
 
-                    <td className="px-5 py-3.5 align-top">
+                    <td className="px-4 py-5 align-middle">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-semibold text-slate-800">{c.phone}</span>
                         <a
@@ -450,7 +450,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                       )}
                     </td>
 
-                    <td className="px-5 py-3.5 align-top space-y-1">
+                    <td className="px-4 py-5 align-middle space-y-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {c.clothingSize && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[11px] font-semibold">
@@ -481,7 +481,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                       )}
                     </td>
 
-                    <td className="px-5 py-3.5 align-top">
+                    <td className="px-4 py-5 align-middle">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold">
                           <Award className="w-3.5 h-3.5 text-amber-500" />
@@ -494,8 +494,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                       </div>
                     </td>
 
-                    <td className="px-5 py-3.5 align-top text-right">
-                      <div className="inline-flex items-center justify-end gap-1.5">
+                    <td className="px-4 py-5 align-middle text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => setHistoryCustomer(c)}
                           className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
