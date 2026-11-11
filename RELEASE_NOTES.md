@@ -25,6 +25,7 @@ Le app web (PWA) già aggiunte in precedenza sulla schermata Home del telefono c
 ### 🛠 Avviso di Assistenza e Buoni Regalo
 - **Avviso "Assistenza Taaaac connessa" più discreto**: al cliente compare una striscia sottile (non più un grosso riquadro fisso sopra i contenuti), che si può chiudere, e sparisce da sola pochi minuti dopo che l'operatore è uscito, anche se non ha premuto "Termina".
 - **Buoni e biglietti senza contatto**: se il buono non ha un cliente con email o cellulare, il modulo lo segnala, propone di creare la scheda cliente e, prima di emettere, chiede conferma (senza contatto il buono si può solo stampare). Nella consegna il pulsante WhatsApp mancante ora ha una spiegazione.
+- **Riscatto rapido dall'elenco buoni**: ogni buono attivo ha il pulsante "Riscatta" direttamente nella riga (dove si vede il codice): per i servizi basta confermare, per gli importi si scrive la spesa del cliente e si vede lo sconto prima di confermare.
 
 ## Novità della Versione 1.1.2 (Patch)
 
