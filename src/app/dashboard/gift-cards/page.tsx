@@ -349,6 +349,63 @@ export default function BuoniPage() {
     }
   };
 
+  // Riscatto rapido dall'elenco: il codice si vede gia' nella riga, quindi si usa il buono senza passare dalla cassa in alto
+  const riscattaRapido = async (b: Buono) => {
+    let spesaRapida: number | null = null;
+    if (b.tipoValore !== "SERVIZIO") {
+      const risposta = window.prompt(`Buono ${b.codice}: scrivi la spesa del cliente in euro (serve per calcolare lo sconto).`);
+      if (risposta === null) return;
+      const n = parseFloat(risposta.replace(",", "."));
+      if (!isFinite(n) || n <= 0) {
+        mostra("Scrivi un importo valido, per esempio 45", "error");
+        return;
+      }
+      spesaRapida = n;
+    }
+    setInviando(b.id);
+    try {
+      const prima = await fetch("/api/gift-cards/riscatto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codice: b.codice, importoSpesa: spesaRapida, soloAnteprima: true }),
+      });
+      const p = await prima.json();
+      if (!prima.ok) {
+        mostra(p.error || "Buono non trovato", "error");
+        return;
+      }
+      if (p.errore) {
+        mostra(p.errore, "error");
+        return;
+      }
+      const riga =
+        b.tipoValore === "SERVIZIO"
+          ? `Riscattare "${valoreTesto(b)}"${p.buono?.intestatario ? ` per ${p.buono.intestatario}` : ""}?`
+          : `Sconto di ${euro(p.anteprima.sconto)}: da pagare ${euro(Math.max(0, (spesaRapida || 0) - p.anteprima.sconto))}. Confermi?`;
+      if (!window.confirm(`Buono ${b.codice}` + String.fromCharCode(10) + riga)) return;
+      const res = await fetch("/api/gift-cards/riscatto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codice: b.codice, importoSpesa: spesaRapida }),
+      });
+      const d = await res.json();
+      if (!res.ok) {
+        mostra(d.error || "Impossibile usare il buono", "error");
+        return;
+      }
+      mostra(
+        d.sconto > 0
+          ? `Buono ${d.codice} usato: sconto di ${euro(d.sconto)}${d.stato === "ATTIVA" ? `, credito residuo ${euro(d.nuovoSaldo)}` : ""}.`
+          : `Buono ${d.codice} riscattato.`
+      );
+      carica();
+    } catch {
+      mostra("Errore di connessione", "error");
+    } finally {
+      setInviando(null);
+    }
+  };
+
   const linkBuono = (b: Buono) => `${window.location.origin}/buono/${b.tokenPubblico}`;
 
   const stampa = async (b: Buono, formato: "a4" | "ricevuta" | "cartoncino" | "cartaceo") => {
@@ -682,6 +739,18 @@ export default function BuoniPage() {
                       </div>
                       <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${statoCls[b.stato] || ""}`}>{b.stato}</span>
                     </button>
+                    {b.stato === "ATTIVA" && !espanso && (
+                      <div className="px-5 pb-3 -mt-1">
+                        <button
+                          type="button"
+                          onClick={() => riscattaRapido(b)}
+                          disabled={inviando === b.id}
+                          className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-xs font-semibold"
+                        >
+                          {inviando === b.id ? "Attendi…" : "Riscatta"}
+                        </button>
+                      </div>
+                    )}
                     {espanso && (
                       <div className="px-5 pb-5 space-y-3 bg-slate-50/50">
                         <div className="text-xs text-slate-600 grid grid-cols-1 sm:grid-cols-2 gap-1">
