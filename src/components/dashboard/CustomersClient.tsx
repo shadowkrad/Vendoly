@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
 import { CustomerData, CustomerInput, createCustomer, updateCustomer, deleteCustomer } from "@/lib/customer-actions";
 import {
   Users,
@@ -471,7 +472,14 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href={`/dashboard/clienti/${c.id}`}
+                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-2xs"
+                    title="Apri scheda completa e tessera punti"
+                  >
+                    Scheda →
+                  </Link>
                   <button
                     onClick={() => setHistoryCustomer(c)}
                     className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
