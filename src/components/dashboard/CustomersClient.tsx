@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import { CustomerData, CustomerInput, createCustomer, updateCustomer, deleteCustomer } from "@/lib/customer-actions";
+import { CustomerData, CustomerInput, createCustomer, deleteCustomer } from "@/lib/customer-actions";
 import {
   Users,
   UserPlus,
@@ -15,7 +15,6 @@ import {
   Award,
   ShoppingBag,
   MessageCircle,
-  Edit2,
   Trash2,
   Eye,
   CheckCircle2,
@@ -41,9 +40,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
   const [searchQuery, setSearchQuery] = useState("");
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // Modale Aggiungi/Modifica
+  // Modale Registrazione Nuovo Cliente
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState<CustomerData | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Form State
@@ -99,7 +97,6 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
   };
 
   const handleOpenAdd = () => {
-    setEditingCustomer(null);
     setFormState({
       firstName: "",
       lastName: "",
@@ -118,26 +115,6 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (customer: CustomerData) => {
-    setEditingCustomer(customer);
-    setFormState({
-      firstName: customer.firstName,
-      lastName: customer.lastName || "",
-      phone: customer.phone,
-      email: customer.email || "",
-      address: customer.address || "",
-      fiscalCode: customer.fiscalCode || "",
-      clothingSize: customer.clothingSize || "",
-      shoeSize: customer.shoeSize || "",
-      preferredBrands: customer.preferredBrands || "",
-      notes: customer.notes || "",
-      loyaltyPoints: customer.loyaltyPoints,
-      birthDate: customer.birthDate || "",
-      marketingConsent: Boolean(customer.marketingConsent),
-    });
-    setIsModalOpen(true);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formState.firstName.trim()) {
@@ -147,44 +124,13 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
 
     setSaving(true);
     try {
-      if (editingCustomer) {
-        // Update
-        const res = await updateCustomer(editingCustomer.id, formState);
-        if (res.success) {
-          setCustomers((prev) =>
-            prev.map((c) =>
-              c.id === editingCustomer.id
-                ? {
-                    ...c,
-                    ...formState,
-                    lastName: formState.lastName || null,
-                    email: formState.email || null,
-                    address: formState.address || null,
-                    fiscalCode: formState.fiscalCode || null,
-                    clothingSize: formState.clothingSize || null,
-                    shoeSize: formState.shoeSize || null,
-                    preferredBrands: formState.preferredBrands || null,
-                    notes: formState.notes || null,
-                    loyaltyPoints: formState.loyaltyPoints ?? c.loyaltyPoints,
-                  }
-                : c
-            )
-          );
-          showFeedback("Cliente aggiornato con successo!");
-          setIsModalOpen(false);
-        } else {
-          showFeedback(res.error || "Errore durante l'aggiornamento", "error");
-        }
+      const res = await createCustomer(formState);
+      if (res.success && res.customer) {
+        setCustomers((prev) => [res.customer!, ...prev]);
+        showFeedback("Nuovo cliente registrato con successo!");
+        setIsModalOpen(false);
       } else {
-        // Create
-        const res = await createCustomer(formState);
-        if (res.success && res.customer) {
-          setCustomers((prev) => [res.customer!, ...prev]);
-          showFeedback("Nuovo cliente registrato con successo!");
-          setIsModalOpen(false);
-        } else {
-          showFeedback(res.error || "Errore durante la creazione", "error");
-        }
+        showFeedback(res.error || "Errore durante la creazione", "error");
       }
     } catch {
       showFeedback("Errore di connessione", "error");
@@ -223,6 +169,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
   };
 
   return (
+    <>
     <div className="space-y-6 font-sans text-slate-800 pb-12">
       {/* 1. Header Principale */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -488,13 +435,6 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                     <Eye className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => handleOpenEdit(c)}
-                    className="p-2 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
-                    title="Modifica scheda cliente"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button
                     onClick={() => handleDelete(c)}
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
                     title="Elimina cliente"
@@ -507,24 +447,23 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
           ))}
         </div>
       )}
+    </div>
 
-      {/* 5. Modale Form Nuovo/Modifica Cliente */}
+      {/* 5. Modale Form Nuovo Cliente */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
+        <div className="fixed inset-0 z-[60] !mt-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto px-6 pb-6 pt-0 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
-                  {editingCustomer ? <Edit2 className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                  <UserPlus className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-base">
-                    {editingCustomer ? "Modifica Scheda Cliente" : "Registra Nuovo Cliente"}
+                    Registra Nuovo Cliente
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {editingCustomer
-                      ? `Aggiorna i recapiti e le preferenze di ${editingCustomer.firstName}`
-                      : "Inserimento rapido anagrafica cassa e marketplace"}
+                    Inserimento rapido anagrafica cassa e marketplace
                   </p>
                 </div>
               </div>
@@ -740,7 +679,7 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
                   ) : (
                     <>
                       <Save className="w-3.5 h-3.5" />
-                      <span>{editingCustomer ? "Salva Modifiche" : "Crea Cliente"}</span>
+                      <span>Crea Cliente</span>
                     </>
                   )}
                 </button>
@@ -752,8 +691,8 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
 
       {/* 6. Modale Storico Ordini Cliente */}
       {historyCustomer && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-[60] !mt-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
@@ -818,6 +757,6 @@ export default function CustomersClient({ initialCustomers, storeName = "Vendoly
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
