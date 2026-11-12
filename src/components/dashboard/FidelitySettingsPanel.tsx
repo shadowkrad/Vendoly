@@ -86,6 +86,14 @@ export default function FidelitySettingsPanel({ data, onChange }: { data: Fideli
   };
 
   const applyPreset = (preset: FidelitySettingsData) => {
+    // Il modello sostituisce premi e regole punti: se ci sono premi gia' creati si chiede conferma
+    const premiAttuali = (data.rewards || []).length;
+    if (premiAttuali > 0) {
+      const procedi = window.confirm(
+        `Applicare questo modello sostituirà i premi e le regole punti che hai adesso (${premiAttuali} ${premiAttuali === 1 ? "premio" : "premi"}). Vuoi continuare?`
+      );
+      if (!procedi) return;
+    }
     onChange({
       ...preset,
       enabled: data.enabled !== undefined ? data.enabled : true,
