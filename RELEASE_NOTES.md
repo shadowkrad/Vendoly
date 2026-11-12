@@ -1,5 +1,12 @@
 ﻿# 🚀 Vendoly — Release Notes
 
+## Novità della Versione 1.1.4 (Hotfix / Patch)
+
+### ⭐ Modelli Fidelity con Conferma
+- **Niente più premi sostituiti per sbaglio**: se hai già creato dei premi, toccando uno dei modelli consigliati (Ristorante, Pizzeria...) ora compare la domanda "Vuoi sostituire i premi attuali?". Solo se confermi i premi e le regole punti vengono rimpiazzati.
+
+---
+
 ## Novità della Versione 1.1.3 (Patch)
 
 ### 🧭 Menu Gestionale e Impostazioni Riorganizzati in Gruppi
