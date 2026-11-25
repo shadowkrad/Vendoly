@@ -1,5 +1,13 @@
 ﻿# 🚀 Vendoly — Release Notes
 
+## Novità della Versione 1.1.6 (Hotfix / Patch)
+
+### 🔖 Allineamento di versione
+- Il numero di versione di tutta la suite è allineato alla 1.1.6. Questo modulo era già su un motore (Node 22) ancora supportato.
+- Nessuna modifica a ciò che vedi e a come lavori: dati, impostazioni e funzioni restano come prima.
+
+---
+
 ## Novità della Versione 1.1.5 (Hotfix / Patch di sicurezza)
 
 ### 🔒 Aggiornamento di Sicurezza
