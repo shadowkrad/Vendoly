@@ -1,5 +1,14 @@
 ﻿# 🚀 Vendoly — Release Notes
 
+## Novità della Versione 1.1.5 (Hotfix / Patch di sicurezza)
+
+### 🔒 Aggiornamento di Sicurezza
+- **Motore dell'applicazione aggiornato**: Next.js passa a una versione che corregge vulnerabilità segnalate nelle ultime settimane (tra cui una grave nell'elaborazione delle immagini).
+- **Libreria immagini aggiornata** (`sharp` 0.35.5): corregge una falla di memoria nel ridimensionamento delle immagini, usata anche per le icone dell'app.
+- Nessuna modifica a ciò che vedi e a come lavori: dati, impostazioni e funzioni restano come prima.
+
+---
+
 ## Novità della Versione 1.1.4 (Hotfix / Patch)
 
 ### ⭐ Modelli Fidelity con Conferma
